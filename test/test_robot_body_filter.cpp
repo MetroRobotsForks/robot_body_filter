@@ -138,7 +138,7 @@ TEST(RobotBodyFilter, InitFromArray)
   ros::NodeHandle nh;
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
-  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::LaserScan>>(filter);
+  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   XmlRpc::XmlRpcValue value;
   nh.getParam("test_chain_config", value);
@@ -167,7 +167,7 @@ TEST(RobotBodyFilter, InitFromDict)
   ros::NodeHandle nh;
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
-  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::LaserScan>>(filter);
+  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   // test_robot_description parameter doesn't exist
   nh.deleteParam("test_robot_description");
@@ -191,7 +191,7 @@ TEST(RobotBodyFilter, LoadParams)
   ros::NodeHandle nh;
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
-  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::LaserScan>>(filter);
+  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   // test that invalid robot model doesn't throw any exception, but also generates no filter shapes
   nh.setParam("test_robot_description", "<robot name='test'></robot>");
@@ -287,7 +287,7 @@ TEST(RobotBodyFilter, LoadParamsAllConfig)
   ros::NodeHandle nh;
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
-  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::LaserScan>>(filter);
+  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   // test that invalid robot model doesn't throw any exception, but also generates no filter shapes
   nh.setParam("test_robot_description", "<robot name='test'></robot>");
@@ -373,7 +373,7 @@ TEST(RobotBodyFilter, ParseRobot)
   ros::NodeHandle nh;
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
-  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::LaserScan>>(filter);
+  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   nh.setParam("test_robot_description", ROBOT_URDF);
   filterBase->configure("test_dict_config", nh);
@@ -403,8 +403,8 @@ TEST(RobotBodyFilter, ParseRobot)
   EXPECT_EQ(2, filter->shapeMask->getBodiesForShadowTest().size());
 
   nh.setParam("test_robot_description", "<robot name='test'></robot>");
-  std_srvs::TriggerRequest req;
-  std_srvs::TriggerResponse resp;
+  std_srvs::srv::Trigger::Request req;
+  std_srvs::srv::Trigger::Response resp;
   EXPECT_TRUE(filter->triggerModelReload(req, resp));
 
   EXPECT_EQ(0, filter->shapesToLinks.size());
@@ -446,12 +446,12 @@ TEST(RobotBodyFilter, Transforms)
   ros::NodeHandle nh;
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
-  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::LaserScan>>(filter);
+  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   nh.setParam("test_robot_description", ROBOT_URDF);
   filterBase->configure("test_dict_config", nh);
 
-  geometry_msgs::TransformStamped tf;
+  geometry_msgs::msg::TransformStamped tf;
   tf.transform.rotation.w = 1.0;
   for (double d = -5.0; d < 5.0; d += 0.1)
   {
@@ -537,7 +537,7 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   ros::NodeHandle nh;
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
-  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::LaserScan>>(filter);
+  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   nh.setParam("test_robot_description", ROBOT_URDF);
   filterBase->configure("compute_mask_config_point_by_point", nh);
@@ -546,13 +546,13 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   cloud.header.frame_id = filter->filteringFrame;
   CloudModifier mod(cloud);
   mod.setPointCloud2Fields(7,
-                           "x", 1, sensor_msgs::PointField::FLOAT32,
-                           "y", 1, sensor_msgs::PointField::FLOAT32,
-                           "z", 1, sensor_msgs::PointField::FLOAT32,
-                           "vp_x", 1, sensor_msgs::PointField::FLOAT32,
-                           "vp_y", 1, sensor_msgs::PointField::FLOAT32,
-                           "vp_z", 1, sensor_msgs::PointField::FLOAT32,
-                           "stamps", 1, sensor_msgs::PointField::FLOAT32);
+                           "x", 1, sensor_msgs::msg::PointField::FLOAT32,
+                           "y", 1, sensor_msgs::msg::PointField::FLOAT32,
+                           "z", 1, sensor_msgs::msg::PointField::FLOAT32,
+                           "vp_x", 1, sensor_msgs::msg::PointField::FLOAT32,
+                           "vp_y", 1, sensor_msgs::msg::PointField::FLOAT32,
+                           "vp_z", 1, sensor_msgs::msg::PointField::FLOAT32,
+                           "stamps", 1, sensor_msgs::msg::PointField::FLOAT32);
   mod.resize(11);
 
   {
@@ -602,7 +602,7 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   {
     ros::Time now = ros::Time::now();
     cloud.header.stamp = now;
-    geometry_msgs::TransformStamped tf;
+    geometry_msgs::msg::TransformStamped tf;
     tf.transform.rotation.w = 1.0;
     for (double d = -5.0; d < 5.0; d += 0.1)
     {
@@ -714,7 +714,7 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   }
 
   {
-    geometry_msgs::TransformStamped tf;
+    geometry_msgs::msg::TransformStamped tf;
     ros::Time now = ros::Time::now();
     cloud.header.stamp = now;
     tf.transform.rotation.w = 1;
@@ -757,49 +757,49 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   }
   filter->updateTransformCache(cloud.header.stamp, cloud.header.stamp + ros::Duration(20));
 
-  SphereStampedConstPtr boundingSphere;
-  geometry_msgs::PolygonStampedConstPtr boundingBox;
-  OrientedBoundingBoxStampedConstPtr orientedBoundingBox;
-  geometry_msgs::PolygonStampedConstPtr localBoundingBox;
-  visualization_msgs::MarkerConstPtr boundingSphereMarker;
-  visualization_msgs::MarkerConstPtr boundingBoxMarker;
-  visualization_msgs::MarkerConstPtr orientedBoundingBoxMarker;
-  visualization_msgs::MarkerConstPtr localBoundingBoxMarker;
-  visualization_msgs::MarkerArrayConstPtr boundingSphereDebugMarker;
-  visualization_msgs::MarkerArrayConstPtr boundingBoxDebugMarker;
-  visualization_msgs::MarkerArrayConstPtr orientedBoundingBoxDebugMarker;
-  visualization_msgs::MarkerArrayConstPtr localBoundingBoxDebugMarker;
-  sensor_msgs::PointCloud2ConstPtr pclNoBoundingSphere;
-  sensor_msgs::PointCloud2ConstPtr pclNoBoundingBox;
-  sensor_msgs::PointCloud2ConstPtr pclNoOrientedBoundingBox;
-  sensor_msgs::PointCloud2ConstPtr pclNoLocalBoundingBox;
-  sensor_msgs::PointCloud2ConstPtr pclInside;
-  sensor_msgs::PointCloud2ConstPtr pclClip;
-  sensor_msgs::PointCloud2ConstPtr pclShadow;
-  visualization_msgs::MarkerArrayConstPtr robotModelContainsTest;
-  visualization_msgs::MarkerArrayConstPtr robotModelShadowTest;
+  msg::SphereStamped::ConstSharedPtr boundingSphere;
+  geometry_msgs::msg::PolygonStamped::ConstSharedPtr boundingBox;
+  msg::OrientedBoundingBoxStamped::ConstSharedPtr orientedBoundingBox;
+  geometry_msgs::msg::PolygonStamped::ConstSharedPtr localBoundingBox;
+  visualization_msgs::msg::Marker::ConstSharedPtr boundingSphereMarker;
+  visualization_msgs::msg::Marker::ConstSharedPtr boundingBoxMarker;
+  visualization_msgs::msg::Marker::ConstSharedPtr orientedBoundingBoxMarker;
+  visualization_msgs::msg::Marker::ConstSharedPtr localBoundingBoxMarker;
+  visualization_msgs::msg::MarkerArray::ConstSharedPtr boundingSphereDebugMarker;
+  visualization_msgs::msg::MarkerArray::ConstSharedPtr boundingBoxDebugMarker;
+  visualization_msgs::msg::MarkerArray::ConstSharedPtr orientedBoundingBoxDebugMarker;
+  visualization_msgs::msg::MarkerArray::ConstSharedPtr localBoundingBoxDebugMarker;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclNoBoundingSphere;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclNoBoundingBox;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclNoOrientedBoundingBox;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclNoLocalBoundingBox;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclInside;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclClip;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclShadow;
+  visualization_msgs::msg::MarkerArray::ConstSharedPtr robotModelContainsTest;
+  visualization_msgs::msg::MarkerArray::ConstSharedPtr robotModelShadowTest;
 
-  ros::Subscriber boundingSphereSubscriber = nh.subscribe<SphereStamped>("/robot_bounding_sphere", 10, [&](const SphereStampedConstPtr& msg){boundingSphere=msg;});
-  ros::Subscriber boundingBoxSubscriber = nh.subscribe<geometry_msgs::PolygonStamped>("/robot_bounding_box", 10, [&](const geometry_msgs::PolygonStampedConstPtr& msg){boundingBox=msg;});
-  ros::Subscriber orientedBoundingBoxSubscriber = nh.subscribe<OrientedBoundingBoxStamped>("/robot_oriented_bounding_box", 10, [&](const OrientedBoundingBoxStampedConstPtr& msg){orientedBoundingBox=msg;});
-  ros::Subscriber localBoundingBoxSubscriber = nh.subscribe<geometry_msgs::PolygonStamped>("/robot_local_bounding_box", 10, [&](const geometry_msgs::PolygonStampedConstPtr& msg){localBoundingBox=msg;});
-  ros::Subscriber boundingSphereMarkerSubscriber = nh.subscribe<visualization_msgs::Marker>("/robot_bounding_sphere_marker", 10, [&](const visualization_msgs::MarkerConstPtr& msg){boundingSphereMarker=msg;});
-  ros::Subscriber boundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::Marker>("/robot_bounding_box_marker", 10, [&](const visualization_msgs::MarkerConstPtr& msg){boundingBoxMarker=msg;});
-  ros::Subscriber orientedBoundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::Marker>("/robot_oriented_bounding_box_marker", 10, [&](const visualization_msgs::MarkerConstPtr& msg){orientedBoundingBoxMarker=msg;});
-  ros::Subscriber localBoundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::Marker>("/robot_local_bounding_box_marker", 10, [&](const visualization_msgs::MarkerConstPtr& msg){localBoundingBoxMarker=msg;});
-  ros::Subscriber boundingSphereDebugMarkerSubscriber = nh.subscribe<visualization_msgs::MarkerArray>("/robot_bounding_sphere_debug", 10, [&](const visualization_msgs::MarkerArrayConstPtr& msg){boundingSphereDebugMarker=msg;});
-  ros::Subscriber boundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::MarkerArray>("/robot_bounding_box_debug", 10, [&](const visualization_msgs::MarkerArrayConstPtr& msg){boundingBoxDebugMarker=msg;});
-  ros::Subscriber orientedBoundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::MarkerArray>("/robot_oriented_bounding_box_debug", 10, [&](const visualization_msgs::MarkerArrayConstPtr& msg){orientedBoundingBoxDebugMarker=msg;});
-  ros::Subscriber localBoundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::MarkerArray>("/robot_local_bounding_box_debug", 10, [&](const visualization_msgs::MarkerArrayConstPtr& msg){localBoundingBoxDebugMarker=msg;});
-  ros::Subscriber scanPointCloudNoBoundingSphereSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_no_bsphere", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclNoBoundingSphere=msg;});
-  ros::Subscriber scanPointCloudNoBoundingBoxSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_no_bbox", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclNoBoundingBox=msg;});
-  ros::Subscriber scanPointCloudNoOrientedBoundingBoxSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_no_oriented_bbox", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclNoOrientedBoundingBox=msg;});
-  ros::Subscriber scanPointCloudNoLocalBoundingBoxSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_no_local_bbox", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclNoLocalBoundingBox=msg;});
-  ros::Subscriber debugPointCloudInsideSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_inside", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclInside=msg;});
-  ros::Subscriber debugPointCloudClipSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_clip", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclClip=msg;});
-  ros::Subscriber debugPointCloudShadowSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_shadow", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclShadow=msg;});
-  ros::Subscriber debugContainsMarkerSubscriber = nh.subscribe<visualization_msgs::MarkerArray>("/robot_model_for_contains_test", 10, [&](const visualization_msgs::MarkerArrayConstPtr& msg){robotModelContainsTest=msg;});
-  ros::Subscriber debugShadowMarkerSubscriber = nh.subscribe<visualization_msgs::MarkerArray>("/robot_model_for_shadow_test", 10, [&](const visualization_msgs::MarkerArrayConstPtr& msg){robotModelShadowTest=msg;});
+  ros::Subscriber boundingSphereSubscriber = nh.subscribe<msg::SphereStamped>("/robot_bounding_sphere", 10, [&](const msg::SphereStamped::ConstSharedPtr& msg){boundingSphere=msg;});
+  ros::Subscriber boundingBoxSubscriber = nh.subscribe<geometry_msgs::msg::PolygonStamped>("/robot_bounding_box", 10, [&](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr& msg){boundingBox=msg;});
+  ros::Subscriber orientedBoundingBoxSubscriber = nh.subscribe<msg::OrientedBoundingBoxStamped>("/robot_oriented_bounding_box", 10, [&](const msg::OrientedBoundingBoxStamped::ConstSharedPtr& msg){orientedBoundingBox=msg;});
+  ros::Subscriber localBoundingBoxSubscriber = nh.subscribe<geometry_msgs::msg::PolygonStamped>("/robot_local_bounding_box", 10, [&](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr& msg){localBoundingBox=msg;});
+  ros::Subscriber boundingSphereMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_bounding_sphere_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){boundingSphereMarker=msg;});
+  ros::Subscriber boundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){boundingBoxMarker=msg;});
+  ros::Subscriber orientedBoundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_oriented_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){orientedBoundingBoxMarker=msg;});
+  ros::Subscriber localBoundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_local_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){localBoundingBoxMarker=msg;});
+  ros::Subscriber boundingSphereDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_bounding_sphere_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){boundingSphereDebugMarker=msg;});
+  ros::Subscriber boundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){boundingBoxDebugMarker=msg;});
+  ros::Subscriber orientedBoundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_oriented_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){orientedBoundingBoxDebugMarker=msg;});
+  ros::Subscriber localBoundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_local_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){localBoundingBoxDebugMarker=msg;});
+  ros::Subscriber scanPointCloudNoBoundingSphereSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_bsphere", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoBoundingSphere=msg;});
+  ros::Subscriber scanPointCloudNoBoundingBoxSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoBoundingBox=msg;});
+  ros::Subscriber scanPointCloudNoOrientedBoundingBoxSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_oriented_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoOrientedBoundingBox=msg;});
+  ros::Subscriber scanPointCloudNoLocalBoundingBoxSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_local_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoLocalBoundingBox=msg;});
+  ros::Subscriber debugPointCloudInsideSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_inside", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclInside=msg;});
+  ros::Subscriber debugPointCloudClipSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_clip", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclClip=msg;});
+  ros::Subscriber debugPointCloudShadowSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_shadow", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclShadow=msg;});
+  ros::Subscriber debugContainsMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_model_for_contains_test", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){robotModelContainsTest=msg;});
+  ros::Subscriber debugShadowMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_model_for_shadow_test", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){robotModelShadowTest=msg;});
 
   filter->computeMask(cloud, mask);
 
@@ -860,8 +860,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, boundingSphereMarker->color.r + boundingSphereMarker->color.g +
                boundingSphereMarker->color.b);
-  EXPECT_EQ(visualization_msgs::Marker::SPHERE, boundingSphereMarker->type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingSphereMarker->action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::SPHERE, boundingSphereMarker->type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingSphereMarker->action);
   EXPECT_EQ("bounding_sphere", boundingSphereMarker->ns);
   EXPECT_EQ(1, boundingSphereMarker->frame_locked);
 
@@ -890,8 +890,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, boundingBoxMarker->color.r + boundingBoxMarker->color.g +
       boundingBoxMarker->color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, boundingBoxMarker->type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingBoxMarker->action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, boundingBoxMarker->type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingBoxMarker->action);
   EXPECT_EQ("bounding_box", boundingBoxMarker->ns);
   EXPECT_EQ(1, boundingBoxMarker->frame_locked);
 
@@ -923,8 +923,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, orientedBoundingBoxMarker->color.r + orientedBoundingBoxMarker->color.g +
       orientedBoundingBoxMarker->color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, orientedBoundingBoxMarker->type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, orientedBoundingBoxMarker->action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, orientedBoundingBoxMarker->type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, orientedBoundingBoxMarker->action);
   EXPECT_EQ("oriented_bounding_box", orientedBoundingBoxMarker->ns);
   EXPECT_EQ(1, orientedBoundingBoxMarker->frame_locked);
 
@@ -953,8 +953,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, localBoundingBoxMarker->color.r + localBoundingBoxMarker->color.g +
       localBoundingBoxMarker->color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, localBoundingBoxMarker->type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, localBoundingBoxMarker->action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, localBoundingBoxMarker->type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, localBoundingBoxMarker->action);
   EXPECT_EQ("local_bounding_box", localBoundingBoxMarker->ns);
   EXPECT_EQ(1, localBoundingBoxMarker->frame_locked);
 
@@ -1073,8 +1073,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, boundingSphereDebugMarker->markers[0].color.r + boundingSphereDebugMarker->markers[0].color.g +
       boundingSphereDebugMarker->markers[0].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::SPHERE, boundingSphereDebugMarker->markers[0].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingSphereDebugMarker->markers[0].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::SPHERE, boundingSphereDebugMarker->markers[0].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingSphereDebugMarker->markers[0].action);
   EXPECT_FALSE(boundingSphereDebugMarker->markers[0].ns.empty());
   EXPECT_EQ(1, boundingSphereDebugMarker->markers[0].frame_locked);
   EXPECT_EQ("odom", boundingSphereDebugMarker->markers[1].header.frame_id);
@@ -1093,11 +1093,11 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, boundingSphereDebugMarker->markers[1].color.r + boundingSphereDebugMarker->markers[1].color.g +
       boundingSphereDebugMarker->markers[1].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::SPHERE, boundingSphereDebugMarker->markers[1].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingSphereDebugMarker->markers[1].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::SPHERE, boundingSphereDebugMarker->markers[1].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingSphereDebugMarker->markers[1].action);
   EXPECT_FALSE(boundingSphereDebugMarker->markers[1].ns.empty());
   EXPECT_EQ(1, boundingSphereDebugMarker->markers[1].frame_locked);
-  
+
   EXPECT_EQ(4, boundingBoxDebugMarker->markers.size());
   EXPECT_EQ("odom", boundingBoxDebugMarker->markers[0].header.frame_id);
   EXPECT_EQ(cloud.header.stamp, boundingBoxDebugMarker->markers[0].header.stamp);
@@ -1115,8 +1115,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, boundingBoxDebugMarker->markers[0].color.r + boundingBoxDebugMarker->markers[0].color.g +
       boundingBoxDebugMarker->markers[0].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, boundingBoxDebugMarker->markers[0].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingBoxDebugMarker->markers[0].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, boundingBoxDebugMarker->markers[0].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingBoxDebugMarker->markers[0].action);
   EXPECT_FALSE(boundingBoxDebugMarker->markers[0].ns.empty());
   EXPECT_EQ(1, boundingBoxDebugMarker->markers[0].frame_locked);
   EXPECT_EQ("odom", boundingBoxDebugMarker->markers[1].header.frame_id);
@@ -1135,8 +1135,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, boundingBoxDebugMarker->markers[1].color.r + boundingBoxDebugMarker->markers[1].color.g +
       boundingBoxDebugMarker->markers[1].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, boundingBoxDebugMarker->markers[1].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingBoxDebugMarker->markers[1].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, boundingBoxDebugMarker->markers[1].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingBoxDebugMarker->markers[1].action);
   EXPECT_FALSE(boundingBoxDebugMarker->markers[1].ns.empty());
   EXPECT_EQ(1, boundingBoxDebugMarker->markers[1].frame_locked);
   EXPECT_EQ("odom", boundingBoxDebugMarker->markers[2].header.frame_id);
@@ -1155,8 +1155,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, boundingBoxDebugMarker->markers[2].color.r + boundingBoxDebugMarker->markers[2].color.g +
       boundingBoxDebugMarker->markers[2].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, boundingBoxDebugMarker->markers[2].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingBoxDebugMarker->markers[2].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, boundingBoxDebugMarker->markers[2].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingBoxDebugMarker->markers[2].action);
   EXPECT_FALSE(boundingBoxDebugMarker->markers[2].ns.empty());
   EXPECT_EQ(1, boundingBoxDebugMarker->markers[2].frame_locked);
   EXPECT_EQ("odom", boundingBoxDebugMarker->markers[3].header.frame_id);
@@ -1175,8 +1175,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, boundingBoxDebugMarker->markers[3].color.r + boundingBoxDebugMarker->markers[3].color.g +
       boundingBoxDebugMarker->markers[3].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, boundingBoxDebugMarker->markers[3].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingBoxDebugMarker->markers[3].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, boundingBoxDebugMarker->markers[3].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingBoxDebugMarker->markers[3].action);
   EXPECT_FALSE(boundingBoxDebugMarker->markers[3].ns.empty());
   EXPECT_EQ(1, boundingBoxDebugMarker->markers[3].frame_locked);
 
@@ -1197,8 +1197,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, orientedBoundingBoxDebugMarker->markers[0].color.r + orientedBoundingBoxDebugMarker->markers[0].color.g +
       orientedBoundingBoxDebugMarker->markers[0].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[0].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, orientedBoundingBoxDebugMarker->markers[0].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[0].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, orientedBoundingBoxDebugMarker->markers[0].action);
   EXPECT_FALSE(orientedBoundingBoxDebugMarker->markers[0].ns.empty());
   EXPECT_EQ(1, orientedBoundingBoxDebugMarker->markers[0].frame_locked);
   EXPECT_EQ("odom", orientedBoundingBoxDebugMarker->markers[1].header.frame_id);
@@ -1217,8 +1217,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, orientedBoundingBoxDebugMarker->markers[1].color.r + orientedBoundingBoxDebugMarker->markers[1].color.g +
       orientedBoundingBoxDebugMarker->markers[1].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[1].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, orientedBoundingBoxDebugMarker->markers[1].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[1].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, orientedBoundingBoxDebugMarker->markers[1].action);
   EXPECT_FALSE(orientedBoundingBoxDebugMarker->markers[1].ns.empty());
   EXPECT_EQ(1, orientedBoundingBoxDebugMarker->markers[1].frame_locked);
   EXPECT_EQ("odom", orientedBoundingBoxDebugMarker->markers[2].header.frame_id);
@@ -1237,8 +1237,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, orientedBoundingBoxDebugMarker->markers[2].color.r + orientedBoundingBoxDebugMarker->markers[2].color.g +
       orientedBoundingBoxDebugMarker->markers[2].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[2].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, orientedBoundingBoxDebugMarker->markers[2].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[2].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, orientedBoundingBoxDebugMarker->markers[2].action);
   EXPECT_FALSE(orientedBoundingBoxDebugMarker->markers[2].ns.empty());
   EXPECT_EQ(1, orientedBoundingBoxDebugMarker->markers[2].frame_locked);
   EXPECT_EQ("odom", orientedBoundingBoxDebugMarker->markers[3].header.frame_id);
@@ -1257,8 +1257,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, orientedBoundingBoxDebugMarker->markers[3].color.r + orientedBoundingBoxDebugMarker->markers[3].color.g +
       orientedBoundingBoxDebugMarker->markers[3].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[3].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, orientedBoundingBoxDebugMarker->markers[3].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[3].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, orientedBoundingBoxDebugMarker->markers[3].action);
   EXPECT_FALSE(orientedBoundingBoxDebugMarker->markers[3].ns.empty());
   EXPECT_EQ(1, orientedBoundingBoxDebugMarker->markers[3].frame_locked);
 
@@ -1279,8 +1279,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, localBoundingBoxDebugMarker->markers[0].color.r + localBoundingBoxDebugMarker->markers[0].color.g +
       localBoundingBoxDebugMarker->markers[0].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, localBoundingBoxDebugMarker->markers[0].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, localBoundingBoxDebugMarker->markers[0].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, localBoundingBoxDebugMarker->markers[0].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, localBoundingBoxDebugMarker->markers[0].action);
   EXPECT_FALSE(localBoundingBoxDebugMarker->markers[0].ns.empty());
   EXPECT_EQ(1, localBoundingBoxDebugMarker->markers[0].frame_locked);
   EXPECT_EQ("base_link", localBoundingBoxDebugMarker->markers[1].header.frame_id);
@@ -1299,8 +1299,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, localBoundingBoxDebugMarker->markers[1].color.r + localBoundingBoxDebugMarker->markers[1].color.g +
       localBoundingBoxDebugMarker->markers[1].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, localBoundingBoxDebugMarker->markers[1].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, localBoundingBoxDebugMarker->markers[1].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, localBoundingBoxDebugMarker->markers[1].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, localBoundingBoxDebugMarker->markers[1].action);
   EXPECT_FALSE(localBoundingBoxDebugMarker->markers[1].ns.empty());
   EXPECT_EQ(1, localBoundingBoxDebugMarker->markers[1].frame_locked);
   EXPECT_EQ("base_link", localBoundingBoxDebugMarker->markers[2].header.frame_id);
@@ -1319,8 +1319,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, localBoundingBoxDebugMarker->markers[2].color.r + localBoundingBoxDebugMarker->markers[2].color.g +
       localBoundingBoxDebugMarker->markers[2].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, localBoundingBoxDebugMarker->markers[2].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, localBoundingBoxDebugMarker->markers[2].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, localBoundingBoxDebugMarker->markers[2].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, localBoundingBoxDebugMarker->markers[2].action);
   EXPECT_FALSE(localBoundingBoxDebugMarker->markers[2].ns.empty());
   EXPECT_EQ(1, localBoundingBoxDebugMarker->markers[2].frame_locked);
   EXPECT_EQ("base_link", localBoundingBoxDebugMarker->markers[3].header.frame_id);
@@ -1339,8 +1339,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, localBoundingBoxDebugMarker->markers[3].color.r + localBoundingBoxDebugMarker->markers[3].color.g +
       localBoundingBoxDebugMarker->markers[3].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, localBoundingBoxDebugMarker->markers[3].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, localBoundingBoxDebugMarker->markers[3].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, localBoundingBoxDebugMarker->markers[3].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, localBoundingBoxDebugMarker->markers[3].action);
   EXPECT_FALSE(localBoundingBoxDebugMarker->markers[3].ns.empty());
   EXPECT_EQ(1, localBoundingBoxDebugMarker->markers[3].frame_locked);
 
@@ -1361,8 +1361,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, robotModelContainsTest->markers[0].color.r + robotModelContainsTest->markers[0].color.g +
       robotModelContainsTest->markers[0].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::SPHERE, robotModelContainsTest->markers[0].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, robotModelContainsTest->markers[0].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::SPHERE, robotModelContainsTest->markers[0].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, robotModelContainsTest->markers[0].action);
   EXPECT_EQ("antenna-0", robotModelContainsTest->markers[0].ns);
   EXPECT_EQ(1, robotModelContainsTest->markers[0].frame_locked);
   EXPECT_EQ("odom", robotModelContainsTest->markers[1].header.frame_id);
@@ -1381,8 +1381,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, robotModelContainsTest->markers[1].color.r + robotModelContainsTest->markers[1].color.g +
       robotModelContainsTest->markers[1].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, robotModelContainsTest->markers[1].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, robotModelContainsTest->markers[1].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, robotModelContainsTest->markers[1].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, robotModelContainsTest->markers[1].action);
   EXPECT_EQ("base_link-0", robotModelContainsTest->markers[1].ns);
   EXPECT_EQ(1, robotModelContainsTest->markers[1].frame_locked);
   EXPECT_EQ("odom", robotModelContainsTest->markers[2].header.frame_id);
@@ -1401,8 +1401,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, robotModelContainsTest->markers[2].color.r + robotModelContainsTest->markers[2].color.g +
       robotModelContainsTest->markers[2].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, robotModelContainsTest->markers[2].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, robotModelContainsTest->markers[2].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, robotModelContainsTest->markers[2].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, robotModelContainsTest->markers[2].action);
   EXPECT_EQ("base_link-1", robotModelContainsTest->markers[2].ns);
   EXPECT_EQ(1, robotModelContainsTest->markers[2].frame_locked);
   EXPECT_EQ("odom", robotModelContainsTest->markers[3].header.frame_id);
@@ -1421,8 +1421,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, robotModelContainsTest->markers[3].color.r + robotModelContainsTest->markers[3].color.g +
       robotModelContainsTest->markers[3].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, robotModelContainsTest->markers[3].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, robotModelContainsTest->markers[3].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, robotModelContainsTest->markers[3].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, robotModelContainsTest->markers[3].action);
   EXPECT_EQ("laser-0", robotModelContainsTest->markers[3].ns);
   EXPECT_EQ(1, robotModelContainsTest->markers[3].frame_locked);
 
@@ -1443,8 +1443,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, robotModelShadowTest->markers[0].color.r + robotModelShadowTest->markers[0].color.g +
       robotModelShadowTest->markers[0].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::SPHERE, robotModelShadowTest->markers[0].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, robotModelShadowTest->markers[0].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::SPHERE, robotModelShadowTest->markers[0].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, robotModelShadowTest->markers[0].action);
   EXPECT_EQ("antenna-0", robotModelShadowTest->markers[0].ns);
   EXPECT_EQ(1, robotModelShadowTest->markers[0].frame_locked);
   EXPECT_EQ("odom", robotModelShadowTest->markers[1].header.frame_id);
@@ -1463,8 +1463,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // make sure the marker has some color
   EXPECT_LT(0, robotModelShadowTest->markers[1].color.r + robotModelShadowTest->markers[1].color.g +
       robotModelShadowTest->markers[1].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, robotModelShadowTest->markers[1].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, robotModelShadowTest->markers[1].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, robotModelShadowTest->markers[1].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, robotModelShadowTest->markers[1].action);
   EXPECT_EQ("base_link-0", robotModelShadowTest->markers[1].ns);
   EXPECT_EQ(1, robotModelShadowTest->markers[1].frame_locked);
 }
@@ -1474,7 +1474,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   ros::NodeHandle nh;
 
   auto filter = std::make_shared<RobotBodyFilterPointCloud2Test>();
-  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::PointCloud2>>(filter);
+  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::PointCloud2>>(filter);
 
   nh.setParam("test_robot_description", ROBOT_URDF);
   filterBase->configure("compute_mask_config_all_at_once", nh);
@@ -1483,9 +1483,9 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   cloud.header.frame_id = filter->filteringFrame;
   CloudModifier mod(cloud);
   mod.setPointCloud2Fields(3,
-                           "x", 1, sensor_msgs::PointField::FLOAT32,
-                           "y", 1, sensor_msgs::PointField::FLOAT32,
-                           "z", 1, sensor_msgs::PointField::FLOAT32);
+                           "x", 1, sensor_msgs::msg::PointField::FLOAT32,
+                           "y", 1, sensor_msgs::msg::PointField::FLOAT32,
+                           "z", 1, sensor_msgs::msg::PointField::FLOAT32);
   mod.resize(12);
   cloud.width = 4;
   cloud.height = 3;
@@ -1513,7 +1513,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   {
     ros::Time now = ros::Time::now();
     cloud.header.stamp = now;
-    geometry_msgs::TransformStamped tf;
+    geometry_msgs::msg::TransformStamped tf;
     tf.transform.rotation.w = 1.0;
     for (double d = -5.0; d < 5.0; d += 0.1)
     {
@@ -1540,49 +1540,49 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
     ros::WallDuration(0.01).sleep();
   filter->updateTransformCache(cloud.header.stamp, cloud.header.stamp + ros::Duration(1));
 
-  SphereStampedConstPtr boundingSphere;
-  geometry_msgs::PolygonStampedConstPtr boundingBox;
-  OrientedBoundingBoxStampedConstPtr orientedBoundingBox;
-  geometry_msgs::PolygonStampedConstPtr localBoundingBox;
-  visualization_msgs::MarkerConstPtr boundingSphereMarker;
-  visualization_msgs::MarkerConstPtr boundingBoxMarker;
-  visualization_msgs::MarkerConstPtr orientedBoundingBoxMarker;
-  visualization_msgs::MarkerConstPtr localBoundingBoxMarker;
-  visualization_msgs::MarkerArrayConstPtr boundingSphereDebugMarker;
-  visualization_msgs::MarkerArrayConstPtr boundingBoxDebugMarker;
-  visualization_msgs::MarkerArrayConstPtr orientedBoundingBoxDebugMarker;
-  visualization_msgs::MarkerArrayConstPtr localBoundingBoxDebugMarker;
-  sensor_msgs::PointCloud2ConstPtr pclNoBoundingSphere;
-  sensor_msgs::PointCloud2ConstPtr pclNoBoundingBox;
-  sensor_msgs::PointCloud2ConstPtr pclNoOrientedBoundingBox;
-  sensor_msgs::PointCloud2ConstPtr pclNoLocalBoundingBox;
-  sensor_msgs::PointCloud2ConstPtr pclInside;
-  sensor_msgs::PointCloud2ConstPtr pclClip;
-  sensor_msgs::PointCloud2ConstPtr pclShadow;
-  visualization_msgs::MarkerArrayConstPtr robotModelContainsTest;
-  visualization_msgs::MarkerArrayConstPtr robotModelShadowTest;
+  msg::SphereStamped::ConstSharedPtr boundingSphere;
+  geometry_msgs::msg::PolygonStamped::ConstSharedPtr boundingBox;
+  msg::OrientedBoundingBoxStamped::ConstSharedPtr orientedBoundingBox;
+  geometry_msgs::msg::PolygonStamped::ConstSharedPtr localBoundingBox;
+  visualization_msgs::msg::Marker::ConstSharedPtr boundingSphereMarker;
+  visualization_msgs::msg::Marker::ConstSharedPtr boundingBoxMarker;
+  visualization_msgs::msg::Marker::ConstSharedPtr orientedBoundingBoxMarker;
+  visualization_msgs::msg::Marker::ConstSharedPtr localBoundingBoxMarker;
+  visualization_msgs::msg::MarkerArray::ConstSharedPtr boundingSphereDebugMarker;
+  visualization_msgs::msg::MarkerArray::ConstSharedPtr boundingBoxDebugMarker;
+  visualization_msgs::msg::MarkerArray::ConstSharedPtr orientedBoundingBoxDebugMarker;
+  visualization_msgs::msg::MarkerArray::ConstSharedPtr localBoundingBoxDebugMarker;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclNoBoundingSphere;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclNoBoundingBox;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclNoOrientedBoundingBox;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclNoLocalBoundingBox;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclInside;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclClip;
+  sensor_msgs::msg::PointCloud2::ConstSharedPtr pclShadow;
+  visualization_msgs::msg::MarkerArray::ConstSharedPtr robotModelContainsTest;
+  visualization_msgs::msg::MarkerArray::ConstSharedPtr robotModelShadowTest;
 
-  ros::Subscriber boundingSphereSubscriber = nh.subscribe<SphereStamped>("/robot_bounding_sphere", 10, [&](const SphereStampedConstPtr& msg){boundingSphere=msg;});
-  ros::Subscriber boundingBoxSubscriber = nh.subscribe<geometry_msgs::PolygonStamped>("/robot_bounding_box", 10, [&](const geometry_msgs::PolygonStampedConstPtr& msg){boundingBox=msg;});
-  ros::Subscriber orientedBoundingBoxSubscriber = nh.subscribe<OrientedBoundingBoxStamped>("/robot_oriented_bounding_box", 10, [&](const OrientedBoundingBoxStampedConstPtr& msg){orientedBoundingBox=msg;});
-  ros::Subscriber localBoundingBoxSubscriber = nh.subscribe<geometry_msgs::PolygonStamped>("/robot_local_bounding_box", 10, [&](const geometry_msgs::PolygonStampedConstPtr& msg){localBoundingBox=msg;});
-  ros::Subscriber boundingSphereMarkerSubscriber = nh.subscribe<visualization_msgs::Marker>("/robot_bounding_sphere_marker", 10, [&](const visualization_msgs::MarkerConstPtr& msg){boundingSphereMarker=msg;});
-  ros::Subscriber boundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::Marker>("/robot_bounding_box_marker", 10, [&](const visualization_msgs::MarkerConstPtr& msg){boundingBoxMarker=msg;});
-  ros::Subscriber orientedBoundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::Marker>("/robot_oriented_bounding_box_marker", 10, [&](const visualization_msgs::MarkerConstPtr& msg){orientedBoundingBoxMarker=msg;});
-  ros::Subscriber localBoundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::Marker>("/robot_local_bounding_box_marker", 10, [&](const visualization_msgs::MarkerConstPtr& msg){localBoundingBoxMarker=msg;});
-  ros::Subscriber boundingSphereDebugMarkerSubscriber = nh.subscribe<visualization_msgs::MarkerArray>("/robot_bounding_sphere_debug", 10, [&](const visualization_msgs::MarkerArrayConstPtr& msg){boundingSphereDebugMarker=msg;});
-  ros::Subscriber boundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::MarkerArray>("/robot_bounding_box_debug", 10, [&](const visualization_msgs::MarkerArrayConstPtr& msg){boundingBoxDebugMarker=msg;});
-  ros::Subscriber orientedBoundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::MarkerArray>("/robot_oriented_bounding_box_debug", 10, [&](const visualization_msgs::MarkerArrayConstPtr& msg){orientedBoundingBoxDebugMarker=msg;});
-  ros::Subscriber localBoundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::MarkerArray>("/robot_local_bounding_box_debug", 10, [&](const visualization_msgs::MarkerArrayConstPtr& msg){localBoundingBoxDebugMarker=msg;});
-  ros::Subscriber scanPointCloudNoBoundingSphereSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_no_bsphere", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclNoBoundingSphere=msg;});
-  ros::Subscriber scanPointCloudNoBoundingBoxSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_no_bbox", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclNoBoundingBox=msg;});
-  ros::Subscriber scanPointCloudNoOrientedBoundingBoxSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_no_oriented_bbox", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclNoOrientedBoundingBox=msg;});
-  ros::Subscriber scanPointCloudNoLocalBoundingBoxSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_no_local_bbox", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclNoLocalBoundingBox=msg;});
-  ros::Subscriber debugPointCloudInsideSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_inside", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclInside=msg;});
-  ros::Subscriber debugPointCloudClipSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_clip", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclClip=msg;});
-  ros::Subscriber debugPointCloudShadowSubscriber = nh.subscribe<sensor_msgs::PointCloud2>("/scan_point_cloud_shadow", 10, [&](const sensor_msgs::PointCloud2ConstPtr& msg){pclShadow=msg;});
-  ros::Subscriber debugContainsMarkerSubscriber = nh.subscribe<visualization_msgs::MarkerArray>("/robot_model_for_contains_test", 10, [&](const visualization_msgs::MarkerArrayConstPtr& msg){robotModelContainsTest=msg;});
-  ros::Subscriber debugShadowMarkerSubscriber = nh.subscribe<visualization_msgs::MarkerArray>("/robot_model_for_shadow_test", 10, [&](const visualization_msgs::MarkerArrayConstPtr& msg){robotModelShadowTest=msg;});
+  ros::Subscriber boundingSphereSubscriber = nh.subscribe<msg::SphereStamped>("/robot_bounding_sphere", 10, [&](const msg::SphereStamped::ConstSharedPtr& msg){boundingSphere=msg;});
+  ros::Subscriber boundingBoxSubscriber = nh.subscribe<geometry_msgs::msg::PolygonStamped>("/robot_bounding_box", 10, [&](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr& msg){boundingBox=msg;});
+  ros::Subscriber orientedBoundingBoxSubscriber = nh.subscribe<msg::OrientedBoundingBoxStamped>("/robot_oriented_bounding_box", 10, [&](const msg::OrientedBoundingBoxStamped::ConstSharedPtr& msg){orientedBoundingBox=msg;});
+  ros::Subscriber localBoundingBoxSubscriber = nh.subscribe<geometry_msgs::msg::PolygonStamped>("/robot_local_bounding_box", 10, [&](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr& msg){localBoundingBox=msg;});
+  ros::Subscriber boundingSphereMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_bounding_sphere_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){boundingSphereMarker=msg;});
+  ros::Subscriber boundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){boundingBoxMarker=msg;});
+  ros::Subscriber orientedBoundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_oriented_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){orientedBoundingBoxMarker=msg;});
+  ros::Subscriber localBoundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_local_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){localBoundingBoxMarker=msg;});
+  ros::Subscriber boundingSphereDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_bounding_sphere_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){boundingSphereDebugMarker=msg;});
+  ros::Subscriber boundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){boundingBoxDebugMarker=msg;});
+  ros::Subscriber orientedBoundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_oriented_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){orientedBoundingBoxDebugMarker=msg;});
+  ros::Subscriber localBoundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_local_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){localBoundingBoxDebugMarker=msg;});
+  ros::Subscriber scanPointCloudNoBoundingSphereSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_bsphere", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoBoundingSphere=msg;});
+  ros::Subscriber scanPointCloudNoBoundingBoxSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoBoundingBox=msg;});
+  ros::Subscriber scanPointCloudNoOrientedBoundingBoxSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_oriented_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoOrientedBoundingBox=msg;});
+  ros::Subscriber scanPointCloudNoLocalBoundingBoxSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_local_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoLocalBoundingBox=msg;});
+  ros::Subscriber debugPointCloudInsideSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_inside", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclInside=msg;});
+  ros::Subscriber debugPointCloudClipSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_clip", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclClip=msg;});
+  ros::Subscriber debugPointCloudShadowSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_shadow", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclShadow=msg;});
+  ros::Subscriber debugContainsMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_model_for_contains_test", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){robotModelContainsTest=msg;});
+  ros::Subscriber debugShadowMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_model_for_shadow_test", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){robotModelShadowTest=msg;});
 
   std::vector<RayCastingShapeMask::MaskValue> mask;
   filter->computeMask(cloud, mask, "laser");
@@ -1645,8 +1645,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, boundingSphereMarker->color.r + boundingSphereMarker->color.g +
       boundingSphereMarker->color.b);
-  EXPECT_EQ(visualization_msgs::Marker::SPHERE, boundingSphereMarker->type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingSphereMarker->action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::SPHERE, boundingSphereMarker->type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingSphereMarker->action);
   EXPECT_EQ("bounding_sphere", boundingSphereMarker->ns);
   EXPECT_EQ(1, boundingSphereMarker->frame_locked);
 
@@ -1675,8 +1675,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, boundingBoxMarker->color.r + boundingBoxMarker->color.g +
       boundingBoxMarker->color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, boundingBoxMarker->type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingBoxMarker->action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, boundingBoxMarker->type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingBoxMarker->action);
   EXPECT_EQ("bounding_box", boundingBoxMarker->ns);
   EXPECT_EQ(1, boundingBoxMarker->frame_locked);
 
@@ -1708,8 +1708,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, orientedBoundingBoxMarker->color.r + orientedBoundingBoxMarker->color.g +
       orientedBoundingBoxMarker->color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, orientedBoundingBoxMarker->type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, orientedBoundingBoxMarker->action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, orientedBoundingBoxMarker->type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, orientedBoundingBoxMarker->action);
   EXPECT_EQ("oriented_bounding_box", orientedBoundingBoxMarker->ns);
   EXPECT_EQ(1, orientedBoundingBoxMarker->frame_locked);
 
@@ -1738,8 +1738,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, localBoundingBoxMarker->color.r + localBoundingBoxMarker->color.g +
       localBoundingBoxMarker->color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, localBoundingBoxMarker->type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, localBoundingBoxMarker->action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, localBoundingBoxMarker->type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, localBoundingBoxMarker->action);
   EXPECT_EQ("local_bounding_box", localBoundingBoxMarker->ns);
   EXPECT_EQ(1, localBoundingBoxMarker->frame_locked);
 
@@ -1908,8 +1908,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, boundingSphereDebugMarker->markers[0].color.r + boundingSphereDebugMarker->markers[0].color.g +
       boundingSphereDebugMarker->markers[0].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::SPHERE, boundingSphereDebugMarker->markers[0].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingSphereDebugMarker->markers[0].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::SPHERE, boundingSphereDebugMarker->markers[0].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingSphereDebugMarker->markers[0].action);
   EXPECT_FALSE(boundingSphereDebugMarker->markers[0].ns.empty());
   EXPECT_EQ(1, boundingSphereDebugMarker->markers[0].frame_locked);
   EXPECT_EQ("laser", boundingSphereDebugMarker->markers[1].header.frame_id);
@@ -1928,8 +1928,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, boundingSphereDebugMarker->markers[1].color.r + boundingSphereDebugMarker->markers[1].color.g +
       boundingSphereDebugMarker->markers[1].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::SPHERE, boundingSphereDebugMarker->markers[1].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingSphereDebugMarker->markers[1].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::SPHERE, boundingSphereDebugMarker->markers[1].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingSphereDebugMarker->markers[1].action);
   EXPECT_FALSE(boundingSphereDebugMarker->markers[1].ns.empty());
   EXPECT_EQ(1, boundingSphereDebugMarker->markers[1].frame_locked);
 
@@ -1950,8 +1950,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, boundingBoxDebugMarker->markers[0].color.r + boundingBoxDebugMarker->markers[0].color.g +
       boundingBoxDebugMarker->markers[0].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, boundingBoxDebugMarker->markers[0].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingBoxDebugMarker->markers[0].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, boundingBoxDebugMarker->markers[0].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingBoxDebugMarker->markers[0].action);
   EXPECT_FALSE(boundingBoxDebugMarker->markers[0].ns.empty());
   EXPECT_EQ(1, boundingBoxDebugMarker->markers[0].frame_locked);
   EXPECT_EQ("laser", boundingBoxDebugMarker->markers[1].header.frame_id);
@@ -1970,8 +1970,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, boundingBoxDebugMarker->markers[1].color.r + boundingBoxDebugMarker->markers[1].color.g +
       boundingBoxDebugMarker->markers[1].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, boundingBoxDebugMarker->markers[1].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingBoxDebugMarker->markers[1].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, boundingBoxDebugMarker->markers[1].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingBoxDebugMarker->markers[1].action);
   EXPECT_FALSE(boundingBoxDebugMarker->markers[1].ns.empty());
   EXPECT_EQ(1, boundingBoxDebugMarker->markers[1].frame_locked);
   EXPECT_EQ("laser", boundingBoxDebugMarker->markers[2].header.frame_id);
@@ -1990,8 +1990,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, boundingBoxDebugMarker->markers[2].color.r + boundingBoxDebugMarker->markers[2].color.g +
       boundingBoxDebugMarker->markers[2].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, boundingBoxDebugMarker->markers[2].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingBoxDebugMarker->markers[2].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, boundingBoxDebugMarker->markers[2].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingBoxDebugMarker->markers[2].action);
   EXPECT_FALSE(boundingBoxDebugMarker->markers[2].ns.empty());
   EXPECT_EQ(1, boundingBoxDebugMarker->markers[2].frame_locked);
   EXPECT_EQ("laser", boundingBoxDebugMarker->markers[3].header.frame_id);
@@ -2010,8 +2010,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, boundingBoxDebugMarker->markers[3].color.r + boundingBoxDebugMarker->markers[3].color.g +
       boundingBoxDebugMarker->markers[3].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, boundingBoxDebugMarker->markers[3].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, boundingBoxDebugMarker->markers[3].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, boundingBoxDebugMarker->markers[3].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, boundingBoxDebugMarker->markers[3].action);
   EXPECT_FALSE(boundingBoxDebugMarker->markers[3].ns.empty());
   EXPECT_EQ(1, boundingBoxDebugMarker->markers[3].frame_locked);
 
@@ -2032,8 +2032,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, orientedBoundingBoxDebugMarker->markers[0].color.r + orientedBoundingBoxDebugMarker->markers[0].color.g +
       orientedBoundingBoxDebugMarker->markers[0].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[0].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, orientedBoundingBoxDebugMarker->markers[0].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[0].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, orientedBoundingBoxDebugMarker->markers[0].action);
   EXPECT_FALSE(orientedBoundingBoxDebugMarker->markers[0].ns.empty());
   EXPECT_EQ(1, orientedBoundingBoxDebugMarker->markers[0].frame_locked);
   EXPECT_EQ("laser", orientedBoundingBoxDebugMarker->markers[1].header.frame_id);
@@ -2052,8 +2052,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, orientedBoundingBoxDebugMarker->markers[1].color.r + orientedBoundingBoxDebugMarker->markers[1].color.g +
       orientedBoundingBoxDebugMarker->markers[1].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[1].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, orientedBoundingBoxDebugMarker->markers[1].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[1].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, orientedBoundingBoxDebugMarker->markers[1].action);
   EXPECT_FALSE(orientedBoundingBoxDebugMarker->markers[1].ns.empty());
   EXPECT_EQ(1, orientedBoundingBoxDebugMarker->markers[1].frame_locked);
   EXPECT_EQ("laser", orientedBoundingBoxDebugMarker->markers[2].header.frame_id);
@@ -2072,8 +2072,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, orientedBoundingBoxDebugMarker->markers[2].color.r + orientedBoundingBoxDebugMarker->markers[2].color.g +
       orientedBoundingBoxDebugMarker->markers[2].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[2].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, orientedBoundingBoxDebugMarker->markers[2].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[2].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, orientedBoundingBoxDebugMarker->markers[2].action);
   EXPECT_FALSE(orientedBoundingBoxDebugMarker->markers[2].ns.empty());
   EXPECT_EQ(1, orientedBoundingBoxDebugMarker->markers[2].frame_locked);
   EXPECT_EQ("laser", orientedBoundingBoxDebugMarker->markers[3].header.frame_id);
@@ -2092,8 +2092,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, orientedBoundingBoxDebugMarker->markers[3].color.r + orientedBoundingBoxDebugMarker->markers[3].color.g +
       orientedBoundingBoxDebugMarker->markers[3].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[3].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, orientedBoundingBoxDebugMarker->markers[3].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, orientedBoundingBoxDebugMarker->markers[3].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, orientedBoundingBoxDebugMarker->markers[3].action);
   EXPECT_FALSE(orientedBoundingBoxDebugMarker->markers[3].ns.empty());
   EXPECT_EQ(1, orientedBoundingBoxDebugMarker->markers[3].frame_locked);
 
@@ -2114,8 +2114,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, localBoundingBoxDebugMarker->markers[0].color.r + localBoundingBoxDebugMarker->markers[0].color.g +
       localBoundingBoxDebugMarker->markers[0].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, localBoundingBoxDebugMarker->markers[0].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, localBoundingBoxDebugMarker->markers[0].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, localBoundingBoxDebugMarker->markers[0].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, localBoundingBoxDebugMarker->markers[0].action);
   EXPECT_FALSE(localBoundingBoxDebugMarker->markers[0].ns.empty());
   EXPECT_EQ(1, localBoundingBoxDebugMarker->markers[0].frame_locked);
   EXPECT_EQ("base_link", localBoundingBoxDebugMarker->markers[1].header.frame_id);
@@ -2134,8 +2134,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, localBoundingBoxDebugMarker->markers[1].color.r + localBoundingBoxDebugMarker->markers[1].color.g +
       localBoundingBoxDebugMarker->markers[1].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, localBoundingBoxDebugMarker->markers[1].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, localBoundingBoxDebugMarker->markers[1].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, localBoundingBoxDebugMarker->markers[1].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, localBoundingBoxDebugMarker->markers[1].action);
   EXPECT_FALSE(localBoundingBoxDebugMarker->markers[1].ns.empty());
   EXPECT_EQ(1, localBoundingBoxDebugMarker->markers[1].frame_locked);
   EXPECT_EQ("base_link", localBoundingBoxDebugMarker->markers[2].header.frame_id);
@@ -2154,8 +2154,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, localBoundingBoxDebugMarker->markers[2].color.r + localBoundingBoxDebugMarker->markers[2].color.g +
       localBoundingBoxDebugMarker->markers[2].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, localBoundingBoxDebugMarker->markers[2].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, localBoundingBoxDebugMarker->markers[2].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, localBoundingBoxDebugMarker->markers[2].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, localBoundingBoxDebugMarker->markers[2].action);
   EXPECT_FALSE(localBoundingBoxDebugMarker->markers[2].ns.empty());
   EXPECT_EQ(1, localBoundingBoxDebugMarker->markers[2].frame_locked);
   EXPECT_EQ("base_link", localBoundingBoxDebugMarker->markers[3].header.frame_id);
@@ -2174,8 +2174,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, localBoundingBoxDebugMarker->markers[3].color.r + localBoundingBoxDebugMarker->markers[3].color.g +
       localBoundingBoxDebugMarker->markers[3].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, localBoundingBoxDebugMarker->markers[3].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, localBoundingBoxDebugMarker->markers[3].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, localBoundingBoxDebugMarker->markers[3].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, localBoundingBoxDebugMarker->markers[3].action);
   EXPECT_FALSE(localBoundingBoxDebugMarker->markers[3].ns.empty());
   EXPECT_EQ(1, localBoundingBoxDebugMarker->markers[3].frame_locked);
 
@@ -2196,8 +2196,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, robotModelContainsTest->markers[0].color.r + robotModelContainsTest->markers[0].color.g +
       robotModelContainsTest->markers[0].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::SPHERE, robotModelContainsTest->markers[0].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, robotModelContainsTest->markers[0].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::SPHERE, robotModelContainsTest->markers[0].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, robotModelContainsTest->markers[0].action);
   EXPECT_EQ("antenna-0", robotModelContainsTest->markers[0].ns);
   EXPECT_EQ(1, robotModelContainsTest->markers[0].frame_locked);
   EXPECT_EQ("laser", robotModelContainsTest->markers[1].header.frame_id);
@@ -2216,8 +2216,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, robotModelContainsTest->markers[1].color.r + robotModelContainsTest->markers[1].color.g +
       robotModelContainsTest->markers[1].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, robotModelContainsTest->markers[1].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, robotModelContainsTest->markers[1].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, robotModelContainsTest->markers[1].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, robotModelContainsTest->markers[1].action);
   EXPECT_EQ("base_link-0", robotModelContainsTest->markers[1].ns);
   EXPECT_EQ(1, robotModelContainsTest->markers[1].frame_locked);
   EXPECT_EQ("laser", robotModelContainsTest->markers[2].header.frame_id);
@@ -2236,8 +2236,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, robotModelContainsTest->markers[2].color.r + robotModelContainsTest->markers[2].color.g +
       robotModelContainsTest->markers[2].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, robotModelContainsTest->markers[2].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, robotModelContainsTest->markers[2].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, robotModelContainsTest->markers[2].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, robotModelContainsTest->markers[2].action);
   EXPECT_EQ("base_link-1", robotModelContainsTest->markers[2].ns);
   EXPECT_EQ(1, robotModelContainsTest->markers[2].frame_locked);
   EXPECT_EQ("laser", robotModelContainsTest->markers[3].header.frame_id);
@@ -2256,8 +2256,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, robotModelContainsTest->markers[3].color.r + robotModelContainsTest->markers[3].color.g +
       robotModelContainsTest->markers[3].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, robotModelContainsTest->markers[3].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, robotModelContainsTest->markers[3].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, robotModelContainsTest->markers[3].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, robotModelContainsTest->markers[3].action);
   EXPECT_EQ("laser-0", robotModelContainsTest->markers[3].ns);
   EXPECT_EQ(1, robotModelContainsTest->markers[3].frame_locked);
 
@@ -2278,8 +2278,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, robotModelShadowTest->markers[0].color.r + robotModelShadowTest->markers[0].color.g +
       robotModelShadowTest->markers[0].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::SPHERE, robotModelShadowTest->markers[0].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, robotModelShadowTest->markers[0].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::SPHERE, robotModelShadowTest->markers[0].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, robotModelShadowTest->markers[0].action);
   EXPECT_EQ("antenna-0", robotModelShadowTest->markers[0].ns);
   EXPECT_EQ(1, robotModelShadowTest->markers[0].frame_locked);
   EXPECT_EQ("laser", robotModelShadowTest->markers[1].header.frame_id);
@@ -2298,8 +2298,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   // make sure the marker has some color
   EXPECT_LT(0, robotModelShadowTest->markers[1].color.r + robotModelShadowTest->markers[1].color.g +
       robotModelShadowTest->markers[1].color.b);
-  EXPECT_EQ(visualization_msgs::Marker::CUBE, robotModelShadowTest->markers[1].type);
-  EXPECT_EQ(visualization_msgs::Marker::ADD, robotModelShadowTest->markers[1].action);
+  EXPECT_EQ(visualization_msgs::msg::Marker::CUBE, robotModelShadowTest->markers[1].type);
+  EXPECT_EQ(visualization_msgs::msg::Marker::ADD, robotModelShadowTest->markers[1].action);
   EXPECT_EQ("base_link-0", robotModelShadowTest->markers[1].ns);
   EXPECT_EQ(1, robotModelShadowTest->markers[1].frame_locked);
 }
@@ -2309,12 +2309,12 @@ TEST(RobotBodyFilter, UpdateLaserScan)
   ros::NodeHandle nh;
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
-  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::LaserScan>>(filter);
+  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   nh.setParam("test_robot_description", ROBOT_URDF);
   filterBase->configure("compute_mask_config_point_by_point", nh);
 
-  sensor_msgs::LaserScan scan;
+  sensor_msgs::msg::LaserScan scan;
   scan.header.frame_id = "laser";
   scan.range_min = 0.1;
   scan.range_max = 10;
@@ -2330,7 +2330,7 @@ TEST(RobotBodyFilter, UpdateLaserScan)
   }
 
   {
-    geometry_msgs::TransformStamped tf;
+    geometry_msgs::msg::TransformStamped tf;
     ros::Time now = ros::Time::now();
     scan.header.stamp = now;
     tf.transform.rotation.w = 1;
@@ -2378,7 +2378,7 @@ TEST(RobotBodyFilter, UpdateLaserScan)
   while (!filter->tfFramesWatchdog->isReachable("base_link"))
     ros::WallDuration(0.01).sleep();
 
-  sensor_msgs::LaserScan outScan;
+  sensor_msgs::msg::LaserScan outScan;
   ASSERT_TRUE(filter->update(scan, outScan));
 
   ASSERT_EQ(19, outScan.ranges.size());
@@ -2408,7 +2408,7 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
   ros::NodeHandle nh;
 
   auto filter = std::make_shared<RobotBodyFilterPointCloud2Test>();
-  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::PointCloud2>>(filter);
+  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::PointCloud2>>(filter);
 
   nh.setParam("test_robot_description", ROBOT_URDF);
   filterBase->configure("compute_mask_config_all_at_once", nh);
@@ -2417,9 +2417,9 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
   cloud.header.frame_id = "laser";
   CloudModifier mod(cloud);
   mod.setPointCloud2Fields(3,
-                           "x", 1, sensor_msgs::PointField::FLOAT32,
-                           "y", 1, sensor_msgs::PointField::FLOAT32,
-                           "z", 1, sensor_msgs::PointField::FLOAT32);
+                           "x", 1, sensor_msgs::msg::PointField::FLOAT32,
+                           "y", 1, sensor_msgs::msg::PointField::FLOAT32,
+                           "z", 1, sensor_msgs::msg::PointField::FLOAT32);
   mod.resize(12);
   cloud.width = 4;
   cloud.height = 3;
@@ -2447,7 +2447,7 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
   {
     ros::Time now = ros::Time::now();
     cloud.header.stamp = now;
-    geometry_msgs::TransformStamped tf;
+    geometry_msgs::msg::TransformStamped tf;
     tf.transform.rotation.w = 1.0;
     for (double d = -5.0; d < 5.0; d += 0.1)
     {
@@ -2475,7 +2475,7 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
   while (!filter->tfFramesWatchdog->isReachable("base_link"))
     ros::WallDuration(0.01).sleep();
 
-  sensor_msgs::PointCloud2 outCloud;
+  sensor_msgs::msg::PointCloud2 outCloud;
   filter->update(cloud, outCloud);
 
   ASSERT_EQ(num_points(cloud), num_points(outCloud));

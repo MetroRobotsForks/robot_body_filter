@@ -153,7 +153,7 @@ TEST(TfFramesWatchdog, SearchForReachableFrames)
   EXPECT_LE(2.0 * watchdog.unreachableTfLookupTimeout.toSec(), (end - start).toSec());
   EXPECT_GE(2.5 * watchdog.unreachableTfLookupTimeout.toSec(), (end - start).toSec());
 
-  geometry_msgs::TransformStamped tf;
+  geometry_msgs::msg::TransformStamped tf;
   tf.header.frame_id = "base_link";
   tf.child_frame_id = "left_track";
   tf.transform.rotation.w = 1.0;
@@ -216,7 +216,7 @@ TEST(TfFramesWatchdog, LookupTransform)
   EXPECT_LE(1.0, (end - start).toSec());
   EXPECT_GE(1.5, (end - start).toSec());
 
-  geometry_msgs::TransformStamped tf;
+  geometry_msgs::msg::TransformStamped tf;
   tf.header.frame_id = "base_link";
   tf.child_frame_id = "left_track";
   tf.transform.rotation.w = 1.0;

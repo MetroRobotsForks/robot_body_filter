@@ -10,7 +10,7 @@
 #error <geometric_shapes/obb.h> not found. Please, update geometric_shapes library to version 0.6.5+ or 0.7.4+ 
 #endif
 
-#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/msg/marker.hpp>
 
 namespace bodies
 {

@@ -63,7 +63,7 @@ namespace robot_body_filter
  * forbidden to be used:
  *  - ShapeHandle addShape(const shapes::ShapeConstPtr&, double, double);
  *  - void removeShape(ShapeHandle handle);
- *  - void maskContainment(const sensor_msgs::PointCloud2&, const Eigen::Vector3d&, double, double,
+ *  - void maskContainment(const sensor_msgs::msg::PointCloud2&, const Eigen::Vector3d&, double, double,
  *                         std::vector<int>&);
  *  - int getMaskContainment(double, double, double) const;
  *  - int getMaskContainment(const Eigen::Vector3d&) const;

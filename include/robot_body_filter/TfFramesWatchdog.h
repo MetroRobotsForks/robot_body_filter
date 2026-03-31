@@ -114,7 +114,7 @@ public:
    * \throws std::runtime_exception If you call this function before a call to
    *         start().
    */
-  optional<geometry_msgs::TransformStamped> lookupTransform(
+  optional<geometry_msgs::msg::TransformStamped> lookupTransform(
       const std::string& frame,
       const ros::Time& time,
       const ros::Duration& timeout,

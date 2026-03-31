@@ -15,23 +15,23 @@
 #include <ros/ros.h>
 #include <robot_body_filter/utils/filter_utils.hpp>
 #include <robot_body_filter/utils/tf2_sensor_msgs.h>
-#include <sensor_msgs/LaserScan.h>
+#include <sensor_msgs/msg/laser_scan.hpp>
 #include <robot_body_filter/RayCastingShapeMask.h>
 #include <moveit/occupancy_map_monitor/occupancy_map_updater.h>
 #include <moveit/robot_model/aabb.h>
 #include <urdf/model.h>
 #include <laser_geometry/laser_geometry.h>
 #include <geometric_shapes/mesh_operations.h>
-#include <geometry_msgs/Point32.h>
-#include <geometry_msgs/PolygonStamped.h>
+#include <geometry_msgs/msg/point32.hpp>
+#include <geometry_msgs/msg/polygon_stamped.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <dynamic_reconfigure/Config.h>
-#include <robot_body_filter/SphereStamped.h>
-#include <robot_body_filter/OrientedBoundingBoxStamped.h>
-#include <geometry_msgs/PointStamped.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <std_srvs/Trigger.h>
+#include <robot_body_filter/msg/sphere_stamped.hpp>
+#include <robot_body_filter/msg/oriented_bounding_box_stamped.hpp>
+#include <geometry_msgs/msg/point_stamped.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
+#include <std_srvs/srv/trigger.hpp>
 
 #include <robot_body_filter/TfFramesWatchdog.h>
 
@@ -362,7 +362,7 @@ protected:
    *                    sensor position from the viewpoint channels.
    * \return Whether the computation succeeded.
    */
-  bool computeMask(const sensor_msgs::PointCloud2& projectedPointCloud,
+  bool computeMask(const sensor_msgs::msg::PointCloud2& projectedPointCloud,
                    std::vector<RayCastingShapeMask::MaskValue>& mask,
                    const std::string& sensorFrame = "");
 
@@ -411,36 +411,36 @@ protected:
 
   void createBodyVisualizationMsg(
       const std::map<point_containment_filter::ShapeHandle, const bodies::Body*>& bodies,
-      const ros::Time& stamp, const std_msgs::ColorRGBA& color,
-      visualization_msgs::MarkerArray& markerArray) const;
+      const rclcpp::Time& stamp, const std_msgs::msg::ColorRGBA& color,
+      visualization_msgs::msg::MarkerArray& markerArray) const;
 
   void publishDebugMarkers(const ros::Time& scanTime) const;
   void publishDebugPointClouds(
-      const sensor_msgs::PointCloud2& projectedPointCloud,
+      const sensor_msgs::msg::PointCloud2& projectedPointCloud,
       const std::vector<RayCastingShapeMask::MaskValue> &pointMask) const;
   /**
    * \brief Computation of the bounding sphere, debug spheres, and publishing of
    * pointcloud without bounding sphere.
    */
-  void computeAndPublishBoundingSphere(const sensor_msgs::PointCloud2& projectedPointCloud) const;
+  void computeAndPublishBoundingSphere(const sensor_msgs::msg::PointCloud2& projectedPointCloud) const;
 
   /**
    * \brief Computation of the bounding box, debug boxes, and publishing of
    * pointcloud without bounding box.
    */
-  void computeAndPublishBoundingBox(const sensor_msgs::PointCloud2& projectedPointCloud) const;
+  void computeAndPublishBoundingBox(const sensor_msgs::msg::PointCloud2& projectedPointCloud) const;
 
   /**
    * \brief Computation of the oriented bounding box, debug boxes, and publishing of
    * pointcloud without bounding box.
    */
-  void computeAndPublishOrientedBoundingBox(const sensor_msgs::PointCloud2& projectedPointCloud) const;
+  void computeAndPublishOrientedBoundingBox(const sensor_msgs::msg::PointCloud2& projectedPointCloud) const;
 
   /**
    * \brief Computation of the local bounding box, debug boxes, and publishing of
    * pointcloud without bounding box.
    */
-  void computeAndPublishLocalBoundingBox(const sensor_msgs::PointCloud2& projectedPointCloud) const;
+  void computeAndPublishLocalBoundingBox(const sensor_msgs::msg::PointCloud2& projectedPointCloud) const;
 
   ScaleAndPadding getLinkInflationForContainsTest(const std::string& linkName) const;
   ScaleAndPadding getLinkInflationForContainsTest(const std::vector<std::string>& linkNames) const;
@@ -456,11 +456,11 @@ private:
   std::string getLinkTfPrefix() const;
 };
 
-class RobotBodyFilterLaserScan : public RobotBodyFilter<sensor_msgs::LaserScan>
+class RobotBodyFilterLaserScan : public RobotBodyFilter<sensor_msgs::msg::LaserScan>
 {
 public:
   //! Apply the filter.
-  bool update(const sensor_msgs::LaserScan &inputScan, sensor_msgs::LaserScan &filteredScan) override;
+  bool update(const sensor_msgs::msg::LaserScan &inputScan, sensor_msgs::msg::LaserScan &filteredScan) override;
 
   bool configure() override;
 
@@ -471,11 +471,11 @@ protected:
   const std::unordered_map<std::string, CloudChannelType> channelsToTransform { {"vp_", CloudChannelType::POINT} };
 };
 
-class RobotBodyFilterPointCloud2 : public RobotBodyFilter<sensor_msgs::PointCloud2>
+class RobotBodyFilterPointCloud2 : public RobotBodyFilter<sensor_msgs::msg::PointCloud2>
 {
 public:
   //! Apply the filter.
-  bool update(const sensor_msgs::PointCloud2 &inputCloud, sensor_msgs::PointCloud2 &filteredCloud) override;
+  bool update(const sensor_msgs::msg::PointCloud2 &inputCloud, sensor_msgs::msg::PointCloud2 &filteredCloud) override;
 
   bool configure() override;
 

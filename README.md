@@ -40,7 +40,7 @@ Release jobs Noetic
 
 ### `filters::FilterBase` API
 
-The basic workings of this filter are done via the [`filters::FilterBase` API](http://wiki.ros.org/filters) implemented for `sensor_msgs::LaserScan` and `sensor_msgs::PointCloud2` types. This means you can load this filter into a FilterChain along other filters as usual. Different from the standard filters, this one can also publish several interesting topics and subscribes to TF.
+The basic workings of this filter are done via the [`filters::FilterBase` API](http://wiki.ros.org/filters) implemented for `sensor_msgs::msg::LaserScan` and `sensor_msgs::msg::PointCloud2` types. This means you can load this filter into a FilterChain along other filters as usual. Different from the standard filters, this one can also publish several interesting topics and subscribes to TF.
 
 ### General overview
 

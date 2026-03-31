@@ -4,21 +4,21 @@
 
 TEST(TF2SensorMsgs, CreateFilteredCloudUnorganized)
 {
-  sensor_msgs::PointCloud2 msg;
+  sensor_msgs::msg::PointCloud2 msg;
   sensor_msgs::PointCloud2Modifier mod(msg);
 
   mod.setPointCloud2Fields(11,
-      "x", 1, sensor_msgs::PointField::FLOAT32,
-      "y", 1, sensor_msgs::PointField::FLOAT32,
-      "z", 1, sensor_msgs::PointField::FLOAT32,
-      "rgb", 1, sensor_msgs::PointField::FLOAT32,
-      "vp_x", 1, sensor_msgs::PointField::FLOAT32,
-      "vp_y", 1, sensor_msgs::PointField::FLOAT32,
-      "vp_z", 1, sensor_msgs::PointField::FLOAT32,
-      "normal_x", 1, sensor_msgs::PointField::FLOAT32,
-      "normal_y", 1, sensor_msgs::PointField::FLOAT32,
-      "normal_z", 1, sensor_msgs::PointField::FLOAT32,
-      "intensity", 1, sensor_msgs::PointField::UINT16);
+      "x", 1, sensor_msgs::msg::PointField::FLOAT32,
+      "y", 1, sensor_msgs::msg::PointField::FLOAT32,
+      "z", 1, sensor_msgs::msg::PointField::FLOAT32,
+      "rgb", 1, sensor_msgs::msg::PointField::FLOAT32,
+      "vp_x", 1, sensor_msgs::msg::PointField::FLOAT32,
+      "vp_y", 1, sensor_msgs::msg::PointField::FLOAT32,
+      "vp_z", 1, sensor_msgs::msg::PointField::FLOAT32,
+      "normal_x", 1, sensor_msgs::msg::PointField::FLOAT32,
+      "normal_y", 1, sensor_msgs::msg::PointField::FLOAT32,
+      "normal_z", 1, sensor_msgs::msg::PointField::FLOAT32,
+      "intensity", 1, sensor_msgs::msg::PointField::UINT16);
 
   mod.resize(1);
 
@@ -51,7 +51,7 @@ TEST(TF2SensorMsgs, CreateFilteredCloudUnorganized)
 
   *it_intensity = 10000;
 
-  geometry_msgs::TransformStamped tf;
+  geometry_msgs::msg::TransformStamped tf;
   tf.header.stamp.sec = 2;
   tf.header.frame_id = "odom";
   tf.child_frame_id = "base_link";
@@ -67,7 +67,7 @@ TEST(TF2SensorMsgs, CreateFilteredCloudUnorganized)
 
   msg.header.stamp.sec = 2;
   msg.header.frame_id = "odom";
-  sensor_msgs::PointCloud2 out;
+  sensor_msgs::msg::PointCloud2 out;
   robot_body_filter::transformWithChannels(msg, out, buffer, "base_link");
 
   ASSERT_EQ(1, out.width);

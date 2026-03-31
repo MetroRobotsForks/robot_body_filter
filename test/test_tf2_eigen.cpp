@@ -4,7 +4,7 @@
 TEST(TF2Eigen, ToMsg)
 {
   const auto ePoint = Eigen::Vector3d(1.0, 2.0, 3.0);
-  geometry_msgs::Point32 gPoint;
+  geometry_msgs::msg::Point32 gPoint;
   tf2::toMsg(ePoint, gPoint);
 
   EXPECT_EQ(float(ePoint.x()), gPoint.x);

@@ -203,109 +203,109 @@ bool RobotBodyFilter<T>::configure() {
       "reload_model", &RobotBodyFilter::triggerModelReload, this);
 
   if (this->computeBoundingSphere) {
-    this->boundingSpherePublisher = this->nodeHandle.template advertise<SphereStamped>("robot_bounding_sphere", 100);
+    this->boundingSpherePublisher = this->nodeHandle.template advertise<robot_body_filter::msg::SphereStamped>("robot_bounding_sphere", 100);
   }
 
   if (this->computeBoundingBox) {
-    this->boundingBoxPublisher = this->nodeHandle.template advertise<geometry_msgs::PolygonStamped>("robot_bounding_box", 100);
+    this->boundingBoxPublisher = this->nodeHandle.template advertise<geometry_msgs::msg::PolygonStamped>("robot_bounding_box", 100);
   }
 
   if (this->computeOrientedBoundingBox) {
-    this->orientedBoundingBoxPublisher = this->nodeHandle.template advertise<OrientedBoundingBoxStamped>("robot_oriented_bounding_box", 100);
+    this->orientedBoundingBoxPublisher = this->nodeHandle.template advertise<robot_body_filter::msg::OrientedBoundingBoxStamped>("robot_oriented_bounding_box", 100);
   }
 
   if (this->computeLocalBoundingBox) {
-    this->localBoundingBoxPublisher = this->nodeHandle.template advertise<geometry_msgs::PolygonStamped>("robot_local_bounding_box", 100);
+    this->localBoundingBoxPublisher = this->nodeHandle.template advertise<geometry_msgs::msg::PolygonStamped>("robot_local_bounding_box", 100);
   }
 
   if (this->publishBoundingSphereMarker && this->computeBoundingSphere) {
-    this->boundingSphereMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::Marker>("robot_bounding_sphere_marker", 100);
+    this->boundingSphereMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::Marker>("robot_bounding_sphere_marker", 100);
   }
 
   if (this->publishBoundingBoxMarker && this->computeBoundingBox) {
-    this->boundingBoxMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::Marker>("robot_bounding_box_marker", 100);
+    this->boundingBoxMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::Marker>("robot_bounding_box_marker", 100);
   }
 
   if (this->publishOrientedBoundingBoxMarker && this->computeOrientedBoundingBox) {
-    this->orientedBoundingBoxMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::Marker>("robot_oriented_bounding_box_marker", 100);
+    this->orientedBoundingBoxMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::Marker>("robot_oriented_bounding_box_marker", 100);
   }
 
   if (this->publishLocalBoundingBoxMarker && this->computeLocalBoundingBox) {
-    this->localBoundingBoxMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::Marker>("robot_local_bounding_box_marker", 100);
+    this->localBoundingBoxMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::Marker>("robot_local_bounding_box_marker", 100);
   }
 
   if (this->publishNoBoundingBoxPointcloud)
   {
-    this->scanPointCloudNoBoundingBoxPublisher = this->nodeHandle.template advertise<sensor_msgs::PointCloud2>("scan_point_cloud_no_bbox", 100);
+    this->scanPointCloudNoBoundingBoxPublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_no_bbox", 100);
   }
 
   if (this->publishNoOrientedBoundingBoxPointcloud)
   {
-    this->scanPointCloudNoOrientedBoundingBoxPublisher = this->nodeHandle.template advertise<sensor_msgs::PointCloud2>("scan_point_cloud_no_oriented_bbox", 100);
+    this->scanPointCloudNoOrientedBoundingBoxPublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_no_oriented_bbox", 100);
   }
 
   if (this->publishNoLocalBoundingBoxPointcloud)
   {
-    this->scanPointCloudNoLocalBoundingBoxPublisher = this->nodeHandle.template advertise<sensor_msgs::PointCloud2>("scan_point_cloud_no_local_bbox", 100);
+    this->scanPointCloudNoLocalBoundingBoxPublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_no_local_bbox", 100);
   }
 
   if (this->publishNoBoundingSpherePointcloud)
   {
-    this->scanPointCloudNoBoundingSpherePublisher = this->nodeHandle.template advertise<sensor_msgs::PointCloud2>("scan_point_cloud_no_bsphere", 100);
+    this->scanPointCloudNoBoundingSpherePublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_no_bsphere", 100);
   }
 
   if (this->publishDebugPclInside)
   {
-    this->debugPointCloudInsidePublisher = this->nodeHandle.template advertise<sensor_msgs::PointCloud2>("scan_point_cloud_inside", 100);
+    this->debugPointCloudInsidePublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_inside", 100);
   }
 
   if (this->publishDebugPclClip)
   {
-    this->debugPointCloudClipPublisher = this->nodeHandle.template advertise<sensor_msgs::PointCloud2>("scan_point_cloud_clip", 100);
+    this->debugPointCloudClipPublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_clip", 100);
   }
 
   if (this->publishDebugPclShadow)
   {
-    this->debugPointCloudShadowPublisher = this->nodeHandle.template advertise<sensor_msgs::PointCloud2>("scan_point_cloud_shadow", 100);
+    this->debugPointCloudShadowPublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_shadow", 100);
   }
 
   if (this->publishDebugContainsMarker)
   {
-    this->debugContainsMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::MarkerArray>("robot_model_for_contains_test", 100);
+    this->debugContainsMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>("robot_model_for_contains_test", 100);
   }
 
   if (this->publishDebugShadowMarker)
   {
-    this->debugShadowMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::MarkerArray>("robot_model_for_shadow_test", 100);
+    this->debugShadowMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>("robot_model_for_shadow_test", 100);
   }
 
   if (this->publishDebugBsphereMarker)
   {
-    this->debugBsphereMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::MarkerArray>("robot_model_for_bounding_sphere", 100);
+    this->debugBsphereMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>("robot_model_for_bounding_sphere", 100);
   }
 
   if (this->publishDebugBboxMarker)
   {
-    this->debugBboxMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::MarkerArray>("robot_model_for_bounding_box", 100);
+    this->debugBboxMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>("robot_model_for_bounding_box", 100);
   }
 
   if (this->computeDebugBoundingBox) {
-    this->boundingBoxDebugMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::MarkerArray>(
+    this->boundingBoxDebugMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>(
       "robot_bounding_box_debug", 100);
   }
 
   if (this->computeDebugOrientedBoundingBox) {
-    this->orientedBoundingBoxDebugMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::MarkerArray>(
+    this->orientedBoundingBoxDebugMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>(
       "robot_oriented_bounding_box_debug", 100);
   }
 
   if (this->computeDebugLocalBoundingBox) {
-    this->localBoundingBoxDebugMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::MarkerArray>(
+    this->localBoundingBoxDebugMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>(
       "robot_local_bounding_box_debug", 100);
   }
 
   if (this->computeDebugBoundingSphere) {
-    this->boundingSphereDebugMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::MarkerArray>(
+    this->boundingSphereDebugMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>(
       "robot_bounding_sphere_debug", 100);
   }
 
@@ -412,7 +412,7 @@ bool RobotBodyFilterPointCloud2::configure() {
 
 template <typename T>
 bool RobotBodyFilter<T>::computeMask(
-    const sensor_msgs::PointCloud2 &projectedPointCloud,
+    const sensor_msgs::msg::PointCloud2 &projectedPointCloud,
     std::vector<RayCastingShapeMask::MaskValue> &pointMask,
     const std::string &sensorFrame) {
 
@@ -526,7 +526,7 @@ bool RobotBodyFilter<T>::computeMask(
   return true;
 }
 
-bool RobotBodyFilterLaserScan::update(const LaserScan &inputScan, LaserScan &filteredScan) {
+bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputScan, sensor_msgs::msg::LaserScan &filteredScan) {
   const auto& scanTime = inputScan.header.stamp;
 
   if (!this->configured_) {
@@ -613,10 +613,10 @@ bool RobotBodyFilterLaserScan::update(const LaserScan &inputScan, LaserScan &fil
 
     // The point cloud will have fields x, y, z, intensity (float32) and index (int32)
     // and for point-by-point scans also timestamp and viewpoint
-    sensor_msgs::PointCloud2 projectedPointCloud;
+    sensor_msgs::msg::PointCloud2 projectedPointCloud;
     { // project the scan measurements to a point cloud in the filteringFrame
 
-      sensor_msgs::PointCloud2 tmpPointCloud;
+      sensor_msgs::msg::PointCloud2 tmpPointCloud;
 
       // the projected point cloud can omit some measurements if they are out of the defined scan's range;
       // for this case, the second channel ("index") contains indices of the point cloud's points into the scan
@@ -701,8 +701,8 @@ bool RobotBodyFilterLaserScan::update(const LaserScan &inputScan, LaserScan &fil
   return true;
 }
 
-bool RobotBodyFilterPointCloud2::update(const sensor_msgs::PointCloud2 &inputCloud,
-                                        sensor_msgs::PointCloud2 &filteredCloud)
+bool RobotBodyFilterPointCloud2::update(const sensor_msgs::msg::PointCloud2 &inputCloud,
+                                        sensor_msgs::msg::PointCloud2 &filteredCloud)
 {
   const auto& scanTime = inputCloud.header.stamp;
 
@@ -748,13 +748,13 @@ bool RobotBodyFilterPointCloud2::update(const sensor_msgs::PointCloud2 &inputClo
   bool hasStampsField = false;
   bool hasVpXField = false, hasVpYField = false, hasVpZField = false;
   for (const auto& field : inputCloud.fields) {
-    if (field.name == "stamps" && field.datatype == sensor_msgs::PointField::FLOAT32)
+    if (field.name == "stamps" && field.datatype == sensor_msgs::msg::PointField::FLOAT32)
       hasStampsField = true;
-    else if (field.name == "vp_x" && field.datatype == sensor_msgs::PointField::FLOAT32)
+    else if (field.name == "vp_x" && field.datatype == sensor_msgs::msg::PointField::FLOAT32)
       hasVpXField = true;
-    else if (field.name == "vp_y" && field.datatype == sensor_msgs::PointField::FLOAT32)
+    else if (field.name == "vp_y" && field.datatype == sensor_msgs::msg::PointField::FLOAT32)
       hasVpYField = true;
-    else if (field.name == "vp_z" && field.datatype == sensor_msgs::PointField::FLOAT32)
+    else if (field.name == "vp_z" && field.datatype == sensor_msgs::msg::PointField::FLOAT32)
       hasVpZField = true;
   }
 
@@ -785,7 +785,7 @@ bool RobotBodyFilterPointCloud2::update(const sensor_msgs::PointCloud2 &inputClo
 
   // Transform to filtering frame
 
-  sensor_msgs::PointCloud2 transformedCloud;
+  sensor_msgs::msg::PointCloud2 transformedCloud;
   if (inputCloud.header.frame_id == this->filteringFrame) {
     transformedCloud = inputCloud;
   } else {
@@ -818,7 +818,7 @@ bool RobotBodyFilterPointCloud2::update(const sensor_msgs::PointCloud2 &inputClo
 
   // Filter the cloud
 
-  sensor_msgs::PointCloud2 tmpCloud;
+  sensor_msgs::msg::PointCloud2 tmpCloud;
   CREATE_FILTERED_CLOUD(transformedCloud, tmpCloud, this->keepCloudsOrganized,
                         (pointMask[i] == RayCastingShapeMask::MaskValue::OUTSIDE))
 
@@ -1122,8 +1122,8 @@ void RobotBodyFilter<T>::publishDebugMarkers(const ros::Time& scanTime) const {
   // assume this->modelMutex is locked
 
   if (this->publishDebugContainsMarker) {
-    visualization_msgs::MarkerArray markerArray;
-    std_msgs::ColorRGBA color;
+    visualization_msgs::msg::MarkerArray markerArray;
+    std_msgs::msg::ColorRGBA color;
     color.g = 1.0;
     color.a = 0.5;
     createBodyVisualizationMsg(this->shapeMask->getBodiesForContainsTest(), scanTime,
@@ -1132,8 +1132,8 @@ void RobotBodyFilter<T>::publishDebugMarkers(const ros::Time& scanTime) const {
   }
 
   if (this->publishDebugShadowMarker) {
-    visualization_msgs::MarkerArray markerArray;
-    std_msgs::ColorRGBA color;
+    visualization_msgs::msg::MarkerArray markerArray;
+    std_msgs::msg::ColorRGBA color;
     color.b = 1.0;
     color.a = 0.5;
     createBodyVisualizationMsg(this->shapeMask->getBodiesForShadowTest(), scanTime,
@@ -1142,8 +1142,8 @@ void RobotBodyFilter<T>::publishDebugMarkers(const ros::Time& scanTime) const {
   }
 
   if (this->publishDebugBsphereMarker) {
-    visualization_msgs::MarkerArray markerArray;
-    std_msgs::ColorRGBA color;
+    visualization_msgs::msg::MarkerArray markerArray;
+    std_msgs::msg::ColorRGBA color;
     color.g = 1.0;
     color.b = 1.0;
     color.a = 0.5;
@@ -1153,8 +1153,8 @@ void RobotBodyFilter<T>::publishDebugMarkers(const ros::Time& scanTime) const {
   }
 
   if (this->publishDebugBboxMarker) {
-    visualization_msgs::MarkerArray markerArray;
-    std_msgs::ColorRGBA color;
+    visualization_msgs::msg::MarkerArray markerArray;
+    std_msgs::msg::ColorRGBA color;
     color.r = 1.0;
     color.b = 1.0;
     color.a = 0.5;
@@ -1166,12 +1166,12 @@ void RobotBodyFilter<T>::publishDebugMarkers(const ros::Time& scanTime) const {
 
 template <typename T>
 void RobotBodyFilter<T>::publishDebugPointClouds(
-    const sensor_msgs::PointCloud2& projectedPointCloud,
+    const sensor_msgs::msg::PointCloud2& projectedPointCloud,
     const std::vector<RayCastingShapeMask::MaskValue> &pointMask) const
 {
   if (this->publishDebugPclInside)
   {
-    sensor_msgs::PointCloud2 insideCloud;
+    sensor_msgs::msg::PointCloud2 insideCloud;
     CREATE_FILTERED_CLOUD(projectedPointCloud, insideCloud, this->keepCloudsOrganized,
       (pointMask[i] == RayCastingShapeMask::MaskValue::INSIDE));
     this->debugPointCloudInsidePublisher.publish(insideCloud);
@@ -1179,7 +1179,7 @@ void RobotBodyFilter<T>::publishDebugPointClouds(
 
   if (this->publishDebugPclClip)
   {
-    sensor_msgs::PointCloud2 clipCloud;
+    sensor_msgs::msg::PointCloud2 clipCloud;
     CREATE_FILTERED_CLOUD(projectedPointCloud, clipCloud, this->keepCloudsOrganized,
       (pointMask[i] == RayCastingShapeMask::MaskValue::CLIP));
     this->debugPointCloudClipPublisher.publish(clipCloud);
@@ -1187,7 +1187,7 @@ void RobotBodyFilter<T>::publishDebugPointClouds(
 
   if (this->publishDebugPclShadow)
   {
-    sensor_msgs::PointCloud2 shadowCloud;
+    sensor_msgs::msg::PointCloud2 shadowCloud;
     CREATE_FILTERED_CLOUD(projectedPointCloud, shadowCloud, this->keepCloudsOrganized,
       (pointMask[i] == RayCastingShapeMask::MaskValue::SHADOW));
     this->debugPointCloudShadowPublisher.publish(shadowCloud);
@@ -1196,7 +1196,7 @@ void RobotBodyFilter<T>::publishDebugPointClouds(
 
 template<typename T>
 void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
-    const sensor_msgs::PointCloud2& projectedPointCloud) const
+    const sensor_msgs::msg::PointCloud2& projectedPointCloud) const
 {
   if (!this->computeBoundingSphere && !this->computeDebugBoundingSphere)
     return;
@@ -1214,7 +1214,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
   const auto& scanTime = projectedPointCloud.header.stamp;
   std::vector<bodies::BoundingSphere> spheres;
   {
-    visualization_msgs::MarkerArray boundingSphereDebugMsg;
+    visualization_msgs::msg::MarkerArray boundingSphereDebugMsg;
     for (const auto &shapeHandleAndBody : this->shapeMask->getBodiesForBoundingSphere())
     {
       const auto &shapeHandle = shapeHandleAndBody.first;
@@ -1230,7 +1230,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
 
       if (this->computeDebugBoundingSphere)
       {
-        visualization_msgs::Marker msg;
+        visualization_msgs::msg::Marker msg;
         msg.header.stamp = scanTime;
         msg.header.frame_id = this->filteringFrame;
 
@@ -1243,8 +1243,8 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
 
         msg.color.g = 1.0;
         msg.color.a = 0.5;
-        msg.type = visualization_msgs::Marker::SPHERE;
-        msg.action = visualization_msgs::Marker::ADD;
+        msg.type = visualization_msgs::msg::Marker::SPHERE;
+        msg.action = visualization_msgs::msg::Marker::ADD;
         msg.ns = "bsphere/" + this->shapesToLinks.at(shapeHandle).cacheKey;
         msg.frame_locked = static_cast<unsigned char>(true);
 
@@ -1262,7 +1262,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
     bodies::BoundingSphere boundingSphere;
     bodies::mergeBoundingSpheres(spheres, boundingSphere);
 
-    robot_body_filter::SphereStamped boundingSphereMsg;
+    robot_body_filter::msg::SphereStamped boundingSphereMsg;
     boundingSphereMsg.header.stamp = scanTime;
     boundingSphereMsg.header.frame_id = this->filteringFrame;
     boundingSphereMsg.sphere.radius =
@@ -1273,7 +1273,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
 
     if (this->publishBoundingSphereMarker)
     {
-      visualization_msgs::Marker msg;
+      visualization_msgs::msg::Marker msg;
       msg.header.stamp = scanTime;
       msg.header.frame_id = this->filteringFrame;
 
@@ -1286,8 +1286,8 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
 
       msg.color.g = 1.0;
       msg.color.a = 0.5;
-      msg.type = visualization_msgs::Marker::SPHERE;
-      msg.action = visualization_msgs::Marker::ADD;
+      msg.type = visualization_msgs::msg::Marker::SPHERE;
+      msg.action = visualization_msgs::msg::Marker::ADD;
       msg.ns = "bounding_sphere";
       msg.frame_locked = static_cast<unsigned char>(true);
 
@@ -1296,7 +1296,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
 
     if (this->publishNoBoundingSpherePointcloud)
     {
-      sensor_msgs::PointCloud2 noSphereCloud;
+      sensor_msgs::msg::PointCloud2 noSphereCloud;
       CREATE_FILTERED_CLOUD(projectedPointCloud, noSphereCloud, this->keepCloudsOrganized,
         ((Eigen::Vector3d(*x_it, *y_it, *z_it)- boundingSphere.center).norm() > boundingSphere.radius));
       this->scanPointCloudNoBoundingSpherePublisher.publish(noSphereCloud);
@@ -1306,7 +1306,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
 
 template<typename T>
 void RobotBodyFilter<T>::computeAndPublishBoundingBox(
-    const sensor_msgs::PointCloud2& projectedPointCloud) const
+    const sensor_msgs::msg::PointCloud2& projectedPointCloud) const
 {
   if (!this->computeBoundingBox && !this->computeDebugBoundingBox)
     return;
@@ -1325,7 +1325,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
   std::vector<bodies::AxisAlignedBoundingBox> boxes;
 
   {
-    visualization_msgs::MarkerArray boundingBoxDebugMsg;
+    visualization_msgs::msg::MarkerArray boundingBoxDebugMsg;
     for (const auto& shapeHandleAndBody : this->shapeMask->getBodiesForBoundingBox())
     {
       const auto& shapeHandle = shapeHandleAndBody.first;
@@ -1340,7 +1340,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
       boxes.push_back(box);
 
       if (this->computeDebugBoundingBox) {
-        visualization_msgs::Marker msg;
+        visualization_msgs::msg::Marker msg;
         msg.header.stamp = scanTime;
         msg.header.frame_id = this->filteringFrame;
 
@@ -1351,8 +1351,8 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
 
         msg.color.g = 1.0;
         msg.color.a = 0.5;
-        msg.type = visualization_msgs::Marker::CUBE;
-        msg.action = visualization_msgs::Marker::ADD;
+        msg.type = visualization_msgs::msg::Marker::CUBE;
+        msg.action = visualization_msgs::msg::Marker::ADD;
         msg.ns = "bbox/" + this->shapesToLinks.at(shapeHandle).cacheKey;
         msg.frame_locked = static_cast<unsigned char>(true);
 
@@ -1371,7 +1371,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
     bodies::mergeBoundingBoxes(boxes, box);
     const auto boxFloat = box.cast<float>();
 
-    geometry_msgs::PolygonStamped boundingBoxMsg;
+    geometry_msgs::msg::PolygonStamped boundingBoxMsg;
 
     boundingBoxMsg.header.stamp = scanTime;
     boundingBoxMsg.header.frame_id = this->filteringFrame;
@@ -1384,7 +1384,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
 
     if (this->publishBoundingBoxMarker)
     {
-      visualization_msgs::Marker msg;
+      visualization_msgs::msg::Marker msg;
       msg.header.stamp = scanTime;
       msg.header.frame_id = this->filteringFrame;
 
@@ -1395,8 +1395,8 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
 
       msg.color.r = 1.0;
       msg.color.a = 0.5;
-      msg.type = visualization_msgs::Marker::CUBE;
-      msg.action = visualization_msgs::Marker::ADD;
+      msg.type = visualization_msgs::msg::Marker::CUBE;
+      msg.action = visualization_msgs::msg::Marker::ADD;
       msg.ns = "bounding_box";
       msg.frame_locked = static_cast<unsigned char>(true);
 
@@ -1420,7 +1420,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
       pcl::PCLPointCloud2 pclOutput;
       cropBox.filter(pclOutput);
 
-      sensor_msgs::PointCloud2Ptr boxFilteredCloud(new sensor_msgs::PointCloud2());
+      sensor_msgs::msg::PointCloud2::SharedPtr boxFilteredCloud(new sensor_msgs::msg::PointCloud2());
       pcl_conversions::moveFromPCL(pclOutput, *boxFilteredCloud);
       boxFilteredCloud->header.stamp = scanTime;  // PCL strips precision of timestamp
 
@@ -1431,7 +1431,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
 
 template<typename T>
 void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
-    const sensor_msgs::PointCloud2& projectedPointCloud) const
+    const sensor_msgs::msg::PointCloud2& projectedPointCloud) const
 {
   if (!this->computeOrientedBoundingBox && !this->computeDebugOrientedBoundingBox)
     return;
@@ -1450,7 +1450,7 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
   std::vector<bodies::OrientedBoundingBox> boxes;
 
   {
-    visualization_msgs::MarkerArray boundingBoxDebugMsg;
+    visualization_msgs::msg::MarkerArray boundingBoxDebugMsg;
     for (const auto& shapeHandleAndBody : this->shapeMask->getBodiesForBoundingBox())
     {
       const auto& shapeHandle = shapeHandleAndBody.first;
@@ -1465,7 +1465,7 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
       boxes.push_back(box);
 
       if (this->computeDebugOrientedBoundingBox) {
-        visualization_msgs::Marker msg;
+        visualization_msgs::msg::Marker msg;
         msg.header.stamp = scanTime;
         msg.header.frame_id = this->filteringFrame;
 
@@ -1475,8 +1475,8 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
 
         msg.color.g = 1.0;
         msg.color.a = 0.5;
-        msg.type = visualization_msgs::Marker::CUBE;
-        msg.action = visualization_msgs::Marker::ADD;
+        msg.type = visualization_msgs::msg::Marker::CUBE;
+        msg.action = visualization_msgs::msg::Marker::ADD;
         msg.ns = "obbox/" + this->shapesToLinks.at(shapeHandle).cacheKey;
         msg.frame_locked = static_cast<unsigned char>(true);
 
@@ -1494,7 +1494,7 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
     bodies::OrientedBoundingBox box(Eigen::Isometry3d::Identity(), Eigen::Vector3d::Zero());
     bodies::mergeBoundingBoxesApprox(boxes, box);
 
-    robot_body_filter::OrientedBoundingBoxStamped boundingBoxMsg;
+    robot_body_filter::msg::OrientedBoundingBoxStamped boundingBoxMsg;
 
     boundingBoxMsg.header.stamp = scanTime;
     boundingBoxMsg.header.frame_id = this->filteringFrame;
@@ -1507,7 +1507,7 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
 
     if (this->publishOrientedBoundingBoxMarker)
     {
-      visualization_msgs::Marker msg;
+      visualization_msgs::msg::Marker msg;
       msg.header.stamp = scanTime;
       msg.header.frame_id = this->filteringFrame;
 
@@ -1517,8 +1517,8 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
 
       msg.color.r = 1.0;
       msg.color.a = 0.5;
-      msg.type = visualization_msgs::Marker::CUBE;
-      msg.action = visualization_msgs::Marker::ADD;
+      msg.type = visualization_msgs::msg::Marker::CUBE;
+      msg.action = visualization_msgs::msg::Marker::ADD;
       msg.ns = "oriented_bounding_box";
       msg.frame_locked = static_cast<unsigned char>(true);
 
@@ -1545,7 +1545,7 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
       pcl::PCLPointCloud2 pclOutput;
       cropBox.filter(pclOutput);
 
-      sensor_msgs::PointCloud2Ptr boxFilteredCloud(new sensor_msgs::PointCloud2());
+      sensor_msgs::msg::PointCloud2::SharedPtr boxFilteredCloud(new sensor_msgs::msg::PointCloud2());
       pcl_conversions::moveFromPCL(pclOutput, *boxFilteredCloud);
       boxFilteredCloud->header.stamp = scanTime;  // PCL strips precision of timestamp
 
@@ -1556,7 +1556,7 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
 
 template<typename T>
 void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
-    const sensor_msgs::PointCloud2& projectedPointCloud) const
+    const sensor_msgs::msg::PointCloud2& projectedPointCloud) const
 {
   if (!this->computeLocalBoundingBox && !this->computeDebugLocalBoundingBox)
     return;
@@ -1590,7 +1590,7 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
   std::vector<bodies::AxisAlignedBoundingBox> boxes;
 
   {
-    visualization_msgs::MarkerArray boundingBoxDebugMsg;
+    visualization_msgs::msg::MarkerArray boundingBoxDebugMsg;
     for (const auto& shapeHandleAndBody : this->shapeMask->getBodiesForBoundingBox())
     {
       const auto& shapeHandle = shapeHandleAndBody.first;
@@ -1605,7 +1605,7 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
       boxes.push_back(box);
 
       if (this->computeDebugLocalBoundingBox) {
-        visualization_msgs::Marker msg;
+        visualization_msgs::msg::Marker msg;
         msg.header.stamp = scanTime;
         msg.header.frame_id = this->localBoundingBoxFrame;
 
@@ -1615,8 +1615,8 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
 
         msg.color.g = 1.0;
         msg.color.a = 0.5;
-        msg.type = visualization_msgs::Marker::CUBE;
-        msg.action = visualization_msgs::Marker::ADD;
+        msg.type = visualization_msgs::msg::Marker::CUBE;
+        msg.action = visualization_msgs::msg::Marker::ADD;
         msg.ns = "lbbox/" + this->shapesToLinks.at(shapeHandle).cacheKey;
         msg.frame_locked = static_cast<unsigned char>(true);
 
@@ -1634,7 +1634,7 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
     bodies::AxisAlignedBoundingBox box;
     bodies::mergeBoundingBoxes(boxes, box);
 
-    geometry_msgs::PolygonStamped boundingBoxMsg;
+    geometry_msgs::msg::PolygonStamped boundingBoxMsg;
 
     boundingBoxMsg.header.stamp = scanTime;
     boundingBoxMsg.header.frame_id = this->localBoundingBoxFrame;
@@ -1647,7 +1647,7 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
 
     if (this->publishLocalBoundingBoxMarker)
     {
-      visualization_msgs::Marker msg;
+      visualization_msgs::msg::Marker msg;
       msg.header.stamp = scanTime;
       msg.header.frame_id = this->localBoundingBoxFrame;
 
@@ -1657,8 +1657,8 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
 
       msg.color.r = 1.0;
       msg.color.a = 0.5;
-      msg.type = visualization_msgs::Marker::CUBE;
-      msg.action = visualization_msgs::Marker::ADD;
+      msg.type = visualization_msgs::msg::Marker::CUBE;
+      msg.action = visualization_msgs::msg::Marker::ADD;
       msg.ns = "local_bounding_box";
       msg.frame_locked = static_cast<unsigned char>(true);
 
@@ -1685,7 +1685,7 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
       pcl::PCLPointCloud2 pclOutput;
       cropBox.filter(pclOutput);
 
-      sensor_msgs::PointCloud2Ptr boxFilteredCloud(new sensor_msgs::PointCloud2());
+      sensor_msgs::msg::PointCloud2::SharedPtr boxFilteredCloud(new sensor_msgs::msg::PointCloud2());
       pcl_conversions::moveFromPCL(pclOutput, *boxFilteredCloud);
       boxFilteredCloud->header.stamp = scanTime;  // PCL strips precision of timestamp
 
@@ -1697,8 +1697,8 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
 template<typename T>
 void RobotBodyFilter<T>::createBodyVisualizationMsg(
     const std::map<point_containment_filter::ShapeHandle, const bodies::Body*>& bodies,
-    const ros::Time& stamp, const std_msgs::ColorRGBA& color,
-    visualization_msgs::MarkerArray& markerArray) const
+    const ros::Time& stamp, const std_msgs::msg::ColorRGBA& color,
+    visualization_msgs::msg::MarkerArray& markerArray) const
 {
   // when computing the markers for publication, we want to publish them to the time of the
   // scan, so we need to set cacheLookupBetweenScansRatio again to zero
@@ -1713,14 +1713,14 @@ void RobotBodyFilter<T>::createBodyVisualizationMsg(
     const auto &shapeHandle = shapeHandleAndBody.first;
     auto body = shapeHandleAndBody.second;
 
-    visualization_msgs::Marker msg;
+    visualization_msgs::msg::Marker msg;
     bodies::constructMarkerFromBody(body, msg);
 
     msg.header.stamp = stamp;
     msg.header.frame_id = this->filteringFrame;
 
     msg.color = color;
-    msg.action = visualization_msgs::Marker::ADD;
+    msg.action = visualization_msgs::msg::Marker::ADD;
     msg.ns = this->shapesToLinks.at(shapeHandle).cacheKey;
     msg.frame_locked = static_cast<unsigned char>(true);
 
@@ -1760,8 +1760,8 @@ void RobotBodyFilter<T>::robotDescriptionUpdated(dynamic_reconfigure::ConfigCons
 }
 
 template<typename T>
-bool RobotBodyFilter<T>::triggerModelReload(std_srvs::TriggerRequest &,
-                                              std_srvs::TriggerResponse &)
+bool RobotBodyFilter<T>::triggerModelReload(std_srvs::srv::Trigger::Request &,
+                                              std_srvs::srv::Trigger::Response &)
 {
   std::string urdf;
   auto success = this->nodeHandle.getParam(this->robotDescriptionParam, urdf);
@@ -1900,5 +1900,5 @@ std::string RobotBodyFilter<T>::getLinkTfPrefix() const
 
 }
 
-PLUGINLIB_EXPORT_CLASS(robot_body_filter::RobotBodyFilterLaserScan, filters::FilterBase<sensor_msgs::LaserScan>)
-PLUGINLIB_EXPORT_CLASS(robot_body_filter::RobotBodyFilterPointCloud2, filters::FilterBase<sensor_msgs::PointCloud2>)
+PLUGINLIB_EXPORT_CLASS(robot_body_filter::RobotBodyFilterLaserScan, filters::FilterBase<sensor_msgs::msg::LaserScan>)
+PLUGINLIB_EXPORT_CLASS(robot_body_filter::RobotBodyFilterPointCloud2, filters::FilterBase<sensor_msgs::msg::PointCloud2>)

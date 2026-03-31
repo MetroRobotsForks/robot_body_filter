@@ -3,7 +3,7 @@
 
 TEST(Cloud, NumPoints)
 {
-  sensor_msgs::PointCloud2 msg;
+  sensor_msgs::msg::PointCloud2 msg;
   sensor_msgs::PointCloud2Modifier mod(msg);
 
   mod.setPointCloud2FieldsByString(1, "xyz");
@@ -20,7 +20,7 @@ TEST(Cloud, NumPoints)
 
 TEST(Cloud, CreateFilteredCloudUnorganized)
 {
-  sensor_msgs::PointCloud2 msg;
+  sensor_msgs::msg::PointCloud2 msg;
   sensor_msgs::PointCloud2Modifier mod(msg);
 
   mod.setPointCloud2FieldsByString(1, "xyz");
@@ -41,7 +41,7 @@ TEST(Cloud, CreateFilteredCloudUnorganized)
     ++it_z;
   }
 
-  sensor_msgs::PointCloud2 out;
+  sensor_msgs::msg::PointCloud2 out;
   CREATE_FILTERED_CLOUD(msg, out, true, *x_it == 2.0)
 
   EXPECT_EQ(1, robot_body_filter::num_points(out));
@@ -59,7 +59,7 @@ TEST(Cloud, CreateFilteredCloudUnorganized)
 
 TEST(Cloud, CreateFilteredCloudOrganized)
 {
-  sensor_msgs::PointCloud2 msg;
+  sensor_msgs::msg::PointCloud2 msg;
   sensor_msgs::PointCloud2Modifier mod(msg);
 
   mod.setPointCloud2FieldsByString(1, "xyz");
@@ -85,7 +85,7 @@ TEST(Cloud, CreateFilteredCloudOrganized)
     ++it_z;
   }
 
-  sensor_msgs::PointCloud2 out;
+  sensor_msgs::msg::PointCloud2 out;
   CREATE_FILTERED_CLOUD(msg, out, true, int(*x_it) % 2 == 0)
 
   ASSERT_EQ(4, robot_body_filter::num_points(out));
@@ -122,7 +122,7 @@ TEST(Cloud, CreateFilteredCloudOrganized)
 
 TEST(Cloud, CreateFilteredCloudOrganizedDoNotKeep)
 {
-  sensor_msgs::PointCloud2 msg;
+  sensor_msgs::msg::PointCloud2 msg;
   sensor_msgs::PointCloud2Modifier mod(msg);
 
   mod.setPointCloud2FieldsByString(1, "xyz");
@@ -148,7 +148,7 @@ TEST(Cloud, CreateFilteredCloudOrganizedDoNotKeep)
     ++it_z;
   }
 
-  sensor_msgs::PointCloud2 out;
+  sensor_msgs::msg::PointCloud2 out;
   CREATE_FILTERED_CLOUD(msg, out, false, int(*x_it) % 2 == 0)
 
   ASSERT_EQ(2, robot_body_filter::num_points(out));

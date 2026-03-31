@@ -101,7 +101,7 @@ void TFFramesWatchdog::clear() {
   reachableFrames.clear();
 }
 
-optional<geometry_msgs::TransformStamped> TFFramesWatchdog::lookupTransform(
+optional<geometry_msgs::msg::TransformStamped> TFFramesWatchdog::lookupTransform(
     const std::string &frame,
     const ros::Time &time,
     const ros::Duration &timeout,
