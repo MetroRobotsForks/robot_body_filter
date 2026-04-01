@@ -85,44 +85,6 @@ TEST(StringUtils, ToString)
   EXPECT_EQ("{}", to_string(std::map<std::string, int>()));
   EXPECT_EQ("1.5", to_string(rclcpp::Time(1, 500000000)));
   EXPECT_EQ("1.5", to_string(rclcpp::Duration(1, 500000000)));
-  XmlRpc::XmlRpcValue::setDoubleFormat("%.2f");
-  EXPECT_EQ("2.00", to_string(XmlRpc::XmlRpcValue(2.0)));
-  EXPECT_EQ("2", to_string(XmlRpc::XmlRpcValue(2)));
-  EXPECT_EQ("0", to_string(XmlRpc::XmlRpcValue(false)));
-  EXPECT_EQ("1", to_string(XmlRpc::XmlRpcValue(true)));
-  EXPECT_EQ("aa", to_string(XmlRpc::XmlRpcValue("aa")));
-  {
-    tm time;
-    time.tm_hour = 1;
-    time.tm_min = 2;
-    time.tm_sec = 3;
-    time.tm_mday = 4;
-    time.tm_mon = 5;
-    time.tm_year = 2006;
-    EXPECT_EQ("20060504T01:02:03", to_string(XmlRpc::XmlRpcValue(&time)));
-  }
-  {
-    int offset = 0;
-    EXPECT_EQ("2.00", to_string(XmlRpc::XmlRpcValue("<value><double>2.0</double></value>", &offset)));
-  }
-  {
-    char bytes[] = "123";
-    EXPECT_EQ("MTIz\n", to_string(XmlRpc::XmlRpcValue(bytes, 3)));
-  }
-  {
-    XmlRpc::XmlRpcValue v;
-    v[0] = 1;
-    v[1] = 2;
-    v[2] = 3;
-    EXPECT_EQ("{1,2,3}", to_string(v));
-  }
-  {
-    XmlRpc::XmlRpcValue v;
-    v["0"] = 1;
-    v["1"] = 2;
-    v["2"] = 3;
-    EXPECT_EQ("[0:1,1:2,2:3]", to_string(v));
-  }
 }
 
 TEST(StringUtils, StartsWith)

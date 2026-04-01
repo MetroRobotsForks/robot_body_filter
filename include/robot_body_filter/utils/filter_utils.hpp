@@ -6,35 +6,9 @@
 #include <filters/filter_base.hpp>
 
 #include "robot_body_filter/utils/string_utils.hpp"
-#include "robot_body_filter/utils/xmlrpc_traits.h"
 
 namespace robot_body_filter
 {
-
-namespace
-{
-/**
- * \brief Internal use only. This class exposes the XmlRpcValue -> typed data conversion
- * provided by filters::FilterBase::getParam(), which is normally protected. We use this
- * workaround to avoid copy-pasting the code here.
- */
-template<typename F>
-class FilterParamHelper : public filters::FilterBase<F>
-{
-public:
-  FilterParamHelper(const std::string& key, const XmlRpc::XmlRpcValue& value)
-  {
-    this->params_[key] = value[key];
-  }
-  template<typename T> bool getParamHelper(const std::string& name, T& value) const
-  {
-    return filters::FilterBase<F>::getParam(name, value);
-  }
-  bool update(const F& data_in, F& data_out) override {return false;}
-protected:
-  bool configure() override {return false;}
-};
-}
 
 template<typename F>
 class FilterBase : public filters::FilterBase<F>
@@ -65,10 +39,10 @@ protected:
   template<typename T>
   T getParamVerbose(const std::string &name, const T &defaultValue = T(),
              const std::string &unit = "", bool* defaultUsed = nullptr,
-             ToStringFn<T> valueToStringFn = &to_string) const
+             ToStringFn<T> valueToStringFn = &to_string)
   {
     T value;
-    if (filters::FilterBase<F>::getParam(name, value))
+    if (this->params_interface_->has_parameter(name) && filters::FilterBase<F>::getParam(name, value))
     {
       if (valueToStringFn != nullptr)
       {
@@ -79,64 +53,6 @@ protected:
       if (defaultUsed != nullptr)
         *defaultUsed = false;
       return value;
-    }
-    else if (this->params_.find(name) != this->params_.end())
-    {  // the parameter was found, but has a wrong type
-      RCLCPP_ERROR_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Parameter " << name << " found, "
-        "but its value has a wrong type. Expected XmlRpc type " <<
-        XmlRpcTraits<T>::stringType << ", got type: " <<
-        to_string(this->params_.at(name).getType()) <<
-        ". Using the default value instead.");
-    }
-    else if (name.length() > 1 && name.find_first_of('/', 1) != std::string::npos)
-    {  // The parameter has slashes in its name, so try a "recursive" search
-      auto slashPos = name.find_first_of('/', 1);
-      auto head = name.substr(0, slashPos);
-      auto tail = name.substr(slashPos + 1);
-      XmlRpc::XmlRpcValue val;
-
-      if (filters::FilterBase<F>::getParam(head, val))
-      {
-        while (val.getType() == XmlRpc::XmlRpcValue::TypeStruct)
-        {
-          if (val.hasMember(tail))
-          {
-            auto tmpFilter = FilterParamHelper<F>(tail, val);
-            if (tmpFilter.getParamHelper(tail, value))
-            {
-              if (defaultUsed != nullptr)
-                *defaultUsed = false;
-              if (valueToStringFn != nullptr)
-              {
-                RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
-                  ", value: " << valueToStringFn(value) << prependIfNonEmpty(unit, " "));
-              }
-              return value;
-            }
-            else
-            {
-              RCLCPP_ERROR_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Parameter " << name << " found, "
-                "but its value has a wrong type. Expected XmlRpc type " <<
-                XmlRpcTraits<T>::stringType << ", got type: " <<
-                to_string(val[tail].getType()) <<
-                ". Using the default value instead.");
-              break;
-            }
-          } else {
-            slashPos = tail.find_first_of('/', 1);
-            if (slashPos == std::string::npos)
-              break;
-            head = tail.substr(0, slashPos);
-            tail = tail.substr(slashPos + 1);
-            if (!val.hasMember(head))
-              break;
-            XmlRpc::XmlRpcValue tmp = val[head]; // tmp copy is required, otherwise mem corruption
-            val = tmp;
-            if (!val.valid())
-              break;
-          }
-        }
-      }
     }
 
     if (valueToStringFn != nullptr)
@@ -165,7 +81,7 @@ protected:
    */
   std::string getParamVerbose(const std::string &name, const char* defaultValue,
                               const std::string &unit = "", bool* defaultUsed = nullptr,
-                              ToStringFn<std::string> valueToStringFn = &to_string) const
+                              ToStringFn<std::string> valueToStringFn = &to_string)
   {
     return this->getParamVerbose(name, std::string(defaultValue), unit, defaultUsed, valueToStringFn);
   }
@@ -189,7 +105,7 @@ protected:
    */
   uint64_t getParamVerbose(const std::string &name, const uint64_t &defaultValue,
                            const std::string &unit = "", bool* defaultUsed = nullptr,
-                           ToStringFn<int> valueToStringFn = &to_string) const
+                           ToStringFn<int> valueToStringFn = &to_string)
   {
     return this->getParamUnsigned<uint64_t, int>(name, defaultValue, unit, defaultUsed,
         valueToStringFn);
@@ -215,7 +131,7 @@ protected:
                                const unsigned int &defaultValue,
                                const std::string &unit = "",
                                bool* defaultUsed = nullptr,
-                               ToStringFn<int> valueToStringFn = &to_string) const
+                               ToStringFn<int> valueToStringFn = &to_string)
   {
     return this->getParamUnsigned<unsigned int, int>(name, defaultValue, unit, defaultUsed,
         valueToStringFn);
@@ -235,14 +151,14 @@ protected:
    *             messages more informative.
    * \return The loaded param value.
    */
-  rclcpp::Duration getParamVerbose(const std::string &name,
+  rclcpp::Duration getParamDuration(const std::string &name,
                                 const rclcpp::Duration &defaultValue,
                                 const std::string &unit = "",
                                 bool* defaultUsed = nullptr,
-                                ToStringFn<double> valueToStringFn = &to_string) const
+                                ToStringFn<double> valueToStringFn = &to_string)
   {
-    return this->getParamCast<rclcpp::Duration, double>(name, defaultValue.seconds(), unit, defaultUsed,
-        valueToStringFn);
+    double temp_value = getParamVerbose(name, defaultValue.seconds(), unit, defaultUsed, valueToStringFn);
+    return rclcpp::Duration::from_seconds(temp_value);
   }
 
   /** \brief Get the value of the given filter parameter as a set of strings, falling back to the
@@ -264,7 +180,7 @@ protected:
       const std::set<T> &defaultValue = std::set<T>(),
       const std::string &unit = "",
       bool* defaultUsed = nullptr,
-      ToStringFn<std::vector<T>> valueToStringFn = &to_string) const
+      ToStringFn<std::vector<T>> valueToStringFn = &to_string)
   {
     std::vector<T> vector(defaultValue.begin(), defaultValue.end());
     vector = this->getParamVerbose(name, vector, unit, defaultUsed, valueToStringFn);
@@ -277,73 +193,38 @@ protected:
       const std::map<std::string, T> &defaultValue = std::map<std::string, T>(),
       const std::string &unit = "",
       bool* defaultUsed = nullptr,
-      ToStringFn<MapType> valueToStringFn = &to_string) const
+      ToStringFn<MapType> valueToStringFn = &to_string)
   {
-    // convert default value to XmlRpc so that we can utilize FilterBase::getParam(XmlRpcValue).
-    XmlRpc::XmlRpcValue defaultValueXmlRpc;
-    defaultValueXmlRpc.begin(); // calls assertStruct() which mutates this value into a struct
-    for (const auto& val : defaultValue)
-      defaultValueXmlRpc[val.first] = val.second;
-
-    // get the param value as a XmlRpcValue
-    bool innerDefaultUsed;
-    auto valueXmlRpc = this->getParamVerbose(name, defaultValueXmlRpc, unit, &innerDefaultUsed,
-                                             (ToStringFn<XmlRpc::XmlRpcValue>)nullptr);
-
-    // convert to map
     MapType value;
-    bool hasWrongTypeItems = false;
-    for (auto& pairXmlRpc : valueXmlRpc)
+
+    std::string prefix = this->param_prefix_ + name;
+    auto parameter_value_map = this->params_interface_->get_parameter_overrides();
+    for (auto& pairParam : parameter_value_map)
     {
-      if (pairXmlRpc.second.getType() == XmlRpcTraits<T>::xmlRpcType)
-      {
-        value[pairXmlRpc.first] = pairXmlRpc.second.operator T&();
-      }
-      else if (XmlRpcTraits<T>::xmlRpcType == XmlRpc::XmlRpcValue::TypeDouble && pairXmlRpc.second.getType() == XmlRpc::XmlRpcValue::TypeInt)
-      {
-        // special handling of the case when doubles are expected but an int is provided
-        value[pairXmlRpc.first] = static_cast<T>(pairXmlRpc.second.operator int&());
-      }
-      else
-      {
-        RCLCPP_WARN_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Invalid value for dict parameter " << name
-          << " key " << pairXmlRpc.first << ". Expected XmlRpc type " << XmlRpcTraits<T>::stringType
-          << ", got type: " << to_string(pairXmlRpc.second.getType()) << ". Skipping value.");
-        hasWrongTypeItems = true;
-      }
+      if (!startsWith(pairParam.first, prefix)) continue;
+      std::string sub_name = pairParam.first.substr(prefix.length() + 1);
+      auto v = pairParam.second.template get<T>();
+      value[sub_name] = v;
     }
 
-    if (value.empty() && hasWrongTypeItems)
+    if (value.empty())
     {
       value = defaultValue;
       if (defaultUsed != nullptr)
         *defaultUsed = true;
       if (valueToStringFn != nullptr)
       {
-        RCLCPP_ERROR_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Dict parameter " << name
-                                         << " got only invalid types of values, assigning default: "
-                                         << valueToStringFn(defaultValue)
-                                         << prependIfNonEmpty(unit, " "));
-      }
-    } else {
-      if (defaultUsed != nullptr)
-        *defaultUsed = innerDefaultUsed;
-      if (valueToStringFn != nullptr)
-      {
-        if (innerDefaultUsed)
-        {
           RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Parameter " << name
                                           << " not defined, assigning default: "
                                           << valueToStringFn(defaultValue)
                                           << prependIfNonEmpty(unit, " "));
-        }
-        else
-        {
-          RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
-                                          ", value: " << valueToStringFn(value) <<
-                                          prependIfNonEmpty(unit, " "));
-        }
       }
+    }
+    else
+    {
+      RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
+                                                                 ", value: " << valueToStringFn(value) <<
+                                                                 prependIfNonEmpty(unit, " "));
     }
 
     return value;
@@ -354,7 +235,7 @@ private:
   template<typename Result, typename Param>
   Result getParamUnsigned(const std::string &name, const Result &defaultValue,
                           const std::string &unit = "", bool* defaultUsed = nullptr,
-                          ToStringFn<Param> valueToStringFn = &to_string) const
+                          ToStringFn<Param> valueToStringFn = &to_string)
   {
     const Param signedValue = this->getParamVerbose(name, static_cast<Param>(defaultValue), unit,
         defaultUsed, valueToStringFn);
@@ -374,7 +255,7 @@ private:
   template<typename Result, typename Param>
   Result getParamCast(const std::string &name, const Param &defaultValue,
                       const std::string &unit = "", bool* defaultUsed = nullptr,
-                      ToStringFn<Param> valueToStringFn = &to_string) const
+                      ToStringFn<Param> valueToStringFn = &to_string)
   {
     const Param paramValue = this->getParamVerbose(name, defaultValue, unit, defaultUsed,
         valueToStringFn);

@@ -10,7 +10,6 @@
 #include <sstream>
 #include <type_traits>
 #include <vector>
-#include <xmlrpcpp/XmlRpcValue.h>
 
 namespace robot_body_filter {
 
@@ -95,14 +94,6 @@ template<>
 inline std::string to_string(const std::string &value)
 {
   return value;
-}
-
-template<>
-inline std::string to_string(const XmlRpc::XmlRpcValue &value)
-{
-  std::stringstream ss;
-  ss << value;
-  return ss.str();
 }
 
 template<typename T>

@@ -1,7 +1,6 @@
 #include "gtest/gtest.h"
 
 #include <robot_body_filter/RobotBodyFilter.h>
-#include <xmlrpcpp/XmlRpcValue.h>
 #include "utils.cpp"
 
 using namespace robot_body_filter;
@@ -132,35 +131,6 @@ class RobotBodyFilterPointCloud2Test : public RobotBodyFilterPointCloud2
   friend class RobotBodyFilter_ComputeMaskAllAtOnce_Test;
   friend class RobotBodyFilter_UpdatePointCloud2_Test;
 };
-
-TEST(RobotBodyFilter, InitFromArray)
-{
-  ros::NodeHandle nh;
-
-  auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
-  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
-
-  XmlRpc::XmlRpcValue value;
-  nh.getParam("test_chain_config", value);
-  ASSERT_EQ(XmlRpc::XmlRpcValue::TypeArray, value.getType());
-  ASSERT_EQ(1, value.size());
-
-  // test_robot_description parameter doesn't exist
-  nh.deleteParam("test_robot_description");
-  EXPECT_THROW(filterBase->configure(value[0]), std::runtime_error);
-  EXPECT_FALSE(filter->configured_);
-  ASSERT_NE(nullptr, filter->tfFramesWatchdog);
-
-  // test that invalid robot model doesn't throw any exception, but also generates no filter shapes
-  nh.setParam("test_robot_description", "<robot name='test'></robot>");
-  filterBase->configure(value[0]);
-  EXPECT_EQ("test_robot_description", filter->robotDescriptionParam);
-  EXPECT_EQ(0, filter->shapesToLinks.size());
-  EXPECT_TRUE(filter->configured_);
-  EXPECT_GT(rclcpp::Duration::from_seconds(0.1), nh->get_clock()->now() - filter->timeConfigured);
-  ASSERT_NE(nullptr, filter->tfFramesWatchdog);
-  EXPECT_TRUE(filter->tfFramesWatchdog->isMonitored("laser"));  // Issue #6, monitor sensor frame
-}
 
 TEST(RobotBodyFilter, InitFromDict)
 {

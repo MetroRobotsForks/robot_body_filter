@@ -51,7 +51,7 @@ bool RobotBodyFilter<T>::configure() {
   nodeHandle =  std::make_shared<rclcpp::Node>("robot_body_filter", "debug");
   clock_ptr = this->nodeHandle->get_clock();
 
-  this->tfBufferLength = this->getParamVerbose("transforms/buffer_length", rclcpp::Duration::from_seconds(60.0), "s");
+  this->tfBufferLength = this->getParamDuration("transforms/buffer_length", rclcpp::Duration::from_seconds(60.0), "s");
 
   if (this->tfBuffer == nullptr)
   {
@@ -73,13 +73,13 @@ bool RobotBodyFilter<T>::configure() {
   this->maxDistance = this->getParamVerbose("sensor/max_distance", 0.0, "m");
   this->robotDescriptionParam = this->getParamVerbose("body_model/robot_description_param", "robot_description");
   this->keepCloudsOrganized = this->getParamVerbose("filter/keep_clouds_organized", true);
-  this->modelPoseUpdateInterval = this->getParamVerbose("filter/model_pose_update_interval", rclcpp::Duration(0, 0), "s");
+  this->modelPoseUpdateInterval = this->getParamDuration("filter/model_pose_update_interval", rclcpp::Duration(0, 0), "s");
   const bool doClipping = this->getParamVerbose("filter/do_clipping", true);
   const bool doContainsTest = this->getParamVerbose("filter/do_contains_test", true);
   const bool doShadowTest = this->getParamVerbose("filter/do_shadow_test", true);
   const double maxShadowDistance = this->getParamVerbose("filter/max_shadow_distance", this->maxDistance, "m");
-  this->reachableTransformTimeout = this->getParamVerbose("transforms/timeout/reachable", rclcpp::Duration::from_seconds(0.1), "s");
-  this->unreachableTransformTimeout = this->getParamVerbose("transforms/timeout/unreachable", rclcpp::Duration::from_seconds(0.2), "s");
+  this->reachableTransformTimeout = this->getParamDuration("transforms/timeout/reachable", rclcpp::Duration::from_seconds(0.1), "s");
+  this->unreachableTransformTimeout = this->getParamDuration("transforms/timeout/unreachable", rclcpp::Duration::from_seconds(0.2), "s");
   this->requireAllFramesReachable = this->getParamVerbose("transforms/require_all_reachable", false);
   this->linkTfPrefix = this->getParamVerbose("transforms/link_tf_prefix", "");
   this->publishNoBoundingSpherePointcloud = this->getParamVerbose("bounding_sphere/publish_cut_out_pointcloud", false);
@@ -205,6 +205,7 @@ bool RobotBodyFilter<T>::configure() {
 
   this->robotDescriptionUpdatesFieldName = this->getParamVerbose("body_model/dynamic_robot_description/field_name", "robot_model");
   // subscribe for robot_description param changes
+  this->params_interface_->declare_parameter(this->robotDescriptionParam, rclcpp::ParameterType::PARAMETER_STRING);
   this->robotDescriptionUpdatesListener = this->nodeHandle.subscribe(
     "dynamic_robot_model_server/parameter_updates", 10, &RobotBodyFilter::robotDescriptionUpdated, this);
 
@@ -340,9 +341,8 @@ bool RobotBodyFilter<T>::configure() {
   }
 
   { // initialize the robot body to be masked out
-
-    string robotUrdf;
-    while (!this->nodeHandle.getParam(this->robotDescriptionParam, robotUrdf) || robotUrdf.length() == 0) {
+    rclcpp::Parameter description_param;
+    while (!this->params_interface_->get_parameter(this->robotDescriptionParam, description_param) || description_param.as_string().length() == 0) {
       if (this->failWithoutRobotDescription)
       {
         throw std::runtime_error(
@@ -360,7 +360,7 @@ bool RobotBodyFilter<T>::configure() {
     // playing)
     if (!this->shapesToLinks.empty())
       this->clearRobotMask();
-    this->addRobotMaskFromUrdf(robotUrdf);
+    this->addRobotMaskFromUrdf(description_param.as_string());
   }
 
   RCLCPP_INFO(get_logger(), "RobotBodyFilter: Successfully configured.");

@@ -31,9 +31,9 @@ class TestFilter : public robot_body_filter::FilterBase<std::string>
     EXPECT_THROW(this->getParamVerbose("test/negative", static_cast<unsigned int>(1)),
       std::invalid_argument);
     EXPECT_EQ(1, this->getParamVerbose("non/existent", static_cast<unsigned int>(1), "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
-    EXPECT_EQ(rclcpp::Duration::from_seconds(60), this->getParamVerbose("transforms/buffer_length",
+    EXPECT_EQ(rclcpp::Duration::from_seconds(60), this->getParamDuration("transforms/buffer_length",
         rclcpp::Duration::from_seconds(30), "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
-    EXPECT_EQ(rclcpp::Duration::from_seconds(30), this->getParamVerbose("nonexistent", rclcpp::Duration::from_seconds(30), "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
+    EXPECT_EQ(rclcpp::Duration::from_seconds(30), this->getParamDuration("nonexistent", rclcpp::Duration::from_seconds(30), "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
     EXPECT_EQ(std::vector<std::string>({"antenna", "base_link::big_collision_box"}),
               this->getParamVerbose("ignored_links/bounding_sphere", std::vector<std::string>(), "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
     EXPECT_EQ(std::set<std::string>({"antenna", "base_link::big_collision_box"}),
@@ -60,21 +60,6 @@ TEST(FilterUtils, getParamVerboseFromDict)
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<std::string>>(filter);
 
   filterBase->configure("test_dict_config", nh);
-}
-
-TEST(FilterUtils, getParamVerboseFromChain)
-{
-  ros::NodeHandle nh;
-
-  auto filter = std::make_shared<TestFilter>();
-  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<std::string>>(filter);
-
-  XmlRpc::XmlRpcValue value;
-  nh.getParam("test_chain_config", value);
-  ASSERT_EQ(XmlRpc::XmlRpcValue::TypeArray, value.getType());
-  ASSERT_EQ(1, value.size());
-
-  filterBase->configure(value[0]);
 }
 
 int main(int argc, char **argv)
