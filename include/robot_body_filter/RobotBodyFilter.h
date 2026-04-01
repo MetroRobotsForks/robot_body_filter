@@ -322,7 +322,7 @@ protected:
   //! tf client
   std::shared_ptr<tf2_ros::Buffer> tfBuffer;
   //! tf listener
-  std::unique_ptr<tf2_ros::TransformListener> tfListener;
+  std::shared_ptr<tf2_ros::TransformListener> tfListener;
 
   //! Watchdog for unreachable frames.
   std::shared_ptr<TFFramesWatchdog> tfFramesWatchdog;

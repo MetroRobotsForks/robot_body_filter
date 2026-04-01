@@ -55,7 +55,8 @@ bool RobotBodyFilter<T>::configure() {
 
   if (this->tfBuffer == nullptr)
   {
-    this->tfBuffer = std::make_shared<tf2_ros::Buffer>(clock_ptr, this->tfBufferLength);
+    tf2::Duration tf2_duration = tf2_ros::fromRclcpp(this->tfBufferLength);
+    this->tfBuffer = std::make_shared<tf2_ros::Buffer>(clock_ptr, tf2_duration);
     this->tfListener = std::make_unique<tf2_ros::TransformListener>(*this->tfBuffer);
   } else {
     // clear the TF buffer (useful if calling configure() after receiving old TF data)
