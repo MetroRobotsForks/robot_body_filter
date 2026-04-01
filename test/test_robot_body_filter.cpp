@@ -256,30 +256,30 @@ TEST(RobotBodyFilter, LoadParams)
   EXPECT_FALSE(filter->publishDebugShadowMarker);
   EXPECT_FALSE(filter->requireAllFramesReachable);
 
-  EXPECT_EQ("/robot_bounding_sphere", filter->boundingSpherePublisher.getTopic());
-  EXPECT_EQ("", filter->boundingBoxPublisher.getTopic());
-  EXPECT_EQ("", filter->orientedBoundingBoxPublisher.getTopic());
-  EXPECT_EQ("/robot_local_bounding_box", filter->localBoundingBoxPublisher.getTopic());
-  EXPECT_EQ("", filter->boundingSphereMarkerPublisher.getTopic());
-  EXPECT_EQ("", filter->boundingBoxMarkerPublisher.getTopic());
-  EXPECT_EQ("", filter->orientedBoundingBoxMarkerPublisher.getTopic());
-  EXPECT_EQ("", filter->localBoundingBoxMarkerPublisher.getTopic());
-  EXPECT_EQ("", filter->boundingSphereDebugMarkerPublisher.getTopic());
-  EXPECT_EQ("", filter->boundingBoxDebugMarkerPublisher.getTopic());
-  EXPECT_EQ("", filter->orientedBoundingBoxDebugMarkerPublisher.getTopic());
-  EXPECT_EQ("", filter->localBoundingBoxDebugMarkerPublisher.getTopic());
-  EXPECT_EQ("", filter->scanPointCloudNoBoundingSpherePublisher.getTopic());
-  EXPECT_EQ("", filter->scanPointCloudNoBoundingBoxPublisher.getTopic());
-  EXPECT_EQ("", filter->scanPointCloudNoOrientedBoundingBoxPublisher.getTopic());
-  EXPECT_EQ("", filter->scanPointCloudNoLocalBoundingBoxPublisher.getTopic());
-  EXPECT_EQ("", filter->debugPointCloudInsidePublisher.getTopic());
-  EXPECT_EQ("", filter->debugPointCloudClipPublisher.getTopic());
-  EXPECT_EQ("", filter->debugPointCloudShadowPublisher.getTopic());
-  EXPECT_EQ("", filter->debugContainsMarkerPublisher.getTopic());
-  EXPECT_EQ("", filter->debugShadowMarkerPublisher.getTopic());
+  EXPECT_EQ("/robot_bounding_sphere", filter->boundingSpherePublisher->get_topic_name());
+  EXPECT_EQ("", filter->boundingBoxPublisher->get_topic_name());
+  EXPECT_EQ("", filter->orientedBoundingBoxPublisher->get_topic_name());
+  EXPECT_EQ("/robot_local_bounding_box", filter->localBoundingBoxPublisher->get_topic_name());
+  EXPECT_EQ("", filter->boundingSphereMarkerPublisher->get_topic_name());
+  EXPECT_EQ("", filter->boundingBoxMarkerPublisher->get_topic_name());
+  EXPECT_EQ("", filter->orientedBoundingBoxMarkerPublisher->get_topic_name());
+  EXPECT_EQ("", filter->localBoundingBoxMarkerPublisher->get_topic_name());
+  EXPECT_EQ("", filter->boundingSphereDebugMarkerPublisher->get_topic_name());
+  EXPECT_EQ("", filter->boundingBoxDebugMarkerPublisher->get_topic_name());
+  EXPECT_EQ("", filter->orientedBoundingBoxDebugMarkerPublisher->get_topic_name());
+  EXPECT_EQ("", filter->localBoundingBoxDebugMarkerPublisher->get_topic_name());
+  EXPECT_EQ("", filter->scanPointCloudNoBoundingSpherePublisher->get_topic_name());
+  EXPECT_EQ("", filter->scanPointCloudNoBoundingBoxPublisher->get_topic_name());
+  EXPECT_EQ("", filter->scanPointCloudNoOrientedBoundingBoxPublisher->get_topic_name());
+  EXPECT_EQ("", filter->scanPointCloudNoLocalBoundingBoxPublisher->get_topic_name());
+  EXPECT_EQ("", filter->debugPointCloudInsidePublisher->get_topic_name());
+  EXPECT_EQ("", filter->debugPointCloudClipPublisher->get_topic_name());
+  EXPECT_EQ("", filter->debugPointCloudShadowPublisher->get_topic_name());
+  EXPECT_EQ("", filter->debugContainsMarkerPublisher->get_topic_name());
+  EXPECT_EQ("", filter->debugShadowMarkerPublisher->get_topic_name());
 
   EXPECT_EQ(ros::this_node::getName() + "/reload_model",
-      filter->reloadRobotModelServiceServer.getService());
+      filter->reloadRobotModelServiceServer->get_service_name());
 }
 
 TEST(RobotBodyFilter, LoadParamsAllConfig)
@@ -342,30 +342,30 @@ TEST(RobotBodyFilter, LoadParamsAllConfig)
   EXPECT_TRUE(filter->publishDebugShadowMarker);
   EXPECT_TRUE(filter->requireAllFramesReachable);
 
-  EXPECT_EQ("/robot_bounding_sphere", filter->boundingSpherePublisher.getTopic());
-  EXPECT_EQ("/robot_bounding_box", filter->boundingBoxPublisher.getTopic());
-  EXPECT_EQ("/robot_oriented_bounding_box", filter->orientedBoundingBoxPublisher.getTopic());
-  EXPECT_EQ("/robot_local_bounding_box", filter->localBoundingBoxPublisher.getTopic());
-  EXPECT_EQ("/robot_bounding_sphere_marker", filter->boundingSphereMarkerPublisher.getTopic());
-  EXPECT_EQ("/robot_bounding_box_marker", filter->boundingBoxMarkerPublisher.getTopic());
-  EXPECT_EQ("/robot_oriented_bounding_box_marker", filter->orientedBoundingBoxMarkerPublisher.getTopic());
-  EXPECT_EQ("/robot_local_bounding_box_marker", filter->localBoundingBoxMarkerPublisher.getTopic());
-  EXPECT_EQ("/robot_bounding_sphere_debug", filter->boundingSphereDebugMarkerPublisher.getTopic());
-  EXPECT_EQ("/robot_bounding_box_debug", filter->boundingBoxDebugMarkerPublisher.getTopic());
-  EXPECT_EQ("/robot_oriented_bounding_box_debug", filter->orientedBoundingBoxDebugMarkerPublisher.getTopic());
-  EXPECT_EQ("/robot_local_bounding_box_debug", filter->localBoundingBoxDebugMarkerPublisher.getTopic());
-  EXPECT_EQ("/scan_point_cloud_no_bsphere", filter->scanPointCloudNoBoundingSpherePublisher.getTopic());
-  EXPECT_EQ("/scan_point_cloud_no_bbox", filter->scanPointCloudNoBoundingBoxPublisher.getTopic());
-  EXPECT_EQ("/scan_point_cloud_no_oriented_bbox", filter->scanPointCloudNoOrientedBoundingBoxPublisher.getTopic());
-  EXPECT_EQ("/scan_point_cloud_no_local_bbox", filter->scanPointCloudNoLocalBoundingBoxPublisher.getTopic());
-  EXPECT_EQ("/scan_point_cloud_inside", filter->debugPointCloudInsidePublisher.getTopic());
-  EXPECT_EQ("/scan_point_cloud_clip", filter->debugPointCloudClipPublisher.getTopic());
-  EXPECT_EQ("/scan_point_cloud_shadow", filter->debugPointCloudShadowPublisher.getTopic());
-  EXPECT_EQ("/robot_model_for_contains_test", filter->debugContainsMarkerPublisher.getTopic());
-  EXPECT_EQ("/robot_model_for_shadow_test", filter->debugShadowMarkerPublisher.getTopic());
+  EXPECT_EQ("/robot_bounding_sphere", filter->boundingSpherePublisher->get_topic_name());
+  EXPECT_EQ("/robot_bounding_box", filter->boundingBoxPublisher->get_topic_name());
+  EXPECT_EQ("/robot_oriented_bounding_box", filter->orientedBoundingBoxPublisher->get_topic_name());
+  EXPECT_EQ("/robot_local_bounding_box", filter->localBoundingBoxPublisher->get_topic_name());
+  EXPECT_EQ("/robot_bounding_sphere_marker", filter->boundingSphereMarkerPublisher->get_topic_name());
+  EXPECT_EQ("/robot_bounding_box_marker", filter->boundingBoxMarkerPublisher->get_topic_name());
+  EXPECT_EQ("/robot_oriented_bounding_box_marker", filter->orientedBoundingBoxMarkerPublisher->get_topic_name());
+  EXPECT_EQ("/robot_local_bounding_box_marker", filter->localBoundingBoxMarkerPublisher->get_topic_name());
+  EXPECT_EQ("/robot_bounding_sphere_debug", filter->boundingSphereDebugMarkerPublisher->get_topic_name());
+  EXPECT_EQ("/robot_bounding_box_debug", filter->boundingBoxDebugMarkerPublisher->get_topic_name());
+  EXPECT_EQ("/robot_oriented_bounding_box_debug", filter->orientedBoundingBoxDebugMarkerPublisher->get_topic_name());
+  EXPECT_EQ("/robot_local_bounding_box_debug", filter->localBoundingBoxDebugMarkerPublisher->get_topic_name());
+  EXPECT_EQ("/scan_point_cloud_no_bsphere", filter->scanPointCloudNoBoundingSpherePublisher->get_topic_name());
+  EXPECT_EQ("/scan_point_cloud_no_bbox", filter->scanPointCloudNoBoundingBoxPublisher->get_topic_name());
+  EXPECT_EQ("/scan_point_cloud_no_oriented_bbox", filter->scanPointCloudNoOrientedBoundingBoxPublisher->get_topic_name());
+  EXPECT_EQ("/scan_point_cloud_no_local_bbox", filter->scanPointCloudNoLocalBoundingBoxPublisher->get_topic_name());
+  EXPECT_EQ("/scan_point_cloud_inside", filter->debugPointCloudInsidePublisher->get_topic_name());
+  EXPECT_EQ("/scan_point_cloud_clip", filter->debugPointCloudClipPublisher->get_topic_name());
+  EXPECT_EQ("/scan_point_cloud_shadow", filter->debugPointCloudShadowPublisher->get_topic_name());
+  EXPECT_EQ("/robot_model_for_contains_test", filter->debugContainsMarkerPublisher->get_topic_name());
+  EXPECT_EQ("/robot_model_for_shadow_test", filter->debugShadowMarkerPublisher->get_topic_name());
 
-  EXPECT_EQ(ros::this_node::getName() + "/reload_model",
-      filter->reloadRobotModelServiceServer.getService());
+  EXPECT_EQ(nh->getName() + "/reload_model",
+      filter->reloadRobotModelServiceServer->get_service_name());
 }
 
 TEST(RobotBodyFilter, ParseRobot)
@@ -779,27 +779,27 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   visualization_msgs::msg::MarkerArray::ConstSharedPtr robotModelContainsTest;
   visualization_msgs::msg::MarkerArray::ConstSharedPtr robotModelShadowTest;
 
-  ros::Subscriber boundingSphereSubscriber = nh.subscribe<msg::SphereStamped>("/robot_bounding_sphere", 10, [&](const msg::SphereStamped::ConstSharedPtr& msg){boundingSphere=msg;});
-  ros::Subscriber boundingBoxSubscriber = nh.subscribe<geometry_msgs::msg::PolygonStamped>("/robot_bounding_box", 10, [&](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr& msg){boundingBox=msg;});
-  ros::Subscriber orientedBoundingBoxSubscriber = nh.subscribe<msg::OrientedBoundingBoxStamped>("/robot_oriented_bounding_box", 10, [&](const msg::OrientedBoundingBoxStamped::ConstSharedPtr& msg){orientedBoundingBox=msg;});
-  ros::Subscriber localBoundingBoxSubscriber = nh.subscribe<geometry_msgs::msg::PolygonStamped>("/robot_local_bounding_box", 10, [&](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr& msg){localBoundingBox=msg;});
-  ros::Subscriber boundingSphereMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_bounding_sphere_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){boundingSphereMarker=msg;});
-  ros::Subscriber boundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){boundingBoxMarker=msg;});
-  ros::Subscriber orientedBoundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_oriented_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){orientedBoundingBoxMarker=msg;});
-  ros::Subscriber localBoundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_local_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){localBoundingBoxMarker=msg;});
-  ros::Subscriber boundingSphereDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_bounding_sphere_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){boundingSphereDebugMarker=msg;});
-  ros::Subscriber boundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){boundingBoxDebugMarker=msg;});
-  ros::Subscriber orientedBoundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_oriented_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){orientedBoundingBoxDebugMarker=msg;});
-  ros::Subscriber localBoundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_local_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){localBoundingBoxDebugMarker=msg;});
-  ros::Subscriber scanPointCloudNoBoundingSphereSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_bsphere", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoBoundingSphere=msg;});
-  ros::Subscriber scanPointCloudNoBoundingBoxSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoBoundingBox=msg;});
-  ros::Subscriber scanPointCloudNoOrientedBoundingBoxSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_oriented_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoOrientedBoundingBox=msg;});
-  ros::Subscriber scanPointCloudNoLocalBoundingBoxSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_local_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoLocalBoundingBox=msg;});
-  ros::Subscriber debugPointCloudInsideSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_inside", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclInside=msg;});
-  ros::Subscriber debugPointCloudClipSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_clip", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclClip=msg;});
-  ros::Subscriber debugPointCloudShadowSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_shadow", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclShadow=msg;});
-  ros::Subscriber debugContainsMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_model_for_contains_test", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){robotModelContainsTest=msg;});
-  ros::Subscriber debugShadowMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_model_for_shadow_test", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){robotModelShadowTest=msg;});
+  auto boundingSphereSubscriber = nh->create_subscription<msg::SphereStamped>("/robot_bounding_sphere", 10, [&](const msg::SphereStamped::ConstSharedPtr& msg){boundingSphere=msg;});
+  auto boundingBoxSubscriber = nh->create_subscription<geometry_msgs::msg::PolygonStamped>("/robot_bounding_box", 10, [&](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr& msg){boundingBox=msg;});
+  auto orientedBoundingBoxSubscriber = nh->create_subscription<msg::OrientedBoundingBoxStamped>("/robot_oriented_bounding_box", 10, [&](const msg::OrientedBoundingBoxStamped::ConstSharedPtr& msg){orientedBoundingBox=msg;});
+  auto localBoundingBoxSubscriber = nh->create_subscription<geometry_msgs::msg::PolygonStamped>("/robot_local_bounding_box", 10, [&](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr& msg){localBoundingBox=msg;});
+  auto boundingSphereMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::Marker>("/robot_bounding_sphere_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){boundingSphereMarker=msg;});
+  auto boundingBoxMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::Marker>("/robot_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){boundingBoxMarker=msg;});
+  auto orientedBoundingBoxMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::Marker>("/robot_oriented_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){orientedBoundingBoxMarker=msg;});
+  auto localBoundingBoxMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::Marker>("/robot_local_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){localBoundingBoxMarker=msg;});
+  auto boundingSphereDebugMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::MarkerArray>("/robot_bounding_sphere_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){boundingSphereDebugMarker=msg;});
+  auto boundingBoxDebugMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::MarkerArray>("/robot_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){boundingBoxDebugMarker=msg;});
+  auto orientedBoundingBoxDebugMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::MarkerArray>("/robot_oriented_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){orientedBoundingBoxDebugMarker=msg;});
+  auto localBoundingBoxDebugMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::MarkerArray>("/robot_local_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){localBoundingBoxDebugMarker=msg;});
+  auto scanPointCloudNoBoundingSphereSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_bsphere", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoBoundingSphere=msg;});
+  auto scanPointCloudNoBoundingBoxSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoBoundingBox=msg;});
+  auto scanPointCloudNoOrientedBoundingBoxSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_oriented_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoOrientedBoundingBox=msg;});
+  auto scanPointCloudNoLocalBoundingBoxSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_local_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoLocalBoundingBox=msg;});
+  auto debugPointCloudInsideSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_inside", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclInside=msg;});
+  auto debugPointCloudClipSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_clip", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclClip=msg;});
+  auto debugPointCloudShadowSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_shadow", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclShadow=msg;});
+  auto debugContainsMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::MarkerArray>("/robot_model_for_contains_test", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){robotModelContainsTest=msg;});
+  auto debugShadowMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::MarkerArray>("/robot_model_for_shadow_test", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){robotModelShadowTest=msg;});
 
   filter->computeMask(cloud, mask);
 
@@ -816,27 +816,27 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   EXPECT_EQ(RayCastingShapeMask::MaskValue::SHADOW, mask[9]);
   EXPECT_EQ(RayCastingShapeMask::MaskValue::OUTSIDE, mask[10]);
 
-  WAIT_FOR_MESSAGE(boundingSphere)
-  WAIT_FOR_MESSAGE(boundingBox)
-  WAIT_FOR_MESSAGE(orientedBoundingBox)
-  WAIT_FOR_MESSAGE(localBoundingBox)
-  WAIT_FOR_MESSAGE(boundingSphereMarker)
-  WAIT_FOR_MESSAGE(boundingBoxMarker)
-  WAIT_FOR_MESSAGE(orientedBoundingBoxMarker)
-  WAIT_FOR_MESSAGE(localBoundingBoxMarker)
-  WAIT_FOR_MESSAGE(boundingSphereDebugMarker)
-  WAIT_FOR_MESSAGE(boundingBoxDebugMarker)
-  WAIT_FOR_MESSAGE(orientedBoundingBoxDebugMarker)
-  WAIT_FOR_MESSAGE(localBoundingBoxDebugMarker)
-  WAIT_FOR_MESSAGE(pclNoBoundingSphere)
-  WAIT_FOR_MESSAGE(pclNoBoundingBox)
-  WAIT_FOR_MESSAGE(pclNoOrientedBoundingBox)
-  WAIT_FOR_MESSAGE(pclNoLocalBoundingBox)
-  WAIT_FOR_MESSAGE(pclInside)
-  WAIT_FOR_MESSAGE(pclClip)
-  WAIT_FOR_MESSAGE(pclShadow)
-  WAIT_FOR_MESSAGE(robotModelContainsTest)
-  WAIT_FOR_MESSAGE(robotModelShadowTest)
+  WAIT_FOR_MESSAGE(nh, boundingSphere)
+  WAIT_FOR_MESSAGE(nh, boundingBox)
+  WAIT_FOR_MESSAGE(nh, orientedBoundingBox)
+  WAIT_FOR_MESSAGE(nh, localBoundingBox)
+  WAIT_FOR_MESSAGE(nh, boundingSphereMarker)
+  WAIT_FOR_MESSAGE(nh, boundingBoxMarker)
+  WAIT_FOR_MESSAGE(nh, orientedBoundingBoxMarker)
+  WAIT_FOR_MESSAGE(nh, localBoundingBoxMarker)
+  WAIT_FOR_MESSAGE(nh, boundingSphereDebugMarker)
+  WAIT_FOR_MESSAGE(nh, boundingBoxDebugMarker)
+  WAIT_FOR_MESSAGE(nh, orientedBoundingBoxDebugMarker)
+  WAIT_FOR_MESSAGE(nh, localBoundingBoxDebugMarker)
+  WAIT_FOR_MESSAGE(nh, pclNoBoundingSphere)
+  WAIT_FOR_MESSAGE(nh, pclNoBoundingBox)
+  WAIT_FOR_MESSAGE(nh, pclNoOrientedBoundingBox)
+  WAIT_FOR_MESSAGE(nh, pclNoLocalBoundingBox)
+  WAIT_FOR_MESSAGE(nh, pclInside)
+  WAIT_FOR_MESSAGE(nh, pclClip)
+  WAIT_FOR_MESSAGE(nh, pclShadow)
+  WAIT_FOR_MESSAGE(nh, robotModelContainsTest)
+  WAIT_FOR_MESSAGE(nh, robotModelShadowTest)
 
   EXPECT_EQ("odom", boundingSphere->header.frame_id);
   EXPECT_EQ(cloud.header.stamp, boundingSphere->header.stamp);
@@ -1562,27 +1562,27 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   visualization_msgs::msg::MarkerArray::ConstSharedPtr robotModelContainsTest;
   visualization_msgs::msg::MarkerArray::ConstSharedPtr robotModelShadowTest;
 
-  ros::Subscriber boundingSphereSubscriber = nh.subscribe<msg::SphereStamped>("/robot_bounding_sphere", 10, [&](const msg::SphereStamped::ConstSharedPtr& msg){boundingSphere=msg;});
-  ros::Subscriber boundingBoxSubscriber = nh.subscribe<geometry_msgs::msg::PolygonStamped>("/robot_bounding_box", 10, [&](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr& msg){boundingBox=msg;});
-  ros::Subscriber orientedBoundingBoxSubscriber = nh.subscribe<msg::OrientedBoundingBoxStamped>("/robot_oriented_bounding_box", 10, [&](const msg::OrientedBoundingBoxStamped::ConstSharedPtr& msg){orientedBoundingBox=msg;});
-  ros::Subscriber localBoundingBoxSubscriber = nh.subscribe<geometry_msgs::msg::PolygonStamped>("/robot_local_bounding_box", 10, [&](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr& msg){localBoundingBox=msg;});
-  ros::Subscriber boundingSphereMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_bounding_sphere_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){boundingSphereMarker=msg;});
-  ros::Subscriber boundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){boundingBoxMarker=msg;});
-  ros::Subscriber orientedBoundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_oriented_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){orientedBoundingBoxMarker=msg;});
-  ros::Subscriber localBoundingBoxMarkerSubscriber = nh.subscribe<visualization_msgs::msg::Marker>("/robot_local_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){localBoundingBoxMarker=msg;});
-  ros::Subscriber boundingSphereDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_bounding_sphere_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){boundingSphereDebugMarker=msg;});
-  ros::Subscriber boundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){boundingBoxDebugMarker=msg;});
-  ros::Subscriber orientedBoundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_oriented_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){orientedBoundingBoxDebugMarker=msg;});
-  ros::Subscriber localBoundingBoxDebugMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_local_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){localBoundingBoxDebugMarker=msg;});
-  ros::Subscriber scanPointCloudNoBoundingSphereSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_bsphere", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoBoundingSphere=msg;});
-  ros::Subscriber scanPointCloudNoBoundingBoxSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoBoundingBox=msg;});
-  ros::Subscriber scanPointCloudNoOrientedBoundingBoxSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_oriented_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoOrientedBoundingBox=msg;});
-  ros::Subscriber scanPointCloudNoLocalBoundingBoxSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_local_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoLocalBoundingBox=msg;});
-  ros::Subscriber debugPointCloudInsideSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_inside", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclInside=msg;});
-  ros::Subscriber debugPointCloudClipSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_clip", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclClip=msg;});
-  ros::Subscriber debugPointCloudShadowSubscriber = nh.subscribe<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_shadow", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclShadow=msg;});
-  ros::Subscriber debugContainsMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_model_for_contains_test", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){robotModelContainsTest=msg;});
-  ros::Subscriber debugShadowMarkerSubscriber = nh.subscribe<visualization_msgs::msg::MarkerArray>("/robot_model_for_shadow_test", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){robotModelShadowTest=msg;});
+  auto boundingSphereSubscriber = nh->create_subscription<msg::SphereStamped>("/robot_bounding_sphere", 10, [&](const msg::SphereStamped::ConstSharedPtr& msg){boundingSphere=msg;});
+  auto boundingBoxSubscriber = nh->create_subscription<geometry_msgs::msg::PolygonStamped>("/robot_bounding_box", 10, [&](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr& msg){boundingBox=msg;});
+  auto orientedBoundingBoxSubscriber = nh->create_subscription<msg::OrientedBoundingBoxStamped>("/robot_oriented_bounding_box", 10, [&](const msg::OrientedBoundingBoxStamped::ConstSharedPtr& msg){orientedBoundingBox=msg;});
+  auto localBoundingBoxSubscriber = nh->create_subscription<geometry_msgs::msg::PolygonStamped>("/robot_local_bounding_box", 10, [&](const geometry_msgs::msg::PolygonStamped::ConstSharedPtr& msg){localBoundingBox=msg;});
+  auto boundingSphereMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::Marker>("/robot_bounding_sphere_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){boundingSphereMarker=msg;});
+  auto boundingBoxMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::Marker>("/robot_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){boundingBoxMarker=msg;});
+  auto orientedBoundingBoxMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::Marker>("/robot_oriented_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){orientedBoundingBoxMarker=msg;});
+  auto localBoundingBoxMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::Marker>("/robot_local_bounding_box_marker", 10, [&](const visualization_msgs::msg::Marker::ConstSharedPtr& msg){localBoundingBoxMarker=msg;});
+  auto boundingSphereDebugMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::MarkerArray>("/robot_bounding_sphere_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){boundingSphereDebugMarker=msg;});
+  auto boundingBoxDebugMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::MarkerArray>("/robot_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){boundingBoxDebugMarker=msg;});
+  auto orientedBoundingBoxDebugMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::MarkerArray>("/robot_oriented_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){orientedBoundingBoxDebugMarker=msg;});
+  auto localBoundingBoxDebugMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::MarkerArray>("/robot_local_bounding_box_debug", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){localBoundingBoxDebugMarker=msg;});
+  auto scanPointCloudNoBoundingSphereSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_bsphere", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoBoundingSphere=msg;});
+  auto scanPointCloudNoBoundingBoxSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoBoundingBox=msg;});
+  auto scanPointCloudNoOrientedBoundingBoxSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_oriented_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoOrientedBoundingBox=msg;});
+  auto scanPointCloudNoLocalBoundingBoxSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_no_local_bbox", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclNoLocalBoundingBox=msg;});
+  auto debugPointCloudInsideSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_inside", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclInside=msg;});
+  auto debugPointCloudClipSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_clip", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclClip=msg;});
+  auto debugPointCloudShadowSubscriber = nh->create_subscription<sensor_msgs::msg::PointCloud2>("/scan_point_cloud_shadow", 10, [&](const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg){pclShadow=msg;});
+  auto debugContainsMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::MarkerArray>("/robot_model_for_contains_test", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){robotModelContainsTest=msg;});
+  auto debugShadowMarkerSubscriber = nh->create_subscription<visualization_msgs::msg::MarkerArray>("/robot_model_for_shadow_test", 10, [&](const visualization_msgs::msg::MarkerArray::ConstSharedPtr& msg){robotModelShadowTest=msg;});
 
   std::vector<RayCastingShapeMask::MaskValue> mask;
   filter->computeMask(cloud, mask, "laser");
@@ -1601,27 +1601,27 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_EQ(RayCastingShapeMask::MaskValue::OUTSIDE, mask[10]);
   EXPECT_EQ(RayCastingShapeMask::MaskValue::OUTSIDE, mask[11]);
 
-  WAIT_FOR_MESSAGE(boundingSphere)
-  WAIT_FOR_MESSAGE(boundingBox)
-  WAIT_FOR_MESSAGE(orientedBoundingBox)
-  WAIT_FOR_MESSAGE(localBoundingBox)
-  WAIT_FOR_MESSAGE(boundingSphereMarker)
-  WAIT_FOR_MESSAGE(boundingBoxMarker)
-  WAIT_FOR_MESSAGE(orientedBoundingBoxMarker)
-  WAIT_FOR_MESSAGE(localBoundingBoxMarker)
-  WAIT_FOR_MESSAGE(boundingSphereDebugMarker)
-  WAIT_FOR_MESSAGE(boundingBoxDebugMarker)
-  WAIT_FOR_MESSAGE(orientedBoundingBoxDebugMarker)
-  WAIT_FOR_MESSAGE(localBoundingBoxDebugMarker)
-  WAIT_FOR_MESSAGE(pclNoBoundingSphere)
-  WAIT_FOR_MESSAGE(pclNoBoundingBox)
-  WAIT_FOR_MESSAGE(pclNoOrientedBoundingBox)
-  WAIT_FOR_MESSAGE(pclNoLocalBoundingBox)
-  WAIT_FOR_MESSAGE(pclInside)
-  WAIT_FOR_MESSAGE(pclClip)
-  WAIT_FOR_MESSAGE(pclShadow)
-  WAIT_FOR_MESSAGE(robotModelContainsTest)
-  WAIT_FOR_MESSAGE(robotModelShadowTest)
+  WAIT_FOR_MESSAGE(nh, boundingSphere)
+  WAIT_FOR_MESSAGE(nh, boundingBox)
+  WAIT_FOR_MESSAGE(nh, orientedBoundingBox)
+  WAIT_FOR_MESSAGE(nh, localBoundingBox)
+  WAIT_FOR_MESSAGE(nh, boundingSphereMarker)
+  WAIT_FOR_MESSAGE(nh, boundingBoxMarker)
+  WAIT_FOR_MESSAGE(nh, orientedBoundingBoxMarker)
+  WAIT_FOR_MESSAGE(nh, localBoundingBoxMarker)
+  WAIT_FOR_MESSAGE(nh, boundingSphereDebugMarker)
+  WAIT_FOR_MESSAGE(nh, boundingBoxDebugMarker)
+  WAIT_FOR_MESSAGE(nh, orientedBoundingBoxDebugMarker)
+  WAIT_FOR_MESSAGE(nh, localBoundingBoxDebugMarker)
+  WAIT_FOR_MESSAGE(nh, pclNoBoundingSphere)
+  WAIT_FOR_MESSAGE(nh, pclNoBoundingBox)
+  WAIT_FOR_MESSAGE(nh, pclNoOrientedBoundingBox)
+  WAIT_FOR_MESSAGE(nh, pclNoLocalBoundingBox)
+  WAIT_FOR_MESSAGE(nh, pclInside)
+  WAIT_FOR_MESSAGE(nh, pclClip)
+  WAIT_FOR_MESSAGE(nh, pclShadow)
+  WAIT_FOR_MESSAGE(nh, robotModelContainsTest)
+  WAIT_FOR_MESSAGE(nh, robotModelShadowTest)
 
   EXPECT_EQ("laser", boundingSphere->header.frame_id);
   EXPECT_EQ(cloud.header.stamp, boundingSphere->header.stamp);

@@ -207,113 +207,113 @@ bool RobotBodyFilter<T>::configure() {
   this->robotDescriptionUpdatesListener = this->nodeHandle.subscribe(
     "dynamic_robot_model_server/parameter_updates", 10, &RobotBodyFilter::robotDescriptionUpdated, this);
 
-  this->reloadRobotModelServiceServer = this->privateNodeHandle.advertiseService(
+  this->reloadRobotModelServiceServer = this->nodeHandle->create_service<std_srvs::srv::Trigger>(
       "reload_model", &RobotBodyFilter::triggerModelReload, this);
 
   if (this->computeBoundingSphere) {
-    this->boundingSpherePublisher = this->nodeHandle.template advertise<robot_body_filter::msg::SphereStamped>("robot_bounding_sphere", 100);
+    this->boundingSpherePublisher = nodeHandle->create_publisher<robot_body_filter::msg::SphereStamped>("robot_bounding_sphere", 100);
   }
 
   if (this->computeBoundingBox) {
-    this->boundingBoxPublisher = this->nodeHandle.template advertise<geometry_msgs::msg::PolygonStamped>("robot_bounding_box", 100);
+    this->boundingBoxPublisher = nodeHandle->create_publisher<geometry_msgs::msg::PolygonStamped>("robot_bounding_box", 100);
   }
 
   if (this->computeOrientedBoundingBox) {
-    this->orientedBoundingBoxPublisher = this->nodeHandle.template advertise<robot_body_filter::msg::OrientedBoundingBoxStamped>("robot_oriented_bounding_box", 100);
+    this->orientedBoundingBoxPublisher = nodeHandle->create_publisher<robot_body_filter::msg::OrientedBoundingBoxStamped>("robot_oriented_bounding_box", 100);
   }
 
   if (this->computeLocalBoundingBox) {
-    this->localBoundingBoxPublisher = this->nodeHandle.template advertise<geometry_msgs::msg::PolygonStamped>("robot_local_bounding_box", 100);
+    this->localBoundingBoxPublisher = nodeHandle->create_publisher<geometry_msgs::msg::PolygonStamped>("robot_local_bounding_box", 100);
   }
 
   if (this->publishBoundingSphereMarker && this->computeBoundingSphere) {
-    this->boundingSphereMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::Marker>("robot_bounding_sphere_marker", 100);
+    this->boundingSphereMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::Marker>("robot_bounding_sphere_marker", 100);
   }
 
   if (this->publishBoundingBoxMarker && this->computeBoundingBox) {
-    this->boundingBoxMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::Marker>("robot_bounding_box_marker", 100);
+    this->boundingBoxMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::Marker>("robot_bounding_box_marker", 100);
   }
 
   if (this->publishOrientedBoundingBoxMarker && this->computeOrientedBoundingBox) {
-    this->orientedBoundingBoxMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::Marker>("robot_oriented_bounding_box_marker", 100);
+    this->orientedBoundingBoxMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::Marker>("robot_oriented_bounding_box_marker", 100);
   }
 
   if (this->publishLocalBoundingBoxMarker && this->computeLocalBoundingBox) {
-    this->localBoundingBoxMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::Marker>("robot_local_bounding_box_marker", 100);
+    this->localBoundingBoxMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::Marker>("robot_local_bounding_box_marker", 100);
   }
 
   if (this->publishNoBoundingBoxPointcloud)
   {
-    this->scanPointCloudNoBoundingBoxPublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_no_bbox", 100);
+    this->scanPointCloudNoBoundingBoxPublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>("scan_point_cloud_no_bbox", 100);
   }
 
   if (this->publishNoOrientedBoundingBoxPointcloud)
   {
-    this->scanPointCloudNoOrientedBoundingBoxPublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_no_oriented_bbox", 100);
+    this->scanPointCloudNoOrientedBoundingBoxPublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>("scan_point_cloud_no_oriented_bbox", 100);
   }
 
   if (this->publishNoLocalBoundingBoxPointcloud)
   {
-    this->scanPointCloudNoLocalBoundingBoxPublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_no_local_bbox", 100);
+    this->scanPointCloudNoLocalBoundingBoxPublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>("scan_point_cloud_no_local_bbox", 100);
   }
 
   if (this->publishNoBoundingSpherePointcloud)
   {
-    this->scanPointCloudNoBoundingSpherePublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_no_bsphere", 100);
+    this->scanPointCloudNoBoundingSpherePublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>("scan_point_cloud_no_bsphere", 100);
   }
 
   if (this->publishDebugPclInside)
   {
-    this->debugPointCloudInsidePublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_inside", 100);
+    this->debugPointCloudInsidePublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>("scan_point_cloud_inside", 100);
   }
 
   if (this->publishDebugPclClip)
   {
-    this->debugPointCloudClipPublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_clip", 100);
+    this->debugPointCloudClipPublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>("scan_point_cloud_clip", 100);
   }
 
   if (this->publishDebugPclShadow)
   {
-    this->debugPointCloudShadowPublisher = this->nodeHandle.template advertise<sensor_msgs::msg::PointCloud2>("scan_point_cloud_shadow", 100);
+    this->debugPointCloudShadowPublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>("scan_point_cloud_shadow", 100);
   }
 
   if (this->publishDebugContainsMarker)
   {
-    this->debugContainsMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>("robot_model_for_contains_test", 100);
+    this->debugContainsMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>("robot_model_for_contains_test", 100);
   }
 
   if (this->publishDebugShadowMarker)
   {
-    this->debugShadowMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>("robot_model_for_shadow_test", 100);
+    this->debugShadowMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>("robot_model_for_shadow_test", 100);
   }
 
   if (this->publishDebugBsphereMarker)
   {
-    this->debugBsphereMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>("robot_model_for_bounding_sphere", 100);
+    this->debugBsphereMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>("robot_model_for_bounding_sphere", 100);
   }
 
   if (this->publishDebugBboxMarker)
   {
-    this->debugBboxMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>("robot_model_for_bounding_box", 100);
+    this->debugBboxMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>("robot_model_for_bounding_box", 100);
   }
 
   if (this->computeDebugBoundingBox) {
-    this->boundingBoxDebugMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>(
+    this->boundingBoxDebugMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>(
       "robot_bounding_box_debug", 100);
   }
 
   if (this->computeDebugOrientedBoundingBox) {
-    this->orientedBoundingBoxDebugMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>(
+    this->orientedBoundingBoxDebugMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>(
       "robot_oriented_bounding_box_debug", 100);
   }
 
   if (this->computeDebugLocalBoundingBox) {
-    this->localBoundingBoxDebugMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>(
+    this->localBoundingBoxDebugMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>(
       "robot_local_bounding_box_debug", 100);
   }
 
   if (this->computeDebugBoundingSphere) {
-    this->boundingSphereDebugMarkerPublisher = this->nodeHandle.template advertise<visualization_msgs::msg::MarkerArray>(
+    this->boundingSphereDebugMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>(
       "robot_bounding_sphere_debug", 100);
   }
 
@@ -347,7 +347,7 @@ bool RobotBodyFilter<T>::configure() {
         throw std::runtime_error(
             "RobotBodyFilter: " + this->robotDescriptionParam + " is empty or not set.");
       }
-      if (!ros::ok())
+      if (!rclcpp::ok())
         return false;
 
       RCLCPP_ERROR(get_logger(), "RobotBodyFilter: %s is empty or not set. Please, provide the robot model. Waiting 1s.",
@@ -1140,7 +1140,7 @@ void RobotBodyFilter<T>::publishDebugMarkers(const rclcpp::Time& scanTime) const
     color.a = 0.5;
     createBodyVisualizationMsg(this->shapeMask->getBodiesForContainsTest(), scanTime,
                                color, markerArray);
-    this->debugContainsMarkerPublisher.publish(markerArray);
+    this->debugContainsMarkerPublisher->publish(markerArray);
   }
 
   if (this->publishDebugShadowMarker) {
@@ -1150,7 +1150,7 @@ void RobotBodyFilter<T>::publishDebugMarkers(const rclcpp::Time& scanTime) const
     color.a = 0.5;
     createBodyVisualizationMsg(this->shapeMask->getBodiesForShadowTest(), scanTime,
                                color, markerArray);
-    this->debugShadowMarkerPublisher.publish(markerArray);
+    this->debugShadowMarkerPublisher->publish(markerArray);
   }
 
   if (this->publishDebugBsphereMarker) {
@@ -1161,7 +1161,7 @@ void RobotBodyFilter<T>::publishDebugMarkers(const rclcpp::Time& scanTime) const
     color.a = 0.5;
     createBodyVisualizationMsg(this->shapeMask->getBodiesForBoundingSphere(), scanTime,
                                color, markerArray);
-    this->debugBsphereMarkerPublisher.publish(markerArray);
+    this->debugBsphereMarkerPublisher->publish(markerArray);
   }
 
   if (this->publishDebugBboxMarker) {
@@ -1172,7 +1172,7 @@ void RobotBodyFilter<T>::publishDebugMarkers(const rclcpp::Time& scanTime) const
     color.a = 0.5;
     createBodyVisualizationMsg(this->shapeMask->getBodiesForBoundingBox(), scanTime,
                                color, markerArray);
-    this->debugBboxMarkerPublisher.publish(markerArray);
+    this->debugBboxMarkerPublisher->publish(markerArray);
   }
 }
 
@@ -1186,7 +1186,7 @@ void RobotBodyFilter<T>::publishDebugPointClouds(
     sensor_msgs::msg::PointCloud2 insideCloud;
     CREATE_FILTERED_CLOUD(projectedPointCloud, insideCloud, this->keepCloudsOrganized,
       (pointMask[i] == RayCastingShapeMask::MaskValue::INSIDE));
-    this->debugPointCloudInsidePublisher.publish(insideCloud);
+    this->debugPointCloudInsidePublisher->publish(insideCloud);
   }
 
   if (this->publishDebugPclClip)
@@ -1194,7 +1194,7 @@ void RobotBodyFilter<T>::publishDebugPointClouds(
     sensor_msgs::msg::PointCloud2 clipCloud;
     CREATE_FILTERED_CLOUD(projectedPointCloud, clipCloud, this->keepCloudsOrganized,
       (pointMask[i] == RayCastingShapeMask::MaskValue::CLIP));
-    this->debugPointCloudClipPublisher.publish(clipCloud);
+    this->debugPointCloudClipPublisher->publish(clipCloud);
   }
 
   if (this->publishDebugPclShadow)
@@ -1202,7 +1202,7 @@ void RobotBodyFilter<T>::publishDebugPointClouds(
     sensor_msgs::msg::PointCloud2 shadowCloud;
     CREATE_FILTERED_CLOUD(projectedPointCloud, shadowCloud, this->keepCloudsOrganized,
       (pointMask[i] == RayCastingShapeMask::MaskValue::SHADOW));
-    this->debugPointCloudShadowPublisher.publish(shadowCloud);
+    this->debugPointCloudShadowPublisher->publish(shadowCloud);
   }
 }
 
@@ -1265,7 +1265,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
     }
 
     if (this->computeDebugBoundingSphere) {
-      this->boundingSphereDebugMarkerPublisher.publish(boundingSphereDebugMsg);
+      this->boundingSphereDebugMarkerPublisher->publish(boundingSphereDebugMsg);
     }
   }
 
@@ -1281,7 +1281,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
         static_cast<float>(boundingSphere.radius);
     boundingSphereMsg.sphere.center = tf2::toMsg(boundingSphere.center);
 
-    this->boundingSpherePublisher.publish(boundingSphereMsg);
+    this->boundingSpherePublisher->publish(boundingSphereMsg);
 
     if (this->publishBoundingSphereMarker)
     {
@@ -1303,7 +1303,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
       msg.ns = "bounding_sphere";
       msg.frame_locked = static_cast<unsigned char>(true);
 
-      this->boundingSphereMarkerPublisher.publish(msg);
+      this->boundingSphereMarkerPublisher->publish(msg);
     }
 
     if (this->publishNoBoundingSpherePointcloud)
@@ -1311,7 +1311,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
       sensor_msgs::msg::PointCloud2 noSphereCloud;
       CREATE_FILTERED_CLOUD(projectedPointCloud, noSphereCloud, this->keepCloudsOrganized,
         ((Eigen::Vector3d(*x_it, *y_it, *z_it)- boundingSphere.center).norm() > boundingSphere.radius));
-      this->scanPointCloudNoBoundingSpherePublisher.publish(noSphereCloud);
+      this->scanPointCloudNoBoundingSpherePublisher->publish(noSphereCloud);
     }
   }
 }
@@ -1373,7 +1373,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
     }
 
     if (this->computeDebugBoundingBox) {
-      this->boundingBoxDebugMarkerPublisher.publish(boundingBoxDebugMsg);
+      this->boundingBoxDebugMarkerPublisher->publish(boundingBoxDebugMsg);
     }
   }
 
@@ -1392,7 +1392,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
     tf2::toMsg(box.min(), boundingBoxMsg.polygon.points[0]);
     tf2::toMsg(box.max(), boundingBoxMsg.polygon.points[1]);
 
-    this->boundingBoxPublisher.publish(boundingBoxMsg);
+    this->boundingBoxPublisher->publish(boundingBoxMsg);
 
     if (this->publishBoundingBoxMarker)
     {
@@ -1412,7 +1412,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
       msg.ns = "bounding_box";
       msg.frame_locked = static_cast<unsigned char>(true);
 
-      this->boundingBoxMarkerPublisher.publish(msg);
+      this->boundingBoxMarkerPublisher->publish(msg);
     }
 
     // compute and publish the scan_point_cloud with robot bounding box removed
@@ -1436,7 +1436,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
       pcl_conversions::moveFromPCL(pclOutput, *boxFilteredCloud);
       boxFilteredCloud->header.stamp = scanTime;  // PCL strips precision of timestamp
 
-      this->scanPointCloudNoBoundingBoxPublisher.publish(boxFilteredCloud);
+      this->scanPointCloudNoBoundingBoxPublisher->publish(*boxFilteredCloud);
     }
   }
 }
@@ -1497,7 +1497,7 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
     }
 
     if (this->computeDebugOrientedBoundingBox) {
-      this->orientedBoundingBoxDebugMarkerPublisher.publish(boundingBoxDebugMsg);
+      this->orientedBoundingBoxDebugMarkerPublisher->publish(boundingBoxDebugMsg);
     }
   }
 
@@ -1515,7 +1515,7 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
     tf2::toMsg(box.getPose().translation(), boundingBoxMsg.obb.pose.translation);
     boundingBoxMsg.obb.pose.rotation = tf2::toMsg(Eigen::Quaterniond(box.getPose().linear()));
 
-    this->orientedBoundingBoxPublisher.publish(boundingBoxMsg);
+    this->orientedBoundingBoxPublisher->publish(boundingBoxMsg);
 
     if (this->publishOrientedBoundingBoxMarker)
     {
@@ -1534,7 +1534,7 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
       msg.ns = "oriented_bounding_box";
       msg.frame_locked = static_cast<unsigned char>(true);
 
-      this->orientedBoundingBoxMarkerPublisher.publish(msg);
+      this->orientedBoundingBoxMarkerPublisher->publish(msg);
     }
 
     // compute and publish the scan_point_cloud with robot bounding box removed
@@ -1561,7 +1561,7 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
       pcl_conversions::moveFromPCL(pclOutput, *boxFilteredCloud);
       boxFilteredCloud->header.stamp = scanTime;  // PCL strips precision of timestamp
 
-      this->scanPointCloudNoOrientedBoundingBoxPublisher.publish(boxFilteredCloud);
+      this->scanPointCloudNoOrientedBoundingBoxPublisher->publish(*boxFilteredCloud);
     }
   }
 }
@@ -1639,7 +1639,7 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
     }
 
     if (this->computeDebugLocalBoundingBox) {
-      this->localBoundingBoxDebugMarkerPublisher.publish(boundingBoxDebugMsg);
+      this->localBoundingBoxDebugMarkerPublisher->publish(boundingBoxDebugMsg);
     }
   }
 
@@ -1657,7 +1657,7 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
     tf2::toMsg(box.min(), boundingBoxMsg.polygon.points[0]);
     tf2::toMsg(box.max(), boundingBoxMsg.polygon.points[1]);
 
-    this->localBoundingBoxPublisher.publish(boundingBoxMsg);
+    this->localBoundingBoxPublisher->publish(boundingBoxMsg);
 
     if (this->publishLocalBoundingBoxMarker)
     {
@@ -1676,7 +1676,7 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
       msg.ns = "local_bounding_box";
       msg.frame_locked = static_cast<unsigned char>(true);
 
-      this->localBoundingBoxMarkerPublisher.publish(msg);
+      this->localBoundingBoxMarkerPublisher->publish(msg);
     }
 
     // compute and publish the scan_point_cloud with robot bounding box removed
@@ -1703,7 +1703,7 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
       pcl_conversions::moveFromPCL(pclOutput, *boxFilteredCloud);
       boxFilteredCloud->header.stamp = scanTime;  // PCL strips precision of timestamp
 
-      this->scanPointCloudNoLocalBoundingBoxPublisher.publish(boxFilteredCloud);
+      this->scanPointCloudNoLocalBoundingBoxPublisher->publish(*boxFilteredCloud);
     }
   }
 }

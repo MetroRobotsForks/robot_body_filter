@@ -57,11 +57,11 @@ void expectTransformsDoubleEq(const Eigen::Isometry3d& i1, const Eigen::Isometry
   EXPECT_DOUBLE_EQ(q1.w(), q2.w());
 }
 
-#define WAIT_FOR_MESSAGE(msg) \
+#define WAIT_FOR_MESSAGE(node_ptr, msg) \
     { size_t i = 0;\
-      while (ros::ok() && msg == nullptr && i < 100) \
+      while (rclcpp::ok() && msg == nullptr && i < 100) \
       { \
-        ros::spinOnce(); \
+        rclcpp::spin_some(node_ptr); \
         rclcpp::sleep_for(std::chrono::milliseconds(10)); \
         ++i;\
       } \

@@ -216,48 +216,48 @@ protected:
   std::set<std::string> onlyLinks;
 
   //! Publisher of robot bounding sphere (relative to fixed frame).
-  ros::Publisher boundingSpherePublisher;
+  rclcpp::Publisher<robot_body_filter::msg::SphereStamped>::SharedPtr boundingSpherePublisher;
   //! Publisher of robot bounding box (relative to fixed frame).
-  ros::Publisher boundingBoxPublisher;
+  rclcpp::Publisher<geometry_msgs::msg::PolygonStamped>::SharedPtr boundingBoxPublisher;
   //! Publisher of robot bounding box (relative to fixed frame).
-  ros::Publisher orientedBoundingBoxPublisher;
+  rclcpp::Publisher<robot_body_filter::msg::OrientedBoundingBoxStamped>::SharedPtr orientedBoundingBoxPublisher;
   //! Publisher of robot bounding box (relative to defined local frame).
-  ros::Publisher localBoundingBoxPublisher;
+  rclcpp::Publisher<geometry_msgs::msg::PolygonStamped>::SharedPtr localBoundingBoxPublisher;
   //! Publisher of the bounding sphere marker.
-  ros::Publisher boundingSphereMarkerPublisher;
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr boundingSphereMarkerPublisher;
   //! Publisher of the bounding box marker.
-  ros::Publisher boundingBoxMarkerPublisher;
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr boundingBoxMarkerPublisher;
   //! Publisher of the oriented bounding box marker.
-  ros::Publisher orientedBoundingBoxMarkerPublisher;
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr orientedBoundingBoxMarkerPublisher;
   //! Publisher of the local bounding box marker.
-  ros::Publisher localBoundingBoxMarkerPublisher;
+  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr localBoundingBoxMarkerPublisher;
   //! Publisher of the debug bounding box markers.
-  ros::Publisher boundingBoxDebugMarkerPublisher;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr boundingBoxDebugMarkerPublisher;
   //! Publisher of the debug oriented bounding box markers.
-  ros::Publisher orientedBoundingBoxDebugMarkerPublisher;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr orientedBoundingBoxDebugMarkerPublisher;
   //! Publisher of the debug local bounding box markers.
-  ros::Publisher localBoundingBoxDebugMarkerPublisher;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr localBoundingBoxDebugMarkerPublisher;
   //! Publisher of the debug bounding sphere markers.
-  ros::Publisher boundingSphereDebugMarkerPublisher;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr boundingSphereDebugMarkerPublisher;
 
   //! Publisher of scan_point_cloud with robot bounding box cut out.
-  ros::Publisher scanPointCloudNoBoundingBoxPublisher;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr scanPointCloudNoBoundingBoxPublisher;
   //! Publisher of scan_point_cloud with robot oriented bounding box cut out.
-  ros::Publisher scanPointCloudNoOrientedBoundingBoxPublisher;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr scanPointCloudNoOrientedBoundingBoxPublisher;
   //! Publisher of scan_point_cloud with robot local bounding box cut out.
-  ros::Publisher scanPointCloudNoLocalBoundingBoxPublisher;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr scanPointCloudNoLocalBoundingBoxPublisher;
   //! Publisher of scan_point_cloud with robot bounding sphere cut out.
-  ros::Publisher scanPointCloudNoBoundingSpherePublisher;
-  ros::Publisher debugPointCloudInsidePublisher;
-  ros::Publisher debugPointCloudClipPublisher;
-  ros::Publisher debugPointCloudShadowPublisher;
-  ros::Publisher debugContainsMarkerPublisher;
-  ros::Publisher debugShadowMarkerPublisher;
-  ros::Publisher debugBsphereMarkerPublisher;
-  ros::Publisher debugBboxMarkerPublisher;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr scanPointCloudNoBoundingSpherePublisher;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debugPointCloudInsidePublisher;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debugPointCloudClipPublisher;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr debugPointCloudShadowPublisher;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debugContainsMarkerPublisher;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debugShadowMarkerPublisher;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debugBsphereMarkerPublisher;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr debugBboxMarkerPublisher;
 
   //! Service server for reloading robot model.
-  ros::ServiceServer reloadRobotModelServiceServer;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr reloadRobotModelServiceServer;
 
   //! Whether to compute bounding sphere of the robot.
   bool computeBoundingSphere;
