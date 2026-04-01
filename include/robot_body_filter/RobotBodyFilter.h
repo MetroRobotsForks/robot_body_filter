@@ -133,7 +133,7 @@ protected:
    * the masking algorithm a little bit less precise but more computationally
    * affordable.
    */
-  ros::Duration modelPoseUpdateInterval;
+  rclcpp::Duration modelPoseUpdateInterval;
 
   /** \brief Fixed frame wrt the sensor frame.
    * Usually base_link for stationary robots (or sensor frame if both
@@ -300,9 +300,9 @@ protected:
   bool publishDebugBboxMarker;
 
   //! Timeout for reachable transforms.
-  ros::Duration reachableTransformTimeout;
+  rclcpp::Duration reachableTransformTimeout;
   //! Timeout for unreachable transforms.
-  ros::Duration unreachableTransformTimeout;
+  rclcpp::Duration unreachableTransformTimeout;
 
   //! Whether to process data when there are some unreachable frames.
   bool requireAllFramesReachable;
@@ -314,7 +314,7 @@ protected:
   std::shared_ptr<std::mutex> modelMutex;
 
   //! tf buffer length
-  ros::Duration tfBufferLength;
+  rclcpp::Duration tfBufferLength;
   //! tf client
   std::shared_ptr<tf2_ros::Buffer> tfBuffer;
   //! tf listener
@@ -324,7 +324,7 @@ protected:
   std::shared_ptr<TFFramesWatchdog> tfFramesWatchdog;
 
   //! The time when the filter configuration has finished.
-  ros::Time timeConfigured;
+  rclcpp::Time timeConfigured;
 
   //! Tool for masking out 3D bodies out of point clouds.
   std::unique_ptr<RayCastingShapeMask> shapeMask;
@@ -394,7 +394,7 @@ protected:
    * \param time The time to get transforms for.
    * \param afterScantime The after scan time to get transforms for (if zero time is passed, after scan transforms are not computed).
    */
-  void updateTransformCache(const ros::Time& time, const ros::Time& afterScanTime = ros::Time(0));
+  void updateTransformCache(const rclcpp::Time& time, const rclcpp::Time& afterScanTime = rclcpp::Time(0));
 
   /**
    * \brief Callback handling update of the robot_description parameter using dynamic reconfigure.
@@ -414,7 +414,7 @@ protected:
       const rclcpp::Time& stamp, const std_msgs::msg::ColorRGBA& color,
       visualization_msgs::msg::MarkerArray& markerArray) const;
 
-  void publishDebugMarkers(const ros::Time& scanTime) const;
+  void publishDebugMarkers(const rclcpp::Time& scanTime) const;
   void publishDebugPointClouds(
       const sensor_msgs::msg::PointCloud2& projectedPointCloud,
       const std::vector<RayCastingShapeMask::MaskValue> &pointMask) const;

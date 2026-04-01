@@ -3,8 +3,8 @@
 
 #include <iterator>
 #include <map>
-#include <ros/duration.h>
-#include <ros/time.h>
+#include <rclcpp/duration.hpp>
+#include <rclcpp/time.hpp>
 #include <set>
 #include <string>
 #include <sstream>
@@ -172,42 +172,18 @@ inline std::string to_string(const std::map<K, V> &value)
 }
 
 template<>
-inline std::string to_string(const ros::Time& value)
+inline std::string to_string(const rclcpp::Time& value)
 {
   std::stringstream ss;
-  ss << value;
+  ss << value.seconds();
   return ss.str();
 }
 
 template<>
-inline std::string to_string(const ros::WallTime& value)
+inline std::string to_string(const rclcpp::Duration& value)
 {
   std::stringstream ss;
-  ss << value;
-  return ss.str();
-}
-
-template<>
-inline std::string to_string(const ros::SteadyTime& value)
-{
-  std::stringstream ss;
-  ss << value;
-  return ss.str();
-}
-
-template<>
-inline std::string to_string(const ros::Duration& value)
-{
-  std::stringstream ss;
-  ss << value;
-  return ss.str();
-}
-
-template<>
-inline std::string to_string(const ros::WallDuration& value)
-{
-  std::stringstream ss;
-  ss << value;
+  ss << value.seconds();
   return ss.str();
 }
 

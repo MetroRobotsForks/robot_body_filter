@@ -11,7 +11,7 @@ namespace robot_body_filter {
  * @param timeout Maximum time to wait from the query time onwards.
  * @return The remaining time, or zero duration if the time is negative or ROS time isn't initialized.
  */
-ros::Duration remainingTime(const rclcpp::Clock::SharedPtr& clock_ptr, const ros::Time &query, double timeout);
+rclcpp::Duration remainingTime(const rclcpp::Clock::SharedPtr& clock_ptr, const rclcpp::Time &query, double timeout);
 
 /**
  * @brief remainingTime Return remaining time to timeout from the query time.
@@ -19,8 +19,8 @@ ros::Duration remainingTime(const rclcpp::Clock::SharedPtr& clock_ptr, const ros
  * @param timeout Maximum time to wait from the query time onwards.
  * @return The remaining time, or zero duration if the time is negative or ROS time isn't initialized.
  */
-ros::Duration remainingTime(const rclcpp::Clock::SharedPtr& clock_ptr, const ros::Time &query,
-                            const ros::Duration &timeout);
+rclcpp::Duration remainingTime(const rclcpp::Clock::SharedPtr& clock_ptr, const rclcpp::Time &query,
+                            const rclcpp::Duration &timeout);
 
 };
 

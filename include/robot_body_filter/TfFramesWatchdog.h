@@ -29,7 +29,7 @@ public:
                    std::string robotFrame,
                    std::set<std::string>  monitoredFrames,
                    std::shared_ptr<tf2_ros::Buffer> tfBuffer,
-                   ros::Duration unreachableTfLookupTimeout = ros::Duration(0, 100000000),  // 0.1 sec
+                   rclcpp::Duration unreachableTfLookupTimeout = rclcpp::Duration(0, 100000000),  // 0.1 sec
                    ros::Rate unreachableFramesCheckRate = ros::Rate(1.0));
 
   virtual ~TFFramesWatchdog();
@@ -117,8 +117,8 @@ public:
    */
   optional<geometry_msgs::msg::TransformStamped> lookupTransform(
       const std::string& frame,
-      const ros::Time& time,
-      const ros::Duration& timeout,
+      const rclcpp::Time& time,
+      const rclcpp::Duration& timeout,
       std::string* errstr = nullptr);
 
 protected:
@@ -182,7 +182,7 @@ protected:
   std::shared_ptr<tf2_ros::Buffer> tfBuffer;
 
   //! Timeout for canTransform() for figuring out if an unreachable frame became reachable.
-  ros::Duration unreachableTfLookupTimeout;
+  rclcpp::Duration unreachableTfLookupTimeout;
   //! Rate at which checking for unreachable frames will be done.
   ros::Rate unreachableFramesCheckRate;
 

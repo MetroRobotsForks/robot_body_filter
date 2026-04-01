@@ -36,7 +36,11 @@ using namespace filters;
 namespace robot_body_filter {
 
 template<typename T>
-RobotBodyFilter<T>::RobotBodyFilter() {
+RobotBodyFilter<T>::RobotBodyFilter()
+    : modelPoseUpdateInterval(0, 0),
+      reachableTransformTimeout(0, 0),
+      unreachableTransformTimeout(0, 0),
+      tfBufferLength(0, 0) {
   this->modelMutex.reset(new std::mutex());
 }
 
@@ -47,7 +51,7 @@ bool RobotBodyFilter<T>::configure() {
   nodeHandle =  std::make_shared<rclcpp::Node>("robot_body_filter", "debug");
   clock_ptr = this->nodeHandle->get_clock();
 
-  this->tfBufferLength = this->getParamVerbose("transforms/buffer_length", ros::Duration(60.0), "s");
+  this->tfBufferLength = this->getParamVerbose("transforms/buffer_length", rclcpp::Duration::from_seconds(60.0), "s");
 
   if (this->tfBuffer == nullptr)
   {
@@ -68,13 +72,13 @@ bool RobotBodyFilter<T>::configure() {
   this->maxDistance = this->getParamVerbose("sensor/max_distance", 0.0, "m");
   this->robotDescriptionParam = this->getParamVerbose("body_model/robot_description_param", "robot_description");
   this->keepCloudsOrganized = this->getParamVerbose("filter/keep_clouds_organized", true);
-  this->modelPoseUpdateInterval = this->getParamVerbose("filter/model_pose_update_interval", ros::Duration(0, 0), "s");
+  this->modelPoseUpdateInterval = this->getParamVerbose("filter/model_pose_update_interval", rclcpp::Duration(0, 0), "s");
   const bool doClipping = this->getParamVerbose("filter/do_clipping", true);
   const bool doContainsTest = this->getParamVerbose("filter/do_contains_test", true);
   const bool doShadowTest = this->getParamVerbose("filter/do_shadow_test", true);
   const double maxShadowDistance = this->getParamVerbose("filter/max_shadow_distance", this->maxDistance, "m");
-  this->reachableTransformTimeout = this->getParamVerbose("transforms/timeout/reachable", ros::Duration(0.1), "s");
-  this->unreachableTransformTimeout = this->getParamVerbose("transforms/timeout/unreachable", ros::Duration(0.2), "s");
+  this->reachableTransformTimeout = this->getParamVerbose("transforms/timeout/reachable", rclcpp::Duration::from_seconds(0.1), "s");
+  this->unreachableTransformTimeout = this->getParamVerbose("transforms/timeout/unreachable", rclcpp::Duration::from_seconds(0.2), "s");
   this->requireAllFramesReachable = this->getParamVerbose("transforms/require_all_reachable", false);
   this->linkTfPrefix = this->getParamVerbose("transforms/link_tf_prefix", "");
   this->publishNoBoundingSpherePointcloud = this->getParamVerbose("bounding_sphere/publish_cut_out_pointcloud", false);
@@ -330,7 +334,7 @@ bool RobotBodyFilter<T>::configure() {
 
     this->tfFramesWatchdog = std::make_shared<TFFramesWatchdog>(this->logging_interface_, clock_ptr, this->filteringFrame,
         initialMonitoredFrames, this->tfBuffer,
-        this->unreachableTransformTimeout, ros::Rate(ros::Duration(1.0)));
+        this->unreachableTransformTimeout, ros::Rate(rclcpp::Duration::from_seconds(1.0)));
     this->tfFramesWatchdog->start();
   }
 
@@ -348,7 +352,7 @@ bool RobotBodyFilter<T>::configure() {
 
       ROS_ERROR("RobotBodyFilter: %s is empty or not set. Please, provide the robot model. Waiting 1s.",
                 robotDescriptionParam.c_str());
-      ros::Duration(1.0).sleep();
+      rclcpp::sleep_for(std::chrono::seconds(1));
     }
 
     // happens when configure() is called again from update() (e.g. when a new bag file started
@@ -380,7 +384,7 @@ bool RobotBodyFilter<T>::configure() {
     }
   }
 
-  this->timeConfigured = ros::Time::now();
+  this->timeConfigured = this->nodeHandle->now();
 
   return true;
 }
@@ -465,13 +469,13 @@ bool RobotBodyFilter<T>::computeMask(
       if ((*stamps_end_it) > static_cast<float>(scanDuration))
         scanDuration = static_cast<double>(*stamps_end_it);
     }
-    const ros::Time afterScanTime(scanTime + ros::Duration().fromSec(scanDuration));
+    const rclcpp::Time afterScanTime(rclcpp::Time(scanTime) + rclcpp::Duration::from_seconds(scanDuration));
 
     size_t updateBodyPosesEvery;
-    if (this->modelPoseUpdateInterval.sec == 0 && this->modelPoseUpdateInterval.nsec == 0) {
+    if (this->modelPoseUpdateInterval.seconds() == 0 && this->modelPoseUpdateInterval.nanoseconds() == 0) {
       updateBodyPosesEvery = 1;
     } else {
-      updateBodyPosesEvery = static_cast<size_t>(ceil(this->modelPoseUpdateInterval.toSec() / scanDuration * num_points(projectedPointCloud)));
+      updateBodyPosesEvery = static_cast<size_t>(ceil(this->modelPoseUpdateInterval.seconds() / scanDuration * num_points(projectedPointCloud)));
       // prevent division by zero
       if (updateBodyPosesEvery == 0)
         updateBodyPosesEvery = 1;
@@ -531,17 +535,17 @@ bool RobotBodyFilter<T>::computeMask(
 }
 
 bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputScan, sensor_msgs::msg::LaserScan &filteredScan) {
-  const auto& scanTime = inputScan.header.stamp;
+  const auto& scanTime = rclcpp::Time(inputScan.header.stamp);
 
   if (!this->configured_) {
-    ROS_DEBUG("RobotBodyFilter: Ignore scan from time %u.%u - filter not yet initialized.",
-              scanTime.sec, scanTime.nsec);
+    ROS_DEBUG("RobotBodyFilter: Ignore scan from time %f.%ld - filter not yet initialized.",
+              scanTime.seconds(), scanTime.nanoseconds());
     return false;
   }
 
   if ((scanTime < timeConfigured) && ((scanTime + tfBufferLength) >= timeConfigured)) {
-    ROS_DEBUG("RobotBodyFilter: Ignore scan from time %u.%u - filter not yet initialized.",
-              scanTime.sec, scanTime.nsec);
+    ROS_DEBUG("RobotBodyFilter: Ignore scan from time %f.%ld - filter not yet initialized.",
+              scanTime.seconds(), scanTime.nanoseconds());
     return false;
   }
 
@@ -595,7 +599,7 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputSc
     if (this->pointByPointScan)
     { // make sure we have all the tfs between sensor frame and fixedFrame during the time of scan acquisition
       const auto scanDuration = inputScan.ranges.size() * inputScan.time_increment;
-      const auto afterScanTime = scanTime + ros::Duration().fromSec(scanDuration);
+      const auto afterScanTime = scanTime + rclcpp::Duration::from_seconds(scanDuration);
 
       string err;
       if (!this->tfBuffer->canTransform(this->fixedFrame, scanFrame, scanTime,
@@ -603,7 +607,7 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputSc
             !this->tfBuffer->canTransform(this->fixedFrame, scanFrame, afterScanTime,
                 remainingTime(clock_ptr, afterScanTime, this->reachableTransformTimeout), &err)) {
         if (err.find("future") != string::npos) {
-          const auto delay = ros::Time::now() - scanTime;
+          const auto delay = nodeHandle->now() - scanTime;
           ROS_ERROR_THROTTLE(3, "RobotBodyFilter: Cannot transform laser scan to "
             "fixed frame. The scan is too much delayed (%s s). TF error: %s",
             to_string(delay).c_str(), err.c_str());
@@ -708,17 +712,17 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputSc
 bool RobotBodyFilterPointCloud2::update(const sensor_msgs::msg::PointCloud2 &inputCloud,
                                         sensor_msgs::msg::PointCloud2 &filteredCloud)
 {
-  const auto& scanTime = inputCloud.header.stamp;
+  const auto& scanTime = rclcpp::Time(inputCloud.header.stamp);
 
   if (!this->configured_) {
-    ROS_DEBUG("RobotBodyFilter: Ignore cloud from time %u.%u - filter not yet initialized.",
-              scanTime.sec, scanTime.nsec);
+    ROS_DEBUG("RobotBodyFilter: Ignore cloud from time %f.%ld - filter not yet initialized.",
+              scanTime.seconds(), scanTime.nanoseconds());
     return false;
   }
 
   if ((scanTime < this->timeConfigured) && ((scanTime + this->tfBufferLength) >= this->timeConfigured)) {
-    ROS_DEBUG("RobotBodyFilter: Ignore cloud from time %u.%u - filter not yet initialized.",
-              scanTime.sec, scanTime.nsec);
+    ROS_DEBUG("RobotBodyFilter: Ignore cloud from time %f.%ld - filter not yet initialized.",
+              scanTime.seconds(), scanTime.nanoseconds());
     return false;
   }
 
@@ -891,12 +895,12 @@ bool RobotBodyFilter<T>::getShapeTransform(point_containment_filter::ShapeHandle
 }
 
 template<typename T>
-void RobotBodyFilter<T>::updateTransformCache(const ros::Time &time, const ros::Time& afterScanTime) {
+void RobotBodyFilter<T>::updateTransformCache(const rclcpp::Time &time, const rclcpp::Time& afterScanTime) {
   // make sure you locked this->modelMutex
 
   // clear the cache so that maskContainment always uses only these tf data and not some older
   this->transformCache.clear();
-  if (afterScanTime.sec != 0)
+  if (afterScanTime.seconds() != 0)
     this->transformCacheAfterScan.clear();
 
   // iterate over all links corresponding to some masking shape and update their cached transforms relative
@@ -929,7 +933,7 @@ void RobotBodyFilter<T>::updateTransformCache(const ros::Time &time, const ros::
           std::allocate_shared<Eigen::Isometry3d>(Eigen::aligned_allocator<Eigen::Isometry3d>(), transform);
     }
 
-    if (afterScanTime.sec != 0)
+    if (afterScanTime.seconds() != 0)
     {
       auto linkTransformTfOptional = this->tfFramesWatchdog->lookupTransform(
           linkFrame, afterScanTime, remainingTime(clock_ptr, time, this->reachableTransformTimeout));
@@ -1122,7 +1126,7 @@ void RobotBodyFilter<T>::clearRobotMask() {
 }
 
 template <typename T>
-void RobotBodyFilter<T>::publishDebugMarkers(const ros::Time& scanTime) const {
+void RobotBodyFilter<T>::publishDebugMarkers(const rclcpp::Time& scanTime) const {
   // assume this->modelMutex is locked
 
   if (this->publishDebugContainsMarker) {
@@ -1701,7 +1705,7 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
 template<typename T>
 void RobotBodyFilter<T>::createBodyVisualizationMsg(
     const std::map<point_containment_filter::ShapeHandle, const bodies::Body*>& bodies,
-    const ros::Time& stamp, const std_msgs::msg::ColorRGBA& color,
+    const rclcpp::Time& stamp, const std_msgs::msg::ColorRGBA& color,
     visualization_msgs::msg::MarkerArray& markerArray) const
 {
   // when computing the markers for publication, we want to publish them to the time of the
@@ -1757,7 +1761,7 @@ void RobotBodyFilter<T>::robotDescriptionUpdated(dynamic_reconfigure::ConfigCons
   this->addRobotMaskFromUrdf(urdf);
 
   this->tfFramesWatchdog->unpause();
-  this->timeConfigured = ros::Time::now();
+  this->timeConfigured = nodeHandle->now();
   this->configured_ = true;
 
   ROS_INFO("RobotBodyFilter: Robot model reloaded, resuming filter operation.");
@@ -1786,7 +1790,7 @@ bool RobotBodyFilter<T>::triggerModelReload(std_srvs::srv::Trigger::Request &,
   this->addRobotMaskFromUrdf(urdf);
 
   this->tfFramesWatchdog->unpause();
-  this->timeConfigured = ros::Time::now();
+  this->timeConfigured = nodeHandle->now();
   this->configured_ = true;
 
   ROS_INFO("RobotBodyFilter: Robot model reloaded, resuming filter operation.");

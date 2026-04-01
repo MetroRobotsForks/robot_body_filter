@@ -12,7 +12,7 @@ TFFramesWatchdog::TFFramesWatchdog(
                                    std::string robotFrame,
                                    std::set<std::string>  monitoredFrames,
                                    std::shared_ptr<tf2_ros::Buffer> tfBuffer,
-                                   ros::Duration unreachableTfLookupTimeout,
+                                   rclcpp::Duration unreachableTfLookupTimeout,
                                    ros::Rate unreachableFramesCheckRate):
     robotFrame(std::move(robotFrame)),
     monitoredFrames(std::move(monitoredFrames)),
@@ -47,7 +47,7 @@ bool TFFramesWatchdog::isRunning() const {
 void TFFramesWatchdog::searchForReachableFrames()
 {
 
-  const ros::Time time = ros::Time::now();
+  const rclcpp::Time time = clock_ptr->now();
 
   // detect all unreachable frames
   // we can't join this loop with the following one, because we need to lock the framesMutex, but
@@ -71,8 +71,8 @@ void TFFramesWatchdog::searchForReachableFrames()
     std::string err;
     if (this->tfBuffer->canTransform(this->robotFrame, frame, time, this->unreachableTfLookupTimeout, &err)) {
       this->markReachable(frame);
-      ROS_DEBUG("TFFramesWatchdog (%s): Frame %s became reachable at %i.%i",
-          this->robotFrame.c_str(), frame.c_str(), time.sec, time.nsec);
+      ROS_DEBUG("TFFramesWatchdog (%s): Frame %s became reachable at %f.%li",
+          this->robotFrame.c_str(), frame.c_str(), time.seconds(), time.nanoseconds());
     } else {
       ROS_WARN_DELAYED_THROTTLE(3,
           "TFFramesWatchdog (%s): Frame %s is not reachable! Cause: %s",
@@ -108,8 +108,8 @@ void TFFramesWatchdog::clear() {
 
 optional<geometry_msgs::msg::TransformStamped> TFFramesWatchdog::lookupTransform(
     const std::string &frame,
-    const ros::Time &time,
-    const ros::Duration &timeout,
+    const rclcpp::Time &time,
+    const rclcpp::Duration &timeout,
     std::string *errstr)
 {
   if (!this->started)

@@ -62,7 +62,7 @@ void expectTransformsDoubleEq(const Eigen::Isometry3d& i1, const Eigen::Isometry
       while (ros::ok() && msg == nullptr && i < 100) \
       { \
         ros::spinOnce(); \
-        ros::WallDuration(0.01).sleep(); \
+        rclcpp::sleep_for(std::chrono::milliseconds(10)); \
         ++i;\
       } \
       if (i == 100) GTEST_FAIL(); \

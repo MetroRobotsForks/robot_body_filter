@@ -31,9 +31,9 @@ class TestFilter : public robot_body_filter::FilterBase<std::string>
     EXPECT_THROW(this->getParamVerbose("test/negative", static_cast<unsigned int>(1)),
       std::invalid_argument);
     EXPECT_EQ(1, this->getParamVerbose("non/existent", static_cast<unsigned int>(1), "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
-    EXPECT_EQ(ros::Duration(60), this->getParamVerbose("transforms/buffer_length",
-        ros::Duration(30), "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
-    EXPECT_EQ(ros::Duration(30), this->getParamVerbose("nonexistent", ros::Duration(30), "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
+    EXPECT_EQ(rclcpp::Duration::from_seconds(60), this->getParamVerbose("transforms/buffer_length",
+        rclcpp::Duration::from_seconds(30), "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
+    EXPECT_EQ(rclcpp::Duration::from_seconds(30), this->getParamVerbose("nonexistent", rclcpp::Duration::from_seconds(30), "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
     EXPECT_EQ(std::vector<std::string>({"antenna", "base_link::big_collision_box"}),
               this->getParamVerbose("ignored_links/bounding_sphere", std::vector<std::string>(), "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
     EXPECT_EQ(std::set<std::string>({"antenna", "base_link::big_collision_box"}),

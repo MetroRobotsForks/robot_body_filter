@@ -83,11 +83,8 @@ TEST(StringUtils, ToString)
   EXPECT_EQ("{\"a\": \"1\", \"b\": \"2\"}", to_string(std::map<std::string, std::string>({{"a", "1"}, {"b", "2"}}))); // map is ordered
   EXPECT_EQ("{True: False}", to_string(std::map<bool, bool>({{true, false}})));
   EXPECT_EQ("{}", to_string(std::map<std::string, int>()));
-  EXPECT_EQ("1.500000000", to_string(ros::Time(1, 500000000)));
-  EXPECT_EQ("1.500000000", to_string(ros::WallTime(1, 500000000)));
-  EXPECT_EQ("1.500000000", to_string(ros::SteadyTime(1, 500000000)));
-  EXPECT_EQ("1.500000000", to_string(ros::Duration(1, 500000000)));
-  EXPECT_EQ("1.500000000", to_string(ros::WallDuration(1, 500000000)));
+  EXPECT_EQ("1.5", to_string(rclcpp::Time(1, 500000000)));
+  EXPECT_EQ("1.5", to_string(rclcpp::Duration(1, 500000000)));
   XmlRpc::XmlRpcValue::setDoubleFormat("%.2f");
   EXPECT_EQ("2.00", to_string(XmlRpc::XmlRpcValue(2.0)));
   EXPECT_EQ("2", to_string(XmlRpc::XmlRpcValue(2)));

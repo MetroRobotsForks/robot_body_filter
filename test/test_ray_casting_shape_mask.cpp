@@ -911,15 +911,16 @@ TEST(RayCastingShapeMask, MaskPerformancePoints)
 
   std::vector<RayCastingShapeMask::MaskValue> vals;
 
-  ros::WallTime start = ros::WallTime::now();
+  rclcpp::Clock wall_clock(RCL_SYSTEM_TIME);
+  rclcpp::Time start = wall_clock.now();
   mask.maskContainmentAndShadows(cloud, vals, sensorPos);
-  ros::WallTime end = ros::WallTime::now();
+  rclcpp::Time end = wall_clock.now();
 
   ASSERT_EQ(numPoints, vals.size());
 #if RELEASE_BUILD == 1
-  EXPECT_GT(2.0, (end - start).toSec());
+  EXPECT_GT(2.0, (end - start).seconds());
 #else
-  EXPECT_GT(1.5, (end - start).toSec());
+  EXPECT_GT(1.5, (end - start).seconds());
 #endif
 }
 
@@ -977,15 +978,16 @@ TEST(RayCastingShapeMask, MaskPerformanceBodies)
 
   std::vector<RayCastingShapeMask::MaskValue> vals;
 
-  ros::WallTime start = ros::WallTime::now();
+  rclcpp::Clock wall_clock(RCL_SYSTEM_TIME);
+  rclcpp::Time start = wall_clock.now();
   mask.maskContainmentAndShadows(cloud, vals, sensorPos);
-  ros::WallTime end = ros::WallTime::now();
+  rclcpp::Time end = wall_clock.now();
 
   ASSERT_EQ(numPoints, vals.size());
 #if RELEASE_BUILD == 1
-  EXPECT_GT(1.0, (end - start).toSec());
+  EXPECT_GT(1.0, (end - start).seconds());
 #else
-  EXPECT_GT(2.0, (end - start).toSec());
+  EXPECT_GT(2.0, (end - start).seconds());
 #endif
 }
 
@@ -1048,15 +1050,16 @@ TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh)
 
   std::vector<RayCastingShapeMask::MaskValue> vals;
 
-  ros::WallTime start = ros::WallTime::now();
+  rclcpp::Clock wall_clock(RCL_SYSTEM_TIME);
+  rclcpp::Time start = wall_clock.now();
   mask.maskContainmentAndShadows(cloud, vals, sensorPos);
-  ros::WallTime end = ros::WallTime::now();
+  rclcpp::Time end = wall_clock.now();
 
   ASSERT_EQ(numPoints, vals.size());
 #if RELEASE_BUILD == 1
-  EXPECT_GT(0.1, (end - start).toSec());
+  EXPECT_GT(0.1, (end - start).seconds());
 #else
-  EXPECT_GT(1.0, (end - start).toSec());
+  EXPECT_GT(1.0, (end - start).seconds());
 #endif
 }
 

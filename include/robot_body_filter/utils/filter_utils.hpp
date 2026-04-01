@@ -235,13 +235,13 @@ protected:
    *             messages more informative.
    * \return The loaded param value.
    */
-  ros::Duration getParamVerbose(const std::string &name,
-                                const ros::Duration &defaultValue,
+  rclcpp::Duration getParamVerbose(const std::string &name,
+                                const rclcpp::Duration &defaultValue,
                                 const std::string &unit = "",
                                 bool* defaultUsed = nullptr,
                                 ToStringFn<double> valueToStringFn = &to_string) const
   {
-    return this->getParamCast<ros::Duration, double>(name, defaultValue.toSec(), unit, defaultUsed,
+    return this->getParamCast<rclcpp::Duration, double>(name, defaultValue.seconds(), unit, defaultUsed,
         valueToStringFn);
   }
 

@@ -102,7 +102,7 @@ class RobotBodyFilterLaserScanTest : public RobotBodyFilterLaserScan
   {
     // this prevents spurious SIGABRTs caused probably by some too fast cleanup
     // after tfFramesWatchdog, or I don't know what...
-    ros::WallDuration(0.1).sleep();
+    rclcpp::sleep_for(std::chrono::milliseconds(100));
   };
 
   friend class RobotBodyFilter_InitFromArray_Test;
@@ -126,7 +126,7 @@ class RobotBodyFilterPointCloud2Test : public RobotBodyFilterPointCloud2
   {
     // this prevents spurious SIGABRTs caused probably by some too fast cleanup
     // after tfFramesWatchdog, or I don't know what...
-    ros::WallDuration(0.1).sleep();
+    rclcpp::sleep_for(std::chrono::milliseconds(100));
   };
 
   friend class RobotBodyFilter_ComputeMaskAllAtOnce_Test;
@@ -157,7 +157,7 @@ TEST(RobotBodyFilter, InitFromArray)
   EXPECT_EQ("test_robot_description", filter->robotDescriptionParam);
   EXPECT_EQ(0, filter->shapesToLinks.size());
   EXPECT_TRUE(filter->configured_);
-  EXPECT_GT(ros::Duration(0.1), ros::Time::now() - filter->timeConfigured);
+  EXPECT_GT(rclcpp::Duration::from_seconds(0.1), nh->get_clock()->now() - filter->timeConfigured);
   ASSERT_NE(nullptr, filter->tfFramesWatchdog);
   EXPECT_TRUE(filter->tfFramesWatchdog->isMonitored("laser"));  // Issue #6, monitor sensor frame
 }
@@ -181,7 +181,7 @@ TEST(RobotBodyFilter, InitFromDict)
   EXPECT_EQ("test_robot_description", filter->robotDescriptionParam);
   EXPECT_EQ(0, filter->shapesToLinks.size());
   EXPECT_TRUE(filter->configured_);
-  EXPECT_GT(ros::Duration(0.1), ros::Time::now() - filter->timeConfigured);
+  EXPECT_GT(rclcpp::Duration::from_seconds(0.1), nh->get_clock()->now() - filter->timeConfigured);
   ASSERT_NE(nullptr, filter->tfFramesWatchdog);
   EXPECT_TRUE(filter->tfFramesWatchdog->isMonitored("laser"));  // Issue #6, monitor sensor frame
 }
@@ -201,7 +201,7 @@ TEST(RobotBodyFilter, LoadParams)
   EXPECT_EQ("laser", filter->sensorFrame);
   EXPECT_EQ("odom", filter->filteringFrame);
   EXPECT_TRUE(filter->keepCloudsOrganized);
-  EXPECT_FLOAT_EQ(0.002, filter->modelPoseUpdateInterval.toSec());
+  EXPECT_FLOAT_EQ(0.002, filter->modelPoseUpdateInterval.seconds());
   EXPECT_TRUE(filter->pointByPointScan);
   EXPECT_FLOAT_EQ(0.1, filter->minDistance);
   EXPECT_FLOAT_EQ(10.0, filter->maxDistance);
@@ -229,9 +229,9 @@ TEST(RobotBodyFilter, LoadParams)
   })), filter->perLinkShadowInflation);
   EXPECT_EQ("test_robot_description", filter->robotDescriptionParam);
   EXPECT_EQ("robot_model", filter->robotDescriptionUpdatesFieldName);
-  EXPECT_DOUBLE_EQ(60.0, filter->tfBufferLength.toSec());
-  EXPECT_DOUBLE_EQ(0.2, filter->reachableTransformTimeout.toSec());
-  EXPECT_DOUBLE_EQ(0.2, filter->unreachableTransformTimeout.toSec());
+  EXPECT_DOUBLE_EQ(60.0, filter->tfBufferLength.seconds());
+  EXPECT_DOUBLE_EQ(0.2, filter->reachableTransformTimeout.seconds());
+  EXPECT_DOUBLE_EQ(0.2, filter->unreachableTransformTimeout.seconds());
   EXPECT_TRUE(filter->computeBoundingSphere);
   EXPECT_FALSE(filter->computeDebugBoundingSphere);
   EXPECT_FALSE(filter->publishBoundingSphereMarker);
@@ -297,7 +297,7 @@ TEST(RobotBodyFilter, LoadParamsAllConfig)
   EXPECT_EQ("laser", filter->sensorFrame);
   EXPECT_EQ("base_link", filter->filteringFrame);
   EXPECT_TRUE(filter->keepCloudsOrganized);
-  EXPECT_FLOAT_EQ(0.002, filter->modelPoseUpdateInterval.toSec());
+  EXPECT_FLOAT_EQ(0.002, filter->modelPoseUpdateInterval.seconds());
   EXPECT_TRUE(filter->pointByPointScan);
   EXPECT_FLOAT_EQ(0.1, filter->minDistance);
   EXPECT_FLOAT_EQ(10.0, filter->maxDistance);
@@ -315,9 +315,9 @@ TEST(RobotBodyFilter, LoadParamsAllConfig)
   EXPECT_DOUBLE_EQ(0.01, filter->defaultShadowInflation.padding);
   EXPECT_EQ("test_robot_description", filter->robotDescriptionParam);
   EXPECT_EQ("robot", filter->robotDescriptionUpdatesFieldName);
-  EXPECT_DOUBLE_EQ(60.0, filter->tfBufferLength.toSec());
-  EXPECT_DOUBLE_EQ(0.2, filter->reachableTransformTimeout.toSec());
-  EXPECT_DOUBLE_EQ(0.2, filter->unreachableTransformTimeout.toSec());
+  EXPECT_DOUBLE_EQ(60.0, filter->tfBufferLength.seconds());
+  EXPECT_DOUBLE_EQ(0.2, filter->reachableTransformTimeout.seconds());
+  EXPECT_DOUBLE_EQ(0.2, filter->unreachableTransformTimeout.seconds());
   EXPECT_TRUE(filter->computeBoundingSphere);
   EXPECT_TRUE(filter->computeDebugBoundingSphere);
   EXPECT_TRUE(filter->publishBoundingSphereMarker);
@@ -455,7 +455,7 @@ TEST(RobotBodyFilter, Transforms)
   tf.transform.rotation.w = 1.0;
   for (double d = -5.0; d < 5.0; d += 0.1)
   {
-    tf.header.stamp = ros::Time::now() + ros::Duration(d);
+    tf.header.stamp = nh->get_clock()->now() + rclcpp::Duration::from_seconds(d);
 
     tf.transform.translation.x = 1;
     tf.header.frame_id = "odom";
@@ -475,7 +475,7 @@ TEST(RobotBodyFilter, Transforms)
 
   for (double d = 25.0; d < 35.0; d += 0.1)
   {
-    tf.header.stamp = ros::Time::now() + ros::Duration(d);
+    tf.header.stamp = nh->get_clock()->now() + rclcpp::Duration::from_seconds(d);
 
     tf.transform.translation.x = 11;
     tf.header.frame_id = "odom";
@@ -494,8 +494,8 @@ TEST(RobotBodyFilter, Transforms)
   }
 
   while (!filter->tfFramesWatchdog->isReachable("antenna"))
-    ros::WallDuration(0.01).sleep();
-  filter->updateTransformCache(ros::Time::now(), ros::Time::now() + ros::Duration(30));
+    rclcpp::sleep_for(std::chrono::milliseconds(10));
+  filter->updateTransformCache(nh->get_clock()->now(), nh->get_clock()->now() + rclcpp::Duration::from_seconds(30));
 
   std::map<std::string, point_containment_filter::ShapeHandle> shapes;
   for (auto& pair : filter->shapesToLinks)
@@ -600,13 +600,13 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   }
 
   {
-    ros::Time now = ros::Time::now();
+    rclcpp::Time now = nh->get_clock()->now();
     cloud.header.stamp = now;
     geometry_msgs::msg::TransformStamped tf;
     tf.transform.rotation.w = 1.0;
     for (double d = -5.0; d < 5.0; d += 0.1)
     {
-      tf.header.stamp = now + ros::Duration(d);
+      tf.header.stamp = now + rclcpp::Duration::from_seconds(d);
 
       tf.transform.translation.x = 0.122;
       tf.header.frame_id = "odom";
@@ -626,8 +626,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   }
 
   while (!filter->tfFramesWatchdog->isReachable("antenna"))
-    ros::WallDuration(0.01).sleep();
-  filter->updateTransformCache(cloud.header.stamp, cloud.header.stamp + ros::Duration(1));
+    rclcpp::sleep_for(std::chrono::milliseconds(10));
+  filter->updateTransformCache(cloud.header.stamp, cloud.header.stamp + rclcpp::Duration::from_seconds(1));
 
   std::map<std::string, point_containment_filter::ShapeHandle> shapes;
   for (auto& pair : filter->shapesToLinks)
@@ -715,12 +715,12 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
 
   {
     geometry_msgs::msg::TransformStamped tf;
-    ros::Time now = ros::Time::now();
+    rclcpp::Time now = nh->get_clock()->now();
     cloud.header.stamp = now;
     tf.transform.rotation.w = 1;
     for (double d = -5.0; d < 5.0; d += 0.1)
     {
-      tf.header.stamp = now + ros::Duration(d);
+      tf.header.stamp = now + rclcpp::Duration::from_seconds(d);
 
       tf.transform.translation.x = 0.122;
       tf.header.frame_id = "odom";
@@ -737,7 +737,7 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
       tf.child_frame_id = "antenna";
       ASSERT_TRUE(filter->tfBuffer->setTransform(tf, "test"));
 
-      tf.header.stamp += ros::Duration(20);
+      tf.header.stamp = rclcpp::Time(tf.header.stamp) + rclcpp::Duration::from_seconds(20);
 
       tf.transform.translation.x = 10.122;
       tf.header.frame_id = "odom";
@@ -755,7 +755,7 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
       ASSERT_TRUE(filter->tfBuffer->setTransform(tf, "test"));
     }
   }
-  filter->updateTransformCache(cloud.header.stamp, cloud.header.stamp + ros::Duration(20));
+  filter->updateTransformCache(cloud.header.stamp, cloud.header.stamp + rclcpp::Duration::from_seconds(20));
 
   msg::SphereStamped::ConstSharedPtr boundingSphere;
   geometry_msgs::msg::PolygonStamped::ConstSharedPtr boundingBox;
@@ -1511,13 +1511,13 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   }
 
   {
-    ros::Time now = ros::Time::now();
+    rclcpp::Time now = nh->get_clock()->now();
     cloud.header.stamp = now;
     geometry_msgs::msg::TransformStamped tf;
     tf.transform.rotation.w = 1.0;
     for (double d = -5.0; d < 5.0; d += 0.1)
     {
-      tf.header.stamp = now + ros::Duration(d);
+      tf.header.stamp = now + rclcpp::Duration::from_seconds(d);
 
       tf.transform.translation.x = 0.122;
       tf.header.frame_id = "odom";
@@ -1537,8 +1537,8 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   }
 
   while (!filter->tfFramesWatchdog->isReachable("antenna"))
-    ros::WallDuration(0.01).sleep();
-  filter->updateTransformCache(cloud.header.stamp, cloud.header.stamp + ros::Duration(1));
+    rclcpp::sleep_for(std::chrono::milliseconds(10));
+  filter->updateTransformCache(cloud.header.stamp, cloud.header.stamp + rclcpp::Duration::from_seconds(1));
 
   msg::SphereStamped::ConstSharedPtr boundingSphere;
   geometry_msgs::msg::PolygonStamped::ConstSharedPtr boundingBox;
@@ -2331,12 +2331,12 @@ TEST(RobotBodyFilter, UpdateLaserScan)
 
   {
     geometry_msgs::msg::TransformStamped tf;
-    ros::Time now = ros::Time::now();
+    rclcpp::Time now = nh->get_clock()->now();
     scan.header.stamp = now;
     tf.transform.rotation.w = 1;
     for (double d = -5.0; d < 5.0; d += 0.1)
     {
-      tf.header.stamp = now + ros::Duration(d);
+      tf.header.stamp = now + rclcpp::Duration::from_seconds(d);
 
       tf.transform.translation.x = 0.122;
       tf.header.frame_id = "odom";
@@ -2353,7 +2353,7 @@ TEST(RobotBodyFilter, UpdateLaserScan)
       tf.child_frame_id = "antenna";
       ASSERT_TRUE(filter->tfBuffer->setTransform(tf, "test"));
 
-      tf.header.stamp += ros::Duration(20);
+      tf.header.stamp = rclcpp::Time(tf.header.stamp) + rclcpp::Duration::from_seconds(20);
 
       tf.transform.translation.x = 10.122;
       tf.header.frame_id = "odom";
@@ -2374,9 +2374,9 @@ TEST(RobotBodyFilter, UpdateLaserScan)
 
   // give TF frames watchdog some time to catch up
   while (!filter->tfFramesWatchdog->isReachable("laser"))
-    ros::WallDuration(0.01).sleep();
+    rclcpp::sleep_for(std::chrono::milliseconds(10));
   while (!filter->tfFramesWatchdog->isReachable("base_link"))
-    ros::WallDuration(0.01).sleep();
+    rclcpp::sleep_for(std::chrono::milliseconds(10));
 
   sensor_msgs::msg::LaserScan outScan;
   ASSERT_TRUE(filter->update(scan, outScan));
@@ -2445,13 +2445,13 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
   }
 
   {
-    ros::Time now = ros::Time::now();
+    rclcpp::Time now = nh->get_clock()->now();
     cloud.header.stamp = now;
     geometry_msgs::msg::TransformStamped tf;
     tf.transform.rotation.w = 1.0;
     for (double d = -5.0; d < 5.0; d += 0.1)
     {
-      tf.header.stamp = now + ros::Duration(d);
+      tf.header.stamp = now + rclcpp::Duration::from_seconds(d);
 
       tf.transform.translation.x = 0.122;
       tf.header.frame_id = "odom";
@@ -2471,9 +2471,9 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
   }
 
   while (!filter->tfFramesWatchdog->isReachable("laser"))
-    ros::WallDuration(0.01).sleep();
+    rclcpp::sleep_for(std::chrono::milliseconds(10));
   while (!filter->tfFramesWatchdog->isReachable("base_link"))
-    ros::WallDuration(0.01).sleep();
+    rclcpp::sleep_for(std::chrono::milliseconds(10));
 
   sensor_msgs::msg::PointCloud2 outCloud;
   filter->update(cloud, outCloud);
