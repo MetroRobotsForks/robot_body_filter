@@ -30,7 +30,7 @@ public:
                    std::set<std::string>  monitoredFrames,
                    std::shared_ptr<tf2_ros::Buffer> tfBuffer,
                    rclcpp::Duration unreachableTfLookupTimeout = rclcpp::Duration(0, 100000000),  // 0.1 sec
-                   ros::Rate unreachableFramesCheckRate = ros::Rate(1.0));
+                   rclcpp::Rate::SharedPtr unreachableFramesCheckRate = std::make_shared<rclcpp::Rate>(1.0));
 
   virtual ~TFFramesWatchdog();
 
@@ -184,7 +184,7 @@ protected:
   //! Timeout for canTransform() for figuring out if an unreachable frame became reachable.
   rclcpp::Duration unreachableTfLookupTimeout;
   //! Rate at which checking for unreachable frames will be done.
-  ros::Rate unreachableFramesCheckRate;
+  rclcpp::Rate::SharedPtr unreachableFramesCheckRate;
 
   //! Lock this mutex any time you want to work with monitoredFrames or reachableFrames.
   mutable std::mutex framesMutex;

@@ -335,7 +335,7 @@ bool RobotBodyFilter<T>::configure() {
 
     this->tfFramesWatchdog = std::make_shared<TFFramesWatchdog>(this->logging_interface_, clock_ptr, this->filteringFrame,
         initialMonitoredFrames, this->tfBuffer,
-        this->unreachableTransformTimeout, ros::Rate(rclcpp::Duration::from_seconds(1.0)));
+        this->unreachableTransformTimeout, std::make_shared<rclcpp::Rate>(1.0));
     this->tfFramesWatchdog->start();
   }
 

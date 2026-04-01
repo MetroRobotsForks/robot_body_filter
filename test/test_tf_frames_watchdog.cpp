@@ -10,7 +10,7 @@ class TestWatchdog : public TFFramesWatchdog
                const std::set<std::string> &monitoredFrames,
                const std::shared_ptr<tf2_ros::Buffer> &tfBuffer,
                const rclcpp::Duration &unreachableTfLookupTimeout,
-               const ros::Rate &unreachableFramesCheckRate) :
+               const rclcpp::Rate::SharedPtr &unreachableFramesCheckRate) :
     TFFramesWatchdog(nullptr, nullptr, robotFrame, monitoredFrames, tfBuffer, unreachableTfLookupTimeout,
         unreachableFramesCheckRate)
   {
@@ -31,7 +31,7 @@ TEST(TfFramesWatchdog, Basic)
 
   const std::shared_ptr<tf2_ros::Buffer> tfBuffer(new tf2_ros::Buffer(clock_ptr));
   TestWatchdog watchdog("base_link", {"left_track", "front_left_flipper"}, tfBuffer,
-      rclcpp::Duration::from_seconds(0.1), ros::Rate(1.0));
+      rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
   EXPECT_TRUE(watchdog.isMonitored("left_track"));
   EXPECT_TRUE(watchdog.isMonitored("front_left_flipper"));
@@ -78,7 +78,7 @@ TEST(TfFramesWatchdog, ThreadControl)
 
   const std::shared_ptr<tf2_ros::Buffer> tfBuffer(new tf2_ros::Buffer(clock_ptr));
   TestWatchdog watchdog("base_link", {"left_track", "front_left_flipper"}, tfBuffer,
-                        rclcpp::Duration::from_seconds(0.1), ros::Rate(1.0));
+                        rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
   EXPECT_FALSE(watchdog.started);
   EXPECT_TRUE(watchdog.paused);
@@ -141,7 +141,7 @@ TEST(TfFramesWatchdog, SearchForReachableFrames)
   const std::shared_ptr<tf2_ros::Buffer> tfBuffer(new tf2_ros::Buffer(clock_ptr));
   tfBuffer->setUsingDedicatedThread(true);
   TestWatchdog watchdog("base_link", {"left_track", "front_left_flipper"}, tfBuffer,
-                        rclcpp::Duration::from_seconds(0.1), ros::Rate(1.0));
+                        rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
   watchdog.unpause(); // searchForReachableFrames checks this->paused
 
@@ -199,7 +199,7 @@ TEST(TfFramesWatchdog, LookupTransform)
   const std::shared_ptr<tf2_ros::Buffer> tfBuffer(new tf2_ros::Buffer(clock_ptr));
   tfBuffer->setUsingDedicatedThread(true);
   TestWatchdog watchdog("base_link", {"left_track", "front_left_flipper"}, tfBuffer,
-                        rclcpp::Duration::from_seconds(0.1), ros::Rate(1.0));
+                        rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
   EXPECT_THROW(watchdog.lookupTransform("left_track", clock->now(), rclcpp::Duration::from_seconds(1)), std::runtime_error);
 

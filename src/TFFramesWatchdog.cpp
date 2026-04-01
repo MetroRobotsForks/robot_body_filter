@@ -13,7 +13,7 @@ TFFramesWatchdog::TFFramesWatchdog(
                                    std::set<std::string>  monitoredFrames,
                                    std::shared_ptr<tf2_ros::Buffer> tfBuffer,
                                    rclcpp::Duration unreachableTfLookupTimeout,
-                                   ros::Rate unreachableFramesCheckRate):
+                                   rclcpp::Rate::SharedPtr unreachableFramesCheckRate):
     robotFrame(std::move(robotFrame)),
     monitoredFrames(std::move(monitoredFrames)),
     tfBuffer(tfBuffer),
@@ -36,7 +36,7 @@ void TFFramesWatchdog::run() {
     if (!this->paused) { // the thread is paused when we want to change the stuff protected by framesMutex.
       this->searchForReachableFrames();
     }
-    this->unreachableFramesCheckRate.sleep();
+    this->unreachableFramesCheckRate->sleep();
   }
 }
 
