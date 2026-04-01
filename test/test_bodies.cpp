@@ -22,12 +22,12 @@ class WrongBody : public ::bodies::Body
   {
     throw std::runtime_error("Should not be called");
   }
-  bool containsPoint(const Eigen::Vector3d& p, bool verbose) const override
+  bool containsPoint(const Eigen::Vector3d&, bool) const override
   {
     throw std::runtime_error("Should not be called");
   }
-  bool intersectsRay(const Eigen::Vector3d& origin, const Eigen::Vector3d& dir,
-    EigenSTL::vector_Vector3d* intersections, unsigned int count) const override
+  bool intersectsRay(const Eigen::Vector3d&, const Eigen::Vector3d&,
+    EigenSTL::vector_Vector3d*, unsigned int) const override
   {
     throw std::runtime_error("Should not be called");
   }
@@ -35,23 +35,23 @@ class WrongBody : public ::bodies::Body
   {
     throw std::runtime_error("Should not be called");
   }
-  void computeBoundingSphere(BoundingSphere& sphere) const override
+  void computeBoundingSphere(BoundingSphere&) const override
   {
     throw std::runtime_error("Should not be called");
   }
-  void computeBoundingCylinder(BoundingCylinder& cylinder) const override
+  void computeBoundingCylinder(BoundingCylinder&) const override
   {
     throw std::runtime_error("Should not be called");
   }
-  void computeBoundingBox(AABB& box) const override
+  void computeBoundingBox(AABB&) const override
   {
     throw std::runtime_error("Should not be called");
   }
-  void computeBoundingBox(OBB& box) const override
+  void computeBoundingBox(OBB&) const override
   {
     throw std::runtime_error("Should not be called");
   }
-  BodyPtr cloneAt(const Eigen::Isometry3d& pose, double padding, double scaling) const override
+  BodyPtr cloneAt(const Eigen::Isometry3d&, double, double) const override
   {
     throw std::runtime_error("Should not be called");
   }
@@ -68,7 +68,7 @@ protected:
   {
     throw std::runtime_error("Should not be called");
   }
-  void useDimensions(const shapes::Shape* shape) override
+  void useDimensions(const shapes::Shape*) override
   {
     throw std::runtime_error("Should not be called");
   }
@@ -269,7 +269,7 @@ TEST(Bodies, ComputeBoundingBoxConvexMesh)
   };
   bool matches = false;
   double maxErr = 1e-6;
-  for (const auto ext : permutations)
+  for (const auto& ext : permutations)
   {
     if (fabs(obb1.getExtents().x() - std::get<0>(ext)) < maxErr &&
         fabs(obb1.getExtents().y() - std::get<1>(ext)) < maxErr &&

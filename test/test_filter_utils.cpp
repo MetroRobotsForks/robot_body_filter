@@ -5,7 +5,7 @@ using namespace robot_body_filter;
 
 class TestFilter : public robot_body_filter::FilterBase<std::string>
 {
-  public: bool update(const std::string &data_in, std::string &data_out) override
+  public: bool update(const std::string &, std::string &) override
   {
     return false;
   }

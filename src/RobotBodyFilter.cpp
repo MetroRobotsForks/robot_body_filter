@@ -692,7 +692,7 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputSc
             case RayCastingShapeMask::MaskValue::INSIDE:
             case RayCastingShapeMask::MaskValue::SHADOW:
             case RayCastingShapeMask::MaskValue::CLIP:
-              indexInScan = static_cast<const size_t>(*indexIt);
+              indexInScan = static_cast<size_t>(*indexIt);
               filteredScan.ranges[indexInScan] = INVALID_POINT_VALUE;
               break;
             case RayCastingShapeMask::MaskValue::OUTSIDE:

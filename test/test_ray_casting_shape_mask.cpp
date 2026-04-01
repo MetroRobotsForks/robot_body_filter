@@ -33,7 +33,7 @@ TEST(RayCastingShapeMask, Basic)
   ros::Time::init();
   ros::Time::setNow(ros::Time(1));
 
-  auto cb = [] (point_containment_filter::ShapeHandle h, Eigen::Isometry3d& t) -> bool
+  auto cb = [] (point_containment_filter::ShapeHandle, Eigen::Isometry3d& t) -> bool
   {
     t = Eigen::Isometry3d::Identity();
     return true;
@@ -111,7 +111,7 @@ TEST(RayCastingShapeMask, Basic)
   EXPECT_EQ(1, mask.getBodiesForContainsTest().size());
   EXPECT_EQ(1, mask.getBodiesForShadowTest().size());
 
-  auto cb2 = [] (point_containment_filter::ShapeHandle h, Eigen::Isometry3d& t) -> bool
+  auto cb2 = [] (point_containment_filter::ShapeHandle, Eigen::Isometry3d& t) -> bool
   {
     t = Eigen::Isometry3d::Identity();
     return false;
@@ -126,7 +126,7 @@ TEST(RayCastingShapeMask, Bspheres)
   ros::Time::init();
   ros::Time::setNow(ros::Time(1));
 
-  auto cb = [](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
+  auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
     t = Eigen::Isometry3d::Identity();
     return true;
@@ -188,7 +188,7 @@ TEST(RayCastingShapeMask, Bspheres)
   EXPECT_DOUBLE_EQ(bsphere.center.y(), bsphereForContainsTest.center.y());
   EXPECT_DOUBLE_EQ(bsphere.center.z(), bsphereForContainsTest.center.z());
 
-  auto cb2 = [](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
+  auto cb2 = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
     t = Eigen::Isometry3d::Identity();
     t.translate(Eigen::Vector3d(1.0, 2.0, 3.0));
@@ -282,7 +282,7 @@ TEST(RayCastingShapeMask, Bspheres)
   EXPECT_DOUBLE_EQ(0.0, bsphereForContainsTest.center.z());
 
   // test the case when all transforms are unavailable
-  auto cb4 = [handle2](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
+  auto cb4 = [handle2](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
     t = Eigen::Isometry3d::Identity();
     return false;
@@ -313,7 +313,7 @@ TEST(RayCastingShapeMask, UpdateBodyPoses)
   ros::Time::init();
   ros::Time::setNow(ros::Time(1));
 
-  auto fooCb = [](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
+  auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
     return true;
   };
@@ -381,7 +381,7 @@ TEST(RayCastingShapeMask, ClassifyPoint)
   ros::Time::init();
   ros::Time::setNow(ros::Time(1));
 
-  auto fooCb = [](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
+  auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
     return true;
   };
@@ -722,7 +722,7 @@ TEST(RayCastingShapeMask, Mask)
   ros::Time::init();
   ros::Time::setNow(ros::Time(1));
 
-  auto fooCb = [](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
+  auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
     return true;
   };
@@ -731,9 +731,11 @@ TEST(RayCastingShapeMask, Mask)
   shapes::ShapeConstPtr shape1(new shapes::Box(1.8, 1.8, 1.8));
   const auto multiHandle1 = mask.addShape(shape1, 1.0, 0.02, 1.1, 0.01, 1.0, 0.02, 1.0, 0.02, false, "box");
   const auto handle1 = multiHandle1.contains;
+  EXPECT_NE(handle1, 0);
   shapes::ShapeConstPtr shape2(new shapes::Sphere(1.375));
   const auto multiHandle2 = mask.addShape(shape2, 1.0, 0.0, false, "sphere");
   const auto handle2 = multiHandle2.contains;
+  EXPECT_NE(handle2, 0);
   shapes::ShapeConstPtr shapeSensor(new shapes::Box(1.0, 1.0, 1.0));
   const auto multiHandleSensor = mask.addShape(shapeSensor, 0.1, 0.0, true, "sensor");
   const auto handleSensor = multiHandleSensor.contains;
@@ -847,7 +849,7 @@ TEST(RayCastingShapeMask, MaskPerformancePoints)
   ros::Time::init();
   ros::Time::setNow(ros::Time(1));
 
-  auto fooCb = [](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
+  auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
     return true;
   };
@@ -929,7 +931,7 @@ TEST(RayCastingShapeMask, MaskPerformanceBodies)
   ros::Time::init();
   ros::Time::setNow(ros::Time(1));
 
-  auto cb = [](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
+  auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
     t = randomPose();
     t.translation().normalize();
@@ -996,7 +998,7 @@ TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh)
   ros::Time::init();
   ros::Time::setNow(ros::Time(1));
 
-  auto cb = [](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
+  auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
     t = randomPose();
     t.translation().normalize();

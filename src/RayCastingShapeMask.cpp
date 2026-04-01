@@ -47,10 +47,10 @@ RayCastingShapeMask::RayCastingShapeMask(
       clock_ptr(clock_ptr),
       minSensorDist(minSensorDist),
       maxSensorDist(maxSensorDist),
+      maxShadowDist(maxShadowDist),
       doClipping(doClipping),
       doContainsTest(doContainsTest),
-      doShadowTest(doShadowTest),
-      maxShadowDist(maxShadowDist)
+      doShadowTest(doShadowTest)
 {
   this->data = std::make_unique<RayCastingShapeMaskPIMPL>();
 }

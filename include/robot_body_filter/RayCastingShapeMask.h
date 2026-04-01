@@ -33,7 +33,7 @@ struct hash<::robot_body_filter::MultiShapeHandle>
 {
   size_t operator()(const ::robot_body_filter::MultiShapeHandle &h) const
   {
-    https://stackoverflow.com/a/1646913/1076564
+    // https://stackoverflow.com/a/1646913/1076564
     size_t hash = 17;
     hash = hash * 31 + std::hash<::point_containment_filter::ShapeHandle>()(h.contains);
     hash = hash * 31 + std::hash<::point_containment_filter::ShapeHandle>()(h.shadow);

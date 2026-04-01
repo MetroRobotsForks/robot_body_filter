@@ -71,6 +71,11 @@ void transformChannel(const sensor_msgs::msg::PointCloud2& cloudIn, sensor_msgs:
         *z_out = point.z();
       }
       break;
+    case CloudChannelType::SCALAR:
+      // TODO: Implement for scalar
+      RCLCPP_ERROR(rclcpp::get_logger("robot_body_filter"),
+                   "transformChannel has not been implemented for CloudChannelType scalar yet!");
+      break;
   }
 }
 
