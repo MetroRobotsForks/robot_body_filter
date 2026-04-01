@@ -1,7 +1,6 @@
 #include "robot_body_filter/utils/string_utils.hpp"
 
-#include <ros/ros.h>
-#include <rosconsole/macros_generated.h>
+#include <rclcpp/rclcpp.hpp>
 
 namespace robot_body_filter {
 

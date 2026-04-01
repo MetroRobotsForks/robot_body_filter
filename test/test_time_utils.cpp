@@ -4,7 +4,7 @@
 #include <ros/time.h>
 
 using namespace robot_body_filter;
-using namespace ros;
+using namespace rclcpp;
 
 TEST(TimeUtils, TimeNotInitialized)
 {

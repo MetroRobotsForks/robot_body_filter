@@ -5,12 +5,12 @@
 #include <map>
 #include <unordered_set>
 
-#include <moveit/point_containment_filter/shape_mask.h>
+#include <moveit/point_containment_filter/shape_mask.hpp>
 
 #include <robot_body_filter/utils/bodies.h>
 #include <robot_body_filter/utils/cloud.h>
 #include <geometric_shapes/body_operations.h>
-#include <ros/console.h>
+#include <rclcpp/rclcpp.hpp>
 
 namespace robot_body_filter
 {

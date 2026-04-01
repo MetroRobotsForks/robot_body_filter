@@ -12,15 +12,15 @@
 
 #include <pcl/filters/crop_box.h>
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <robot_body_filter/utils/filter_utils.hpp>
 #include <robot_body_filter/utils/tf2_sensor_msgs.h>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <robot_body_filter/RayCastingShapeMask.h>
-#include <moveit/occupancy_map_monitor/occupancy_map_updater.h>
-#include <moveit/robot_model/aabb.h>
+#include <moveit/occupancy_map_monitor/occupancy_map_updater.hpp>
+#include <moveit/robot_model/aabb.hpp>
 #include <urdf/model.h>
-#include <laser_geometry/laser_geometry.h>
+#include <laser_geometry/laser_geometry.hpp>
 #include <geometric_shapes/mesh_operations.h>
 #include <geometry_msgs/msg/point32.hpp>
 #include <geometry_msgs/msg/polygon_stamped.hpp>

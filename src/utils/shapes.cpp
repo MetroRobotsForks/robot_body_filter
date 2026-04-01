@@ -1,6 +1,6 @@
 #include <robot_body_filter/utils/shapes.h>
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <geometric_shapes/mesh_operations.h>
 #include <urdf_model/model.h>
 #include <robot_body_filter/utils/bodies.h>

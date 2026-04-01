@@ -2,7 +2,7 @@
 /* We want to subclass ShapeMask and use its private members. */
 #include <sstream>  // has to be there, otherwise we encounter build problems
 #define private protected
-#include <moveit/point_containment_filter/shape_mask.h>
+#include <moveit/point_containment_filter/shape_mask.hpp>
 #undef private
 /* HACK END HACK */
 
@@ -12,7 +12,7 @@
 
 #include <geometric_shapes/body_operations.h>
 
-#include <ros/console.h>
+#include <rclcpp/logging.hpp>
 
 namespace robot_body_filter
 {

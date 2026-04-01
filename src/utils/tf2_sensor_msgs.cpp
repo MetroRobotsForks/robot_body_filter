@@ -3,7 +3,7 @@
 #include <robot_body_filter/utils/cloud.h>
 #include <robot_body_filter/utils/string_utils.hpp>
 
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 #include <Eigen/Geometry>  // needs to be implementation-private as we want -march=native optimizations
 

@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include <robot_body_filter/utils/cloud.h>
+#include <cmath>
 
 TEST(Cloud, NumPoints)
 {

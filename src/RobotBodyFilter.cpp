@@ -5,20 +5,19 @@
 
 #include "robot_body_filter/RobotBodyFilter.h"
 
-#include "pluginlib/class_list_macros.h"
+#include <pluginlib/class_list_macros.hpp>
 
 #include <geometric_shapes/bodies.h>
 #include <geometric_shapes/body_operations.h>
 #include <geometric_shapes/shape_operations.h>
 #include <geometric_shapes/shape_to_marker.h>
 
-#include <sensor_msgs/point_cloud_conversion.h>
-#include <sensor_msgs/point_cloud2_iterator.h>
+#include <sensor_msgs/point_cloud2_iterator.hpp>
 
 #include <pcl_conversions/pcl_conversions.h>
 #include <tf2/LinearMath/Transform.h>
-#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 #include <robot_body_filter/utils/bodies.h>
 #include <robot_body_filter/utils/crop_box.h>

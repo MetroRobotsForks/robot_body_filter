@@ -1,7 +1,7 @@
 #ifndef ROBOT_BODY_FILTER_UTILS_TIME_UTILS_HPP
 #define ROBOT_BODY_FILTER_UTILS_TIME_UTILS_HPP
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 namespace robot_body_filter {
 
