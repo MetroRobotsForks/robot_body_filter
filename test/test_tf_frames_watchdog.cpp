@@ -207,7 +207,7 @@ TEST(TfFramesWatchdog, LookupTransform)
 
   EXPECT_FALSE(watchdog.isReachable("left_track"));
   auto resTf = watchdog.lookupTransform("left_track", clock->now(), rclcpp::Duration::from_seconds(1));
-  EXPECT_FALSE(resTf.has_value());
+  EXPECT_FALSE((bool) resTf);
 
   // if the frame is marked reachable and canTransform fails, it is marked unreachable
   watchdog.markReachable("left_track");
@@ -215,7 +215,7 @@ TEST(TfFramesWatchdog, LookupTransform)
   resTf = watchdog.lookupTransform("left_track", clock->now(), rclcpp::Duration::from_seconds(1));
   rclcpp::Time end = clock->now();
   EXPECT_FALSE(watchdog.isReachable("left_track"));
-  EXPECT_FALSE(resTf.has_value());
+  EXPECT_FALSE((bool) resTf);
   // check that the lookup took at least the amount of time specified by timeout, but not much more
   EXPECT_LE(1.0, (end - start).seconds());
   EXPECT_GE(1.5, (end - start).seconds());
@@ -234,7 +234,7 @@ TEST(TfFramesWatchdog, LookupTransform)
 
   resTf = watchdog.lookupTransform("left_track", clock->now(), rclcpp::Duration::from_seconds(1));
   EXPECT_FALSE(watchdog.isReachable("left_track"));
-  EXPECT_FALSE(resTf.has_value());
+  EXPECT_FALSE((bool) resTf);
 
   // if looking up an unmonitored frame, the first lookup fails, but sets the frame as monitored
   EXPECT_FALSE(watchdog.isMonitored("rear_left_flipper"));
@@ -242,7 +242,7 @@ TEST(TfFramesWatchdog, LookupTransform)
   resTf = watchdog.lookupTransform("rear_left_flipper", clock->now(), rclcpp::Duration::from_seconds(1));
   EXPECT_TRUE(watchdog.isMonitored("rear_left_flipper"));
   EXPECT_FALSE(watchdog.isReachable("rear_left_flipper"));
-  EXPECT_FALSE(resTf.has_value());
+  EXPECT_FALSE((bool) resTf);
 
   // look up a transform that is monitored, reachable and available in the buffer
 
@@ -264,7 +264,7 @@ TEST(TfFramesWatchdog, LookupTransform)
   resTf = watchdog.lookupTransform("rear_left_flipper", time, rclcpp::Duration::from_seconds(1));
   EXPECT_TRUE(watchdog.isMonitored("rear_left_flipper"));
   EXPECT_TRUE(watchdog.isReachable("rear_left_flipper"));
-  ASSERT_TRUE(resTf.has_value());
+  ASSERT_TRUE((bool) resTf);
   EXPECT_EQ("base_link", resTf.value().header.frame_id);
   EXPECT_EQ("rear_left_flipper", resTf.value().child_frame_id);
   EXPECT_EQ(time, resTf.value().header.stamp);
