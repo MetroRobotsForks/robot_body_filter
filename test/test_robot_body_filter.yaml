@@ -147,7 +147,6 @@ all_config:
     body_model/inflation/scale: 1.1
     body_model/inflation/padding: 0.01
     body_model/robot_description_param: 'test_robot_description'
-    body_model//dynamic_robot_description/field_name: 'robot'
     transforms/buffer_length: 60.0
     transforms/timeout/reachable: 0.2
     transforms/timeout/unreachable: 0.2

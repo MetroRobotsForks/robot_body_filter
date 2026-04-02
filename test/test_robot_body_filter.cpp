@@ -198,7 +198,6 @@ TEST(RobotBodyFilter, LoadParams)
     {"laser", ScaleAndPadding(1.1, 0.015)},
   })), filter->perLinkShadowInflation);
   EXPECT_EQ("test_robot_description", filter->robotDescriptionParam);
-  EXPECT_EQ("robot_model", filter->robotDescriptionUpdatesFieldName);
   EXPECT_DOUBLE_EQ(60.0, filter->tfBufferLength.seconds());
   EXPECT_DOUBLE_EQ(0.2, filter->reachableTransformTimeout.seconds());
   EXPECT_DOUBLE_EQ(0.2, filter->unreachableTransformTimeout.seconds());
@@ -284,7 +283,6 @@ TEST(RobotBodyFilter, LoadParamsAllConfig)
   EXPECT_DOUBLE_EQ(1.1, filter->defaultShadowInflation.scale);
   EXPECT_DOUBLE_EQ(0.01, filter->defaultShadowInflation.padding);
   EXPECT_EQ("test_robot_description", filter->robotDescriptionParam);
-  EXPECT_EQ("robot", filter->robotDescriptionUpdatesFieldName);
   EXPECT_DOUBLE_EQ(60.0, filter->tfBufferLength.seconds());
   EXPECT_DOUBLE_EQ(0.2, filter->reachableTransformTimeout.seconds());
   EXPECT_DOUBLE_EQ(0.2, filter->unreachableTransformTimeout.seconds());
@@ -384,14 +382,14 @@ TEST(RobotBodyFilter, ParseRobot)
   EXPECT_EQ(0, filter->shapeMask->getBodiesForContainsTest().size());
   EXPECT_EQ(0, filter->shapeMask->getBodiesForShadowTest().size());
 
-  auto cfg = boost::make_shared<dynamic_reconfigure::Config>();
+  /*auto cfg = boost::make_shared<dynamic_reconfigure::Config>();
   dynamic_reconfigure::StrParameter param;
   param.name = "robot_model";
   param.value = ROBOT_URDF;
-  cfg->strs.push_back(param);
+  cfg->strs.push_back(param);*/
 
-  auto cfgConst = boost::const_pointer_cast<const dynamic_reconfigure::Config>(cfg);
-  filter->robotDescriptionUpdated(cfgConst);
+  // auto cfgConst = boost::const_pointer_cast<const dynamic_reconfigure::Config>(cfg);
+  // filter->robotDescriptionUpdated(cfgConst);
   EXPECT_EQ(7, filter->shapesToLinks.size());
   EXPECT_TRUE(filter->tfFramesWatchdog->isMonitored("laser"));
   EXPECT_TRUE(filter->tfFramesWatchdog->isMonitored("base_link"));

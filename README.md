@@ -231,11 +231,6 @@ handle, and can publish a lot of auxiliary or debug data.
 - `/tf`, `/tf_static`
 
     Transforms
-- `dynamic_robot_model_server/parameter_updates` (`dynamic_reconfigure/Config`)
-
-    Dynamic reconfigure topic on which updated robot model can be subscribed. 
-    The model is read from a field defined by parameter 
-    `body_model/dynamic_robot_description/field_name`.
 
 ### Published Topics
 
@@ -524,11 +519,6 @@ configuration of your filter.
     `scan_point_cloud_no_local_bbox`. Implies `local_bounding_box/compute`. The
     "base" point cloud before cutting out are the input data, not the filtered
     data.
-- `body_model/dynamic_robot_description/field_name` (`string`, 
-    default `robot_model`)
-
-    If robot model is published by dynamic reconfigure, this is the name of the 
-    Config message field which holds the robot model.
 - `cloud/point_channels` (`list[string]`, default `["vp_"]`)
 
     List of channels of the incoming pointcloud that should be transformed as

@@ -203,11 +203,9 @@ bool RobotBodyFilter<T>::configure() {
   this->linksIgnoredEverywhere = this->template getParamVerboseSet<string>("ignored_links/everywhere");
   this->onlyLinks = this->template getParamVerboseSet<string>("only_links");
 
-  this->robotDescriptionUpdatesFieldName = this->getParamVerbose("body_model/dynamic_robot_description/field_name", "robot_model");
   // subscribe for robot_description param changes
   this->params_interface_->declare_parameter(this->robotDescriptionParam, rclcpp::ParameterType::PARAMETER_STRING);
-  this->robotDescriptionUpdatesListener = this->nodeHandle.subscribe(
-    "dynamic_robot_model_server/parameter_updates", 10, &RobotBodyFilter::robotDescriptionUpdated, this);
+  param_cb_ = this->params_interface_->add_on_set_parameters_callback(std::bind(&RobotBodyFilter<T>::paramUpdateCallback, this, std::placeholders::_1));
 
   this->reloadRobotModelServiceServer = this->nodeHandle->create_service<std_srvs::srv::Trigger>(
       "reload_model", &RobotBodyFilter::triggerModelReload, this);
@@ -1744,10 +1742,14 @@ void RobotBodyFilter<T>::createBodyVisualizationMsg(
 }
 
 template<typename T>
-void RobotBodyFilter<T>::robotDescriptionUpdated(dynamic_reconfigure::ConfigConstPtr newConfig) {
+rcl_interfaces::msg::SetParametersResult RobotBodyFilter<T>::paramUpdateCallback(const std::vector<rclcpp::Parameter> & parameters)
+{
+  rcl_interfaces::msg::SetParametersResult result;
+  result.successful = true;
+
   auto robotDescriptionIdx = static_cast<size_t>(-1);
-  for (size_t i = 0; i < newConfig->strs.size(); ++i) {
-    if (newConfig->strs[i].name == this->robotDescriptionUpdatesFieldName) {
+  for (size_t i = 0; i < parameters.size(); ++i) {
+    if (parameters[i].get_name() == this->robotDescriptionParam) {
       robotDescriptionIdx = i;
       break;
     }
@@ -1755,23 +1757,31 @@ void RobotBodyFilter<T>::robotDescriptionUpdated(dynamic_reconfigure::ConfigCons
 
   // robot_description parameter was not found, so we don't have to restart the filter
   if (robotDescriptionIdx == static_cast<size_t>(-1))
-    return;
+    return result;
 
-  auto urdf = newConfig->strs[robotDescriptionIdx].value;
+  RCLCPP_INFO(get_logger(),"RobotBodyFilter: Reloading robot model because of parameter update. Filter operation stopped.");
+  const rclcpp::Parameter& description_param = parameters[robotDescriptionIdx];
 
-  RCLCPP_INFO(get_logger(), "RobotBodyFilter: Reloading robot model because of dynamic_reconfigure update. Filter operation stopped.");
+  if (description_param.get_type() != rclcpp::ParameterType::PARAMETER_STRING)
+  {
+    result.successful = false;
+    result.reason = "description must be a string";
+    return result;
+  }
 
   this->tfFramesWatchdog->pause();
   this->configured_ = false;
 
   this->clearRobotMask();
-  this->addRobotMaskFromUrdf(urdf);
+  this->addRobotMaskFromUrdf(description_param.as_string());
 
   this->tfFramesWatchdog->unpause();
   this->timeConfigured = nodeHandle->now();
   this->configured_ = true;
 
   RCLCPP_DEBUG(get_logger(), "RobotBodyFilter: Robot model reloaded, resuming filter operation.");
+
+  return result;
 }
 
 template<typename T>

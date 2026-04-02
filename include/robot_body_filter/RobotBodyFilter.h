@@ -26,7 +26,6 @@
 #include <geometry_msgs/msg/polygon_stamped.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
-#include <dynamic_reconfigure/Config.h>
 #include <robot_body_filter/msg/sphere_stamped.hpp>
 #include <robot_body_filter/msg/oriented_bounding_box_stamped.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
@@ -203,10 +202,8 @@ protected:
   //! Name of the parameter where the robot model can be found.
   std::string robotDescriptionParam;
 
-  //! Subscriber for robot_description updates.
-  ros::Subscriber robotDescriptionUpdatesListener;
-  //! Name of the field in the dynamic reconfigure message that contains robot model.
-  std::string robotDescriptionUpdatesFieldName;
+  //! Callback for robot_description updates.
+  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_cb_;
 
   std::set<std::string> linksIgnoredInBoundingSphere;
   std::set<std::string> linksIgnoredInBoundingBox;
@@ -401,11 +398,11 @@ protected:
   void updateTransformCache(const rclcpp::Time& time, const rclcpp::Time& afterScanTime = rclcpp::Time(0));
 
   /**
-   * \brief Callback handling update of the robot_description parameter using dynamic reconfigure.
+   * \brief Callback handling update of the robot_description parameter using dynamic parameters.
    *
-   * \param newConfig The updated config.
+   * \param parameters The updated config.
    */
-  void robotDescriptionUpdated(dynamic_reconfigure::ConfigConstPtr newConfig);
+  rcl_interfaces::msg::SetParametersResult paramUpdateCallback(const std::vector<rclcpp::Parameter> & parameters);
 
   /**
    * \brief Callback for ~reload_model service. Reloads the URDF from parameter.
