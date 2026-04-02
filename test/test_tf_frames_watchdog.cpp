@@ -26,8 +26,9 @@ class TestWatchdog : public TFFramesWatchdog
 TEST(TfFramesWatchdog, Basic)
 {
   auto clock_ptr = std::make_shared<rclcpp::Clock>();
-  ros::Time::init();
-  ros::Time::setNow(ros::Time(1));
+  // TODO: Figure out time travel
+  // rclcpp::Time::init();
+  // rclcpp::Time::setNow(ros::Time(1));
 
   const std::shared_ptr<tf2_ros::Buffer> tfBuffer(new tf2_ros::Buffer(clock_ptr));
   TestWatchdog watchdog("base_link", {"left_track", "front_left_flipper"}, tfBuffer,
@@ -73,8 +74,9 @@ TEST(TfFramesWatchdog, Basic)
 TEST(TfFramesWatchdog, ThreadControl)
 {
   auto clock_ptr = std::make_shared<rclcpp::Clock>();
-  ros::Time::init();
-  ros::Time::setNow(ros::Time(1));
+  // TODO: Figure out time travel
+  // ros::Time::init();
+  // ros::Time::setNow(ros::Time(1));
 
   const std::shared_ptr<tf2_ros::Buffer> tfBuffer(new tf2_ros::Buffer(clock_ptr));
   TestWatchdog watchdog("base_link", {"left_track", "front_left_flipper"}, tfBuffer,
@@ -136,7 +138,8 @@ TEST(TfFramesWatchdog, ThreadControl)
 TEST(TfFramesWatchdog, SearchForReachableFrames)
 {
   auto clock_ptr = std::make_shared<rclcpp::Clock>();
-  ros::Time::init(); // use system time for this test so that we don't have problems with timeouts
+  // TODO: Figure out time travel
+  // ros::Time::init(); // use system time for this test so that we don't have problems with timeouts
 
   const std::shared_ptr<tf2_ros::Buffer> tfBuffer(new tf2_ros::Buffer(clock_ptr));
   tfBuffer->setUsingDedicatedThread(true);
@@ -194,7 +197,8 @@ TEST(TfFramesWatchdog, SearchForReachableFrames)
 TEST(TfFramesWatchdog, LookupTransform)
 {
   auto clock_ptr = std::make_shared<rclcpp::Clock>();
-  ros::Time::init(); // use system time for this test so that we don't have problems with timeouts
+  // TODO: Figure out time travel
+  // rclcpp::Time::init(); // use system time for this test so that we don't have problems with timeouts
 
   const std::shared_ptr<tf2_ros::Buffer> tfBuffer(new tf2_ros::Buffer(clock_ptr));
   tfBuffer->setUsingDedicatedThread(true);

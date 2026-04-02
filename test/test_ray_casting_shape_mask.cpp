@@ -30,8 +30,9 @@ class TestMask : public RayCastingShapeMask
 
 TEST(RayCastingShapeMask, Basic)
 {
-  ros::Time::init();
-  ros::Time::setNow(ros::Time(1));
+  // TODO: Figure out time travel
+  // ros::Time::init();
+  // ros::Time::setNow(ros::Time(1));
 
   auto cb = [] (point_containment_filter::ShapeHandle, Eigen::Isometry3d& t) -> bool
   {
@@ -125,8 +126,9 @@ TEST(RayCastingShapeMask, Basic)
 
 TEST(RayCastingShapeMask, Bspheres)
 {
-  ros::Time::init();
-  ros::Time::setNow(ros::Time(1));
+  // TODO: Figure out time travel
+  // ros::Time::init();
+  // ros::Time::setNow(ros::Time(1));
 
   auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
@@ -312,8 +314,9 @@ TEST(RayCastingShapeMask, Bspheres)
 
 TEST(RayCastingShapeMask, UpdateBodyPoses)
 {
-  ros::Time::init();
-  ros::Time::setNow(ros::Time(1));
+  // TODO: Figure out time travel
+  // ros::Time::init();
+  // ros::Time::setNow(ros::Time(1));
 
   auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
@@ -380,8 +383,9 @@ TEST(RayCastingShapeMask, UpdateBodyPoses)
 
 TEST(RayCastingShapeMask, ClassifyPoint)
 {
-  ros::Time::init();
-  ros::Time::setNow(ros::Time(1));
+  // TODO: Figure out time travel
+  // ros::Time::init();
+  // ros::Time::setNow(ros::Time(1));
 
   auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
@@ -721,8 +725,9 @@ TEST(RayCastingShapeMask, ClassifyPoint)
 
 TEST(RayCastingShapeMask, Mask)
 {
-  ros::Time::init();
-  ros::Time::setNow(ros::Time(1));
+  // TODO: Figure out time travel
+  // ros::Time::init();
+  // ros::Time::setNow(ros::Time(1));
 
   auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
@@ -848,8 +853,9 @@ TEST(RayCastingShapeMask, Mask)
 
 TEST(RayCastingShapeMask, MaskPerformancePoints)
 {
-  ros::Time::init();
-  ros::Time::setNow(ros::Time(1));
+  // TODO: Figure out time travel
+  // ros::Time::init();
+  // ros::Time::setNow(ros::Time(1));
 
   auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
@@ -930,8 +936,9 @@ TEST(RayCastingShapeMask, MaskPerformancePoints)
 
 TEST(RayCastingShapeMask, MaskPerformanceBodies)
 {
-  ros::Time::init();
-  ros::Time::setNow(ros::Time(1));
+  // TODO: Figure out time travel
+  // ros::Time::init();
+  // ros::Time::setNow(ros::Time(1));
 
   auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
@@ -997,8 +1004,9 @@ TEST(RayCastingShapeMask, MaskPerformanceBodies)
 
 TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh)
 {
-  ros::Time::init();
-  ros::Time::setNow(ros::Time(1));
+  // TODO: Figure out time travel
+  // ros::Time::init();
+  // ros::Time::setNow(ros::Time(1));
 
   auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
