@@ -54,17 +54,16 @@ class TestFilter : public robot_body_filter::FilterBase<std::string>
 
 TEST(FilterUtils, getParamVerboseFromDict)
 {
-  ros::NodeHandle nh;
+  rclcpp::Node nh("filter_utils");
 
   auto filter = std::make_shared<TestFilter>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<std::string>>(filter);
 
-  filterBase->configure("test_dict_config", nh);
+  filterBase->configure("", "test_dict_config", nh.get_node_logging_interface(), nh.get_node_parameters_interface());
 }
 
 int main(int argc, char **argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "test_filter_utils");
   return RUN_ALL_TESTS();
 }

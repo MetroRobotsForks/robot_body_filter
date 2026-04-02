@@ -134,20 +134,20 @@ class RobotBodyFilterPointCloud2Test : public RobotBodyFilterPointCloud2
 
 TEST(RobotBodyFilter, InitFromDict)
 {
-  ros::NodeHandle nh;
+  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   // test_robot_description parameter doesn't exist
-  nh.deleteParam("test_robot_description");
-  EXPECT_THROW(filterBase->configure("test_dict_config", nh), std::runtime_error);
+  nh->set_parameter(rclcpp::Parameter("test_robot_description", ""));
+  EXPECT_THROW(filterBase->configure("", "test_dict_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface()), std::runtime_error);
   EXPECT_FALSE(filter->configured_);
   ASSERT_NE(nullptr, filter->tfFramesWatchdog);
 
   // test that invalid robot model doesn't throw any exception, but also generates no filter shapes
-  nh.setParam("test_robot_description", "<robot name='test'></robot>");
-  filterBase->configure("test_dict_config", nh);
+  nh->set_parameter(rclcpp::Parameter("test_robot_description", "<robot name='test'></robot>"));
+  filterBase->configure("", "test_dict_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
   EXPECT_EQ("test_robot_description", filter->robotDescriptionParam);
   EXPECT_EQ(0, filter->shapesToLinks.size());
   EXPECT_TRUE(filter->configured_);
@@ -158,14 +158,14 @@ TEST(RobotBodyFilter, InitFromDict)
 
 TEST(RobotBodyFilter, LoadParams)
 {
-  ros::NodeHandle nh;
+  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   // test that invalid robot model doesn't throw any exception, but also generates no filter shapes
-  nh.setParam("test_robot_description", "<robot name='test'></robot>");
-  filterBase->configure("test_dict_config", nh);
+  nh->set_parameter(rclcpp::Parameter("test_robot_description", "<robot name='test'></robot>"));
+  filterBase->configure("", "test_dict_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
 
   EXPECT_EQ("odom", filter->fixedFrame);
   EXPECT_EQ("laser", filter->sensorFrame);
@@ -254,14 +254,14 @@ TEST(RobotBodyFilter, LoadParams)
 
 TEST(RobotBodyFilter, LoadParamsAllConfig)
 {
-  ros::NodeHandle nh;
+  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   // test that invalid robot model doesn't throw any exception, but also generates no filter shapes
-  nh.setParam("test_robot_description", "<robot name='test'></robot>");
-  filterBase->configure("all_config", nh);
+  nh->set_parameter(rclcpp::Parameter("test_robot_description", "<robot name='test'></robot>"));
+  filterBase->configure("", "all_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
 
   EXPECT_EQ("odom", filter->fixedFrame);
   EXPECT_EQ("laser", filter->sensorFrame);
@@ -340,13 +340,13 @@ TEST(RobotBodyFilter, LoadParamsAllConfig)
 
 TEST(RobotBodyFilter, ParseRobot)
 {
-  ros::NodeHandle nh;
+  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
-  nh.setParam("test_robot_description", ROBOT_URDF);
-  filterBase->configure("test_dict_config", nh);
+  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
+  filterBase->configure("", "test_dict_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
 
   // base_link, base_link::big_collision_box::contains/shadow, laser::contains/shadow, antenna::contains/shadow
   EXPECT_EQ(7, filter->shapesToLinks.size());
@@ -401,8 +401,8 @@ TEST(RobotBodyFilter, ParseRobot)
 
   // test reconfiguring (this happens when playing back a bag file and a new one starts playing)
   filter->clearRobotMask();
-  nh.setParam("test_robot_description", ROBOT_URDF);
-  filterBase->configure("test_dict_config", nh);
+  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
+  filterBase->configure("", "test_dict_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
   EXPECT_EQ(7, filter->shapesToLinks.size());
   EXPECT_TRUE(filter->tfFramesWatchdog->isMonitored("laser"));
   EXPECT_TRUE(filter->tfFramesWatchdog->isMonitored("base_link"));
@@ -413,13 +413,13 @@ TEST(RobotBodyFilter, ParseRobot)
 
 TEST(RobotBodyFilter, Transforms)
 {
-  ros::NodeHandle nh;
+  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
-  nh.setParam("test_robot_description", ROBOT_URDF);
-  filterBase->configure("test_dict_config", nh);
+  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
+  filterBase->configure("", "test_dict_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
 
   geometry_msgs::msg::TransformStamped tf;
   tf.transform.rotation.w = 1.0;
@@ -504,13 +504,13 @@ TEST(RobotBodyFilter, Transforms)
 
 TEST(RobotBodyFilter, ComputeMaskPointByPoint)
 {
-  ros::NodeHandle nh;
+  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
-  nh.setParam("test_robot_description", ROBOT_URDF);
-  filterBase->configure("compute_mask_config_point_by_point", nh);
+  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
+  filterBase->configure("", "compute_mask_config_point_by_point", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
 
   Cloud cloud;
   cloud.header.frame_id = filter->filteringFrame;
@@ -1441,13 +1441,13 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
 
 TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
 {
-  ros::NodeHandle nh;
+  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
 
   auto filter = std::make_shared<RobotBodyFilterPointCloud2Test>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::PointCloud2>>(filter);
 
-  nh.setParam("test_robot_description", ROBOT_URDF);
-  filterBase->configure("compute_mask_config_all_at_once", nh);
+  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
+  filterBase->configure("", "compute_mask_config_all_at_once", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
 
   Cloud cloud;
   cloud.header.frame_id = filter->filteringFrame;
@@ -2276,13 +2276,13 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
 
 TEST(RobotBodyFilter, UpdateLaserScan)
 {
-  ros::NodeHandle nh;
+  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
-  nh.setParam("test_robot_description", ROBOT_URDF);
-  filterBase->configure("compute_mask_config_point_by_point", nh);
+  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
+  filterBase->configure("", "compute_mask_config_point_by_point", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
 
   sensor_msgs::msg::LaserScan scan;
   scan.header.frame_id = "laser";
@@ -2375,13 +2375,13 @@ TEST(RobotBodyFilter, UpdateLaserScan)
 
 TEST(RobotBodyFilter, UpdatePointCloud2)
 {
-  ros::NodeHandle nh;
+  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
 
   auto filter = std::make_shared<RobotBodyFilterPointCloud2Test>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::PointCloud2>>(filter);
 
-  nh.setParam("test_robot_description", ROBOT_URDF);
-  filterBase->configure("compute_mask_config_all_at_once", nh);
+  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
+  filterBase->configure("", "compute_mask_config_all_at_once", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
 
   Cloud cloud;
   cloud.header.frame_id = "laser";
@@ -2526,7 +2526,6 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
 
   int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "test_robot_body_filter");
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
