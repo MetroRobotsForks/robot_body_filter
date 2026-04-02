@@ -6,7 +6,7 @@ namespace robot_body_filter {
 
 void warnLeadingSlash(const std::string& s)
 {
-  ROS_WARN_STREAM_ONCE("Found initial slash in " << s);
+  RCLCPP_WARN_STREAM_ONCE(rclcpp::get_logger("string_utils"), "Found initial slash in " << s);
 }
 
 void stripLeadingSlash(std::string &s, const bool warn)

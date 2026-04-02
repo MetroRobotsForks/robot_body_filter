@@ -165,7 +165,7 @@ void RayCastingShapeMask::updateBodyPosesNoLock()
     else
     {
       if (containsBody == nullptr)
-        ROS_ERROR_STREAM_DELAYED_THROTTLE_NAMED(3, "shape_mask",
+        RCLCPP_ERROR_STREAM_THROTTLE(logger, *clock_ptr, 3,
             "Missing transform for shape with handle " << containsHandle
             << " without a body");
       else {
@@ -174,11 +174,11 @@ void RayCastingShapeMask::updateBodyPosesNoLock()
           name = this->data->shapeNames.at(containsHandle);
 
         if (name.empty())
-          ROS_ERROR_STREAM_DELAYED_THROTTLE_NAMED(3, "shape_mask",
+          RCLCPP_ERROR_STREAM_THROTTLE(logger, *clock_ptr, 3,
               "Missing transform for shape " << containsBody->getType()
               << " with handle " << containsHandle);
         else
-          ROS_ERROR_STREAM_DELAYED_THROTTLE_NAMED(3, "shape_mask",
+          RCLCPP_ERROR_STREAM_THROTTLE(logger, *clock_ptr, 3,
               "Missing transform for shape " << name << " (" << containsBody->getType() << ")");
       }
     }

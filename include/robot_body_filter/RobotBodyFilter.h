@@ -110,6 +110,10 @@ protected:
   rclcpp::Node::SharedPtr nodeHandle;
   rclcpp::Clock::SharedPtr clock_ptr;
 
+  rclcpp::Logger get_logger() const {
+    return this->logging_interface_->get_logger();
+  }
+
   /** \brief If true, suppose that every point in the scan was captured at a
    * different time instant. Otherwise, the scan is assumed to be taken at once.
    *

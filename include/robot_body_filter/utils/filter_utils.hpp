@@ -72,7 +72,7 @@ protected:
     {
       if (valueToStringFn != nullptr)
       {
-        ROS_INFO_STREAM(this->getName() << ": Found parameter: " << name <<
+        RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
                                         ", value: " << valueToStringFn(value) <<
                                         prependIfNonEmpty(unit, " "));
       }
@@ -82,7 +82,7 @@ protected:
     }
     else if (this->params_.find(name) != this->params_.end())
     {  // the parameter was found, but has a wrong type
-      ROS_ERROR_STREAM(this->getName() << ": Parameter " << name << " found, "
+      RCLCPP_ERROR_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Parameter " << name << " found, "
         "but its value has a wrong type. Expected XmlRpc type " <<
         XmlRpcTraits<T>::stringType << ", got type: " <<
         to_string(this->params_.at(name).getType()) <<
@@ -108,14 +108,14 @@ protected:
                 *defaultUsed = false;
               if (valueToStringFn != nullptr)
               {
-                ROS_INFO_STREAM(this->getName() << ": Found parameter: " << name <<
+                RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
                   ", value: " << valueToStringFn(value) << prependIfNonEmpty(unit, " "));
               }
               return value;
             }
             else
             {
-              ROS_ERROR_STREAM(this->getName() << ": Parameter " << name << " found, "
+              RCLCPP_ERROR_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Parameter " << name << " found, "
                 "but its value has a wrong type. Expected XmlRpc type " <<
                 XmlRpcTraits<T>::stringType << ", got type: " <<
                 to_string(val[tail].getType()) <<
@@ -141,7 +141,7 @@ protected:
 
     if (valueToStringFn != nullptr)
     {
-      ROS_INFO_STREAM(this->getName() << ": Parameter " << name
+      RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Parameter " << name
                                       << " not defined, assigning default: "
                                       << valueToStringFn(defaultValue)
                                       << prependIfNonEmpty(unit, " "));
@@ -306,7 +306,7 @@ protected:
       }
       else
       {
-        ROS_WARN_STREAM(this->getName() << ": Invalid value for dict parameter " << name
+        RCLCPP_WARN_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Invalid value for dict parameter " << name
           << " key " << pairXmlRpc.first << ". Expected XmlRpc type " << XmlRpcTraits<T>::stringType
           << ", got type: " << to_string(pairXmlRpc.second.getType()) << ". Skipping value.");
         hasWrongTypeItems = true;
@@ -320,7 +320,7 @@ protected:
         *defaultUsed = true;
       if (valueToStringFn != nullptr)
       {
-        ROS_ERROR_STREAM(this->getName() << ": Dict parameter " << name
+        RCLCPP_ERROR_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Dict parameter " << name
                                          << " got only invalid types of values, assigning default: "
                                          << valueToStringFn(defaultValue)
                                          << prependIfNonEmpty(unit, " "));
@@ -332,14 +332,14 @@ protected:
       {
         if (innerDefaultUsed)
         {
-          ROS_INFO_STREAM(this->getName() << ": Parameter " << name
+          RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Parameter " << name
                                           << " not defined, assigning default: "
                                           << valueToStringFn(defaultValue)
                                           << prependIfNonEmpty(unit, " "));
         }
         else
         {
-          ROS_INFO_STREAM(this->getName() << ": Found parameter: " << name <<
+          RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
                                           ", value: " << valueToStringFn(value) <<
                                           prependIfNonEmpty(unit, " "));
         }
@@ -362,7 +362,7 @@ private:
     {
       if (valueToStringFn != nullptr)
       {
-        ROS_ERROR_STREAM(this->getName() << ": Value " << valueToStringFn(signedValue) <<
+        RCLCPP_ERROR_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Value " << valueToStringFn(signedValue) <<
                                          " of unsigned parameter " << name << " is negative.");
       }
       throw std::invalid_argument(name);
