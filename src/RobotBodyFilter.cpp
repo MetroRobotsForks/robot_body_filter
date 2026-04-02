@@ -208,7 +208,7 @@ bool RobotBodyFilter<T>::configure() {
   param_cb_ = this->params_interface_->add_on_set_parameters_callback(std::bind(&RobotBodyFilter<T>::paramUpdateCallback, this, std::placeholders::_1));
 
   this->reloadRobotModelServiceServer = this->nodeHandle->create_service<std_srvs::srv::Trigger>(
-      "reload_model", &RobotBodyFilter::triggerModelReload, this);
+      "reload_model", std::bind(&RobotBodyFilter<T>::triggerModelReload, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
   if (this->computeBoundingSphere) {
     this->boundingSpherePublisher = nodeHandle->create_publisher<robot_body_filter::msg::SphereStamped>("robot_bounding_sphere", 100);
@@ -534,6 +534,8 @@ bool RobotBodyFilter<T>::computeMask(
 }
 
 bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputScan, sensor_msgs::msg::LaserScan &filteredScan) {
+  rclcpp::spin_some(nodeHandle);
+
   const auto& scanTime = rclcpp::Time(inputScan.header.stamp);
 
   if (!this->configured_) {
@@ -1785,17 +1787,18 @@ rcl_interfaces::msg::SetParametersResult RobotBodyFilter<T>::paramUpdateCallback
 }
 
 template<typename T>
-bool RobotBodyFilter<T>::triggerModelReload(std_srvs::srv::Trigger::Request &,
-                                              std_srvs::srv::Trigger::Response &)
+void RobotBodyFilter<T>::triggerModelReload(const std::shared_ptr<rmw_request_id_t>,
+                          const std::shared_ptr<std_srvs::srv::Trigger::Request>,
+                          std::shared_ptr<std_srvs::srv::Trigger::Response> res)
 {
-  std::string urdf;
-  auto success = this->nodeHandle.getParam(this->robotDescriptionParam, urdf);
+  rclcpp::Parameter description_param;
+  res->success = this->params_interface_->get_parameter(this->robotDescriptionParam, description_param);
 
-  if (!success)
+  if (!res->success)
   {
     RCLCPP_ERROR_STREAM(get_logger(), "RobotBodyFilter: Parameter " << this->robotDescriptionParam
         << " doesn't exist.");
-    return false;
+    return;
   }
 
   RCLCPP_INFO(get_logger(), "RobotBodyFilter: Reloading robot model because of trigger. Filter operation stopped.");
@@ -1804,14 +1807,14 @@ bool RobotBodyFilter<T>::triggerModelReload(std_srvs::srv::Trigger::Request &,
   this->configured_ = false;
 
   this->clearRobotMask();
-  this->addRobotMaskFromUrdf(urdf);
+  this->addRobotMaskFromUrdf(description_param.as_string());
 
   this->tfFramesWatchdog->unpause();
   this->timeConfigured = nodeHandle->now();
   this->configured_ = true;
 
   RCLCPP_INFO(get_logger(), "RobotBodyFilter: Robot model reloaded, resuming filter operation.");
-  return true;
+  return;
 }
 
 template<typename T>

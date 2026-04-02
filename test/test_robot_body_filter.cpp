@@ -247,7 +247,7 @@ TEST(RobotBodyFilter, LoadParams)
   EXPECT_EQ("", filter->debugContainsMarkerPublisher->get_topic_name());
   EXPECT_EQ("", filter->debugShadowMarkerPublisher->get_topic_name());
 
-  EXPECT_EQ(ros::this_node::getName() + "/reload_model",
+  EXPECT_EQ(nh->get_name() + std::string("/reload_model"),
       filter->reloadRobotModelServiceServer->get_service_name());
 }
 
@@ -332,7 +332,7 @@ TEST(RobotBodyFilter, LoadParamsAllConfig)
   EXPECT_EQ("/robot_model_for_contains_test", filter->debugContainsMarkerPublisher->get_topic_name());
   EXPECT_EQ("/robot_model_for_shadow_test", filter->debugShadowMarkerPublisher->get_topic_name());
 
-  EXPECT_EQ(nh->getName() + "/reload_model",
+  EXPECT_EQ(nh->get_name() + std::string("/reload_model"),
       filter->reloadRobotModelServiceServer->get_service_name());
 }
 
@@ -370,10 +370,11 @@ TEST(RobotBodyFilter, ParseRobot)
   EXPECT_EQ(4, filter->shapeMask->getBodiesForContainsTest().size());
   EXPECT_EQ(2, filter->shapeMask->getBodiesForShadowTest().size());
 
-  nh.setParam("test_robot_description", "<robot name='test'></robot>");
-  std_srvs::srv::Trigger::Request req;
-  std_srvs::srv::Trigger::Response resp;
-  EXPECT_TRUE(filter->triggerModelReload(req, resp));
+  nh->set_parameter(rclcpp::Parameter("test_robot_description", "<robot name='test'></robot>"));
+  auto req = std::make_shared<std_srvs::srv::Trigger::Request>();
+  auto resp = std::make_shared<std_srvs::srv::Trigger::Response>();
+  filter->triggerModelReload(nullptr, req, resp);
+  EXPECT_TRUE(resp->success);
 
   EXPECT_EQ(0, filter->shapesToLinks.size());
   EXPECT_FALSE(filter->tfFramesWatchdog->isMonitored("laser"));
