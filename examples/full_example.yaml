@@ -1,7 +1,9 @@
 # This is an example filter config for tracked vehicle Absolem from Czech Technical University's
 # VRAS team. The robot is equipped with a 2D lidar attached to a rotating pivot point.
 scan_filter_chain:
-  - name: RobotBodyFilter
+ ros__parameters:
+  filter1:
+    name: RobotBodyFilter
     type: robot_body_filter/RobotBodyFilterLaserScan
     params:
       frames/fixed: 'odom'
