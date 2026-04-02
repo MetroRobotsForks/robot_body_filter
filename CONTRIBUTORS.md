@@ -1,3 +1,5 @@
 Martin Pecka (@peci1)
 Tomáš Petříček (@tpet)
 Rein Appeldoorn (@reinzor)
+Sebastian Pelletier (@spelletier1996)
+David V. Lu!! (@DLu)
