@@ -6,7 +6,10 @@
 
 namespace robot_body_filter
 {
-TFFramesWatchdog::TFFramesWatchdog(std::string robotFrame,
+TFFramesWatchdog::TFFramesWatchdog(
+                                   const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr & logging_interface,
+                                   const rclcpp::Clock::SharedPtr& clock_ptr,
+                                   std::string robotFrame,
                                    std::set<std::string>  monitoredFrames,
                                    std::shared_ptr<tf2_ros::Buffer> tfBuffer,
                                    ros::Duration unreachableTfLookupTimeout,
@@ -15,7 +18,9 @@ TFFramesWatchdog::TFFramesWatchdog(std::string robotFrame,
     monitoredFrames(std::move(monitoredFrames)),
     tfBuffer(tfBuffer),
     unreachableTfLookupTimeout(std::move(unreachableTfLookupTimeout)),
-    unreachableFramesCheckRate(std::move(unreachableFramesCheckRate)) {
+    unreachableFramesCheckRate(std::move(unreachableFramesCheckRate)),
+    logger(logging_interface->get_logger().get_child("tf_frames_watchdog")),
+    clock_ptr(clock_ptr) {
 }
 
 void TFFramesWatchdog::start() {
@@ -132,7 +137,7 @@ optional<geometry_msgs::msg::TransformStamped> TFFramesWatchdog::lookupTransform
   }
 
   if (!this->tfBuffer->canTransform(this->robotFrame, frame, time,
-      remainingTime(time, timeout), errstr)) {
+      remainingTime(clock_ptr, time, timeout), errstr)) {
     ROS_WARN_THROTTLE(3,
         "TFFramesWatchdog (%s): Frame %s became unreachable. Cause: %s",
         this->robotFrame.c_str(), frame.c_str(), errstr->c_str());
@@ -145,7 +150,7 @@ optional<geometry_msgs::msg::TransformStamped> TFFramesWatchdog::lookupTransform
   try
   {
     return this->tfBuffer->lookupTransform(
-        this->robotFrame, frame, time, remainingTime(time, timeout));
+        this->robotFrame, frame, time, remainingTime(clock_ptr, time, timeout));
   } catch (tf2::LookupException&) {
     ROS_WARN_DELAYED_THROTTLE(3,
         "TFFramesWatchdog (%s): Frame %s is not reachable. Cause: %s",

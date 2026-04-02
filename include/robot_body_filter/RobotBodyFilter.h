@@ -107,8 +107,8 @@ public:
 protected:
 
   //! Handle of the node this filter runs in.
-  ros::NodeHandle nodeHandle;
-  ros::NodeHandle privateNodeHandle;
+  rclcpp::Node::SharedPtr nodeHandle;
+  rclcpp::Clock::SharedPtr clock_ptr;
 
   /** \brief If true, suppose that every point in the scan was captured at a
    * different time instant. Otherwise, the scan is assumed to be taken at once.

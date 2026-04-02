@@ -36,17 +36,22 @@ using namespace filters;
 namespace robot_body_filter {
 
 template<typename T>
-RobotBodyFilter<T>::RobotBodyFilter() : privateNodeHandle("~") {
+RobotBodyFilter<T>::RobotBodyFilter() {
   this->modelMutex.reset(new std::mutex());
 }
 
 template<typename T>
 bool RobotBodyFilter<T>::configure() {
+
+  // Need to create NodeHandle because FilterBase does not provide get_node_topics_interface
+  nodeHandle =  std::make_shared<rclcpp::Node>("robot_body_filter", "debug");
+  clock_ptr = this->nodeHandle->get_clock();
+
   this->tfBufferLength = this->getParamVerbose("transforms/buffer_length", ros::Duration(60.0), "s");
 
   if (this->tfBuffer == nullptr)
   {
-    this->tfBuffer = std::make_shared<tf2_ros::Buffer>(this->tfBufferLength);
+    this->tfBuffer = std::make_shared<tf2_ros::Buffer>(clock_ptr, this->tfBufferLength);
     this->tfListener = std::make_unique<tf2_ros::TransformListener>(*this->tfBuffer);
   } else {
     // clear the TF buffer (useful if calling configure() after receiving old TF data)
@@ -310,7 +315,7 @@ bool RobotBodyFilter<T>::configure() {
 
   // initialize the 3D body masking tool
   auto getShapeTransformCallback = std::bind(&RobotBodyFilter::getShapeTransform, this, std::placeholders::_1, std::placeholders::_2);
-  shapeMask = std::make_unique<RayCastingShapeMask>(getShapeTransformCallback,
+  shapeMask = std::make_unique<RayCastingShapeMask>(this->logging_interface_, clock_ptr, getShapeTransformCallback,
       this->minDistance, this->maxDistance,
       doClipping, doContainsTest, doShadowTest, maxShadowDistance);
 
@@ -323,7 +328,7 @@ bool RobotBodyFilter<T>::configure() {
       initialMonitoredFrames.insert(this->sensorFrame);
     }
 
-    this->tfFramesWatchdog = std::make_shared<TFFramesWatchdog>(this->filteringFrame,
+    this->tfFramesWatchdog = std::make_shared<TFFramesWatchdog>(this->logging_interface_, clock_ptr, this->filteringFrame,
         initialMonitoredFrames, this->tfBuffer,
         this->unreachableTransformTimeout, ros::Rate(ros::Duration(1.0)));
     this->tfFramesWatchdog->start();
@@ -429,7 +434,7 @@ bool RobotBodyFilter<T>::computeMask(
     try {
       const auto sensorTf = this->tfBuffer->lookupTransform(
           this->filteringFrame, sensorFrame, scanTime,
-          remainingTime(scanTime, this->reachableTransformTimeout));
+          remainingTime(clock_ptr, scanTime, this->reachableTransformTimeout));
       tf2::fromMsg(sensorTf.transform.translation, sensorPosition);
     } catch (tf2::TransformException& e) {
       ROS_ERROR("RobotBodyFilter: Could not compute filtering mask due to this "
@@ -594,9 +599,9 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputSc
 
       string err;
       if (!this->tfBuffer->canTransform(this->fixedFrame, scanFrame, scanTime,
-            remainingTime(scanTime, this->reachableTransformTimeout), &err) ||
+            remainingTime(clock_ptr, scanTime, this->reachableTransformTimeout), &err) ||
             !this->tfBuffer->canTransform(this->fixedFrame, scanFrame, afterScanTime,
-                remainingTime(afterScanTime, this->reachableTransformTimeout), &err)) {
+                remainingTime(clock_ptr, afterScanTime, this->reachableTransformTimeout), &err)) {
         if (err.find("future") != string::npos) {
           const auto delay = ros::Time::now() - scanTime;
           ROS_ERROR_THROTTLE(3, "RobotBodyFilter: Cannot transform laser scan to "
@@ -649,7 +654,7 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputSc
         std::string err;
         if (!this->tfBuffer->canTransform(this->filteringFrame,
             tmpPointCloud.header.frame_id, scanTime,
-            remainingTime(scanTime, this->reachableTransformTimeout), &err)) {
+            remainingTime(clock_ptr, scanTime, this->reachableTransformTimeout), &err)) {
           ROS_ERROR_DELAYED_THROTTLE(3, "RobotBodyFilter: Cannot transform "
               "laser scan to filtering frame. Something's wrong with TFs: %s",
               err.c_str());
@@ -794,7 +799,7 @@ bool RobotBodyFilterPointCloud2::update(const sensor_msgs::msg::PointCloud2 &inp
     std::string err;
     if (!this->tfBuffer->canTransform(this->filteringFrame,
         inputCloud.header.frame_id, scanTime,
-        remainingTime(scanTime, this->reachableTransformTimeout), &err)) {
+        remainingTime(clock_ptr, scanTime, this->reachableTransformTimeout), &err)) {
       ROS_ERROR_DELAYED_THROTTLE(3, "RobotBodyFilter: Cannot transform "
           "point cloud to filtering frame. Something's wrong with TFs: %s",
           err.c_str());
@@ -832,7 +837,7 @@ bool RobotBodyFilterPointCloud2::update(const sensor_msgs::msg::PointCloud2 &inp
     std::string err;
     if (!this->tfBuffer->canTransform(this->outputFrame,
         tmpCloud.header.frame_id, scanTime,
-        remainingTime(scanTime, this->reachableTransformTimeout), &err)) {
+        remainingTime(clock_ptr, scanTime, this->reachableTransformTimeout), &err)) {
       ROS_ERROR_DELAYED_THROTTLE(3, "RobotBodyFilter: Cannot transform "
           "point cloud to output frame. Something's wrong with TFs: %s",
           err.c_str());
@@ -910,7 +915,7 @@ void RobotBodyFilter<T>::updateTransformCache(const ros::Time &time, const ros::
 
     {
       auto linkTransformTfOptional = this->tfFramesWatchdog->lookupTransform(
-          linkFrame, time, remainingTime(time, this->reachableTransformTimeout));
+          linkFrame, time, remainingTime(clock_ptr, time, this->reachableTransformTimeout));
 
       if (!linkTransformTfOptional)  // has no value
         continue;
@@ -927,7 +932,7 @@ void RobotBodyFilter<T>::updateTransformCache(const ros::Time &time, const ros::
     if (afterScanTime.sec != 0)
     {
       auto linkTransformTfOptional = this->tfFramesWatchdog->lookupTransform(
-          linkFrame, afterScanTime, remainingTime(time, this->reachableTransformTimeout));
+          linkFrame, afterScanTime, remainingTime(clock_ptr, time, this->reachableTransformTimeout));
 
       if (!linkTransformTfOptional)  // has no value
         continue;
@@ -1568,7 +1573,7 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
     if (!this->tfBuffer->canTransform(this->localBoundingBoxFrame,
                                       this->filteringFrame,
                                       scanTime,
-                                      remainingTime(scanTime, this->reachableTransformTimeout),
+                                      remainingTime(clock_ptr, scanTime, this->reachableTransformTimeout),
                                       &err)) {
       ROS_ERROR_DELAYED_THROTTLE(3.0, "Cannot get transform %s->%s. Error is %s.",
                          this->filteringFrame.c_str(),

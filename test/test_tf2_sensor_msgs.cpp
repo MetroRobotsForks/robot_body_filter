@@ -62,7 +62,8 @@ TEST(TF2SensorMsgs, CreateFilteredCloudUnorganized)
   tf.transform.rotation.x = tf.transform.rotation.z = 0;
   tf.transform.rotation.y = tf.transform.rotation.w = M_SQRT1_2;
 
-  tf2_ros::Buffer buffer;
+  auto clock_ptr = std::make_shared<rclcpp::Clock>();
+  tf2_ros::Buffer buffer(clock_ptr);
   buffer.setTransform(tf, "test");
 
   msg.header.stamp.sec = 2;

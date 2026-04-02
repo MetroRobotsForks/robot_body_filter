@@ -24,7 +24,9 @@ namespace robot_body_filter {
  */
 class TFFramesWatchdog {
 public:
-  TFFramesWatchdog(std::string robotFrame,
+  TFFramesWatchdog(const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr & logging_interface,
+                   const rclcpp::Clock::SharedPtr& clock_ptr,
+                   std::string robotFrame,
                    std::set<std::string>  monitoredFrames,
                    std::shared_ptr<tf2_ros::Buffer> tfBuffer,
                    ros::Duration unreachableTfLookupTimeout = ros::Duration(0, 100000000),  // 0.1 sec
@@ -189,6 +191,9 @@ protected:
 
 private:
   std::thread thisThread;
+
+  rclcpp::Logger logger;
+  const rclcpp::Clock::SharedPtr& clock_ptr;
 };
 
 }

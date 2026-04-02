@@ -2,7 +2,7 @@
 
 namespace robot_body_filter {
 
-ros::Duration remainingTime(const ros::Time &query, const double timeout)
+ros::Duration remainingTime(const rclcpp::Clock::SharedPtr& clock_ptr, const ros::Time &query, const double timeout)
 {
   ros::Time::waitForValid(ros::WallDuration().fromSec(timeout));
   if (!ros::Time::isValid()) {
@@ -14,7 +14,7 @@ ros::Duration remainingTime(const ros::Time &query, const double timeout)
   return ros::Duration(std::max(0.0, timeout - passed));
 }
 
-ros::Duration remainingTime(const ros::Time &query,
+ros::Duration remainingTime(const rclcpp::Clock::SharedPtr& clock_ptr, const ros::Time &query,
                             const ros::Duration &timeout)
 {
   ros::Time::waitForValid(ros::WallDuration(timeout.sec, timeout.nsec));

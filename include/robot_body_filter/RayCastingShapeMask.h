@@ -97,6 +97,8 @@ public:
    * \param doShadowTest
    */
   explicit RayCastingShapeMask(
+      const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr & logging_interface,
+      const rclcpp::Clock::SharedPtr& clock_ptr,
       const TransformCallback& transformCallback,
       double minSensorDist = 0.0, double maxSensorDist = 1e10,
       bool doClipping = true, bool doContainsTest = true,
@@ -363,6 +365,9 @@ protected:
    * \return The bounding sphere of the mask.
    */
   bodies::BoundingSphere getBoundingSphereForContainsTestNoLock() const;
+
+  rclcpp::Logger logger;
+  const rclcpp::Clock::SharedPtr& clock_ptr;
 
   double minSensorDist; //!< Minimum sensing distance of the sensor.
   double maxSensorDist; //!< Maximum sensing distance of the sensor.

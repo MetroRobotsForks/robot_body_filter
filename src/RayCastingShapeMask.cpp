@@ -36,11 +36,15 @@ struct RayCastingShapeMask::RayCastingShapeMaskPIMPL
 };
 
 RayCastingShapeMask::RayCastingShapeMask(
+    const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr & logging_interface,
+    const rclcpp::Clock::SharedPtr& clock_ptr,
     const TransformCallback& transformCallback,
     const double minSensorDist, const double maxSensorDist,
     const bool doClipping, const bool doContainsTest, const bool doShadowTest,
     const double maxShadowDist)
     : ShapeMask(transformCallback),
+      logger(logging_interface->get_logger().get_child("ray_casting_shape_mask")),
+      clock_ptr(clock_ptr),
       minSensorDist(minSensorDist),
       maxSensorDist(maxSensorDist),
       doClipping(doClipping),

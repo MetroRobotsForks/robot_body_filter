@@ -17,7 +17,7 @@ class TestMask : public RayCastingShapeMask
                    bool doClipping,
                    bool doContainsTest,
                    bool doShadowTest) :
-    RayCastingShapeMask(transformCallback, minSensorDist, maxSensorDist, doClipping, doContainsTest,
+    RayCastingShapeMask(nullptr, nullptr, transformCallback, minSensorDist, maxSensorDist, doClipping, doContainsTest,
         doShadowTest)
   {
 
