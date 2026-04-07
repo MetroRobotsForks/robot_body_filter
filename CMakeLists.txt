@@ -60,6 +60,7 @@ target_include_directories(${PROJECT_NAME}_utils PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 ament_target_dependencies(${PROJECT_NAME}_utils ${THIS_PACKAGE_DEPS})
+target_link_libraries(${PROJECT_NAME}_utils ${PCL_LIBRARIES})
 
 add_library(tf2_sensor_msgs_rbf src/utils/tf2_sensor_msgs.cpp)
 target_link_libraries(tf2_sensor_msgs_rbf ${PROJECT_NAME}_utils)

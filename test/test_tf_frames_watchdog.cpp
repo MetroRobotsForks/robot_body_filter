@@ -148,9 +148,9 @@ TEST(TfFramesWatchdog, SearchForReachableFrames)
 
   watchdog.unpause(); // searchForReachableFrames checks this->paused
 
-  rclcpp::Time start = clock->now();
+  rclcpp::Time start = clock_ptr->now();
   watchdog.searchForReachableFrames();
-  rclcpp::Time end = clock->now();
+  rclcpp::Time end = clock_ptr->now();
 
   EXPECT_FALSE(watchdog.isReachable("left_track"));
   EXPECT_FALSE(watchdog.isReachable("front_left_flipper"));
@@ -165,13 +165,13 @@ TEST(TfFramesWatchdog, SearchForReachableFrames)
   tf.transform.rotation.w = 1.0;
   for (double d = -5.0; d < 5.0; d += 0.1)
   {
-    tf.header.stamp = clock->now() + rclcpp::Duration::from_seconds(d);
+    tf.header.stamp = clock_ptr->now() + rclcpp::Duration::from_seconds(d);
     tfBuffer->setTransform(tf, "test");
   }
 
-  start = clock->now();
+  start = clock_ptr->now();
   watchdog.searchForReachableFrames();
-  end = clock->now();
+  end = clock_ptr->now();
 
   EXPECT_TRUE(watchdog.isReachable("left_track"));
   EXPECT_FALSE(watchdog.isReachable("front_left_flipper"));
@@ -185,7 +185,7 @@ TEST(TfFramesWatchdog, SearchForReachableFrames)
   tf.transform.rotation.w = 1.0;
   for (double d = -5.0; d < 5.0; d += 0.1)
   {
-    tf.header.stamp = clock->now() + rclcpp::Duration::from_seconds(d);
+    tf.header.stamp = clock_ptr->now() + rclcpp::Duration::from_seconds(d);
     tfBuffer->setTransform(tf, "test");
   }
 
@@ -205,19 +205,19 @@ TEST(TfFramesWatchdog, LookupTransform)
   TestWatchdog watchdog("base_link", {"left_track", "front_left_flipper"}, tfBuffer,
                         rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
-  EXPECT_THROW(watchdog.lookupTransform("left_track", clock->now(), rclcpp::Duration::from_seconds(1)), std::runtime_error);
+  EXPECT_THROW(watchdog.lookupTransform("left_track", clock_ptr->now(), rclcpp::Duration::from_seconds(1)), std::runtime_error);
 
   watchdog.started = true; // fake the running thread
 
   EXPECT_FALSE(watchdog.isReachable("left_track"));
-  auto resTf = watchdog.lookupTransform("left_track", clock->now(), rclcpp::Duration::from_seconds(1));
+  auto resTf = watchdog.lookupTransform("left_track", clock_ptr->now(), rclcpp::Duration::from_seconds(1));
   EXPECT_FALSE((bool) resTf);
 
   // if the frame is marked reachable and canTransform fails, it is marked unreachable
   watchdog.markReachable("left_track");
-  rclcpp::Time start = clock->now();
-  resTf = watchdog.lookupTransform("left_track", clock->now(), rclcpp::Duration::from_seconds(1));
-  rclcpp::Time end = clock->now();
+  rclcpp::Time start = clock_ptr->now();
+  resTf = watchdog.lookupTransform("left_track", clock_ptr->now(), rclcpp::Duration::from_seconds(1));
+  rclcpp::Time end = clock_ptr->now();
   EXPECT_FALSE(watchdog.isReachable("left_track"));
   EXPECT_FALSE((bool) resTf);
   // check that the lookup took at least the amount of time specified by timeout, but not much more
@@ -230,20 +230,20 @@ TEST(TfFramesWatchdog, LookupTransform)
   tf.transform.rotation.w = 1.0;
   for (double d = -5.0; d < 5.0; d += 0.1)
   {
-    tf.header.stamp = clock->now() + rclcpp::Duration::from_seconds(d);
+    tf.header.stamp = clock_ptr->now() + rclcpp::Duration::from_seconds(d);
     tfBuffer->setTransform(tf, "test");
   }
 
   // if the transform is there but the frame is marked unreachable, lookupTransform should fail
 
-  resTf = watchdog.lookupTransform("left_track", clock->now(), rclcpp::Duration::from_seconds(1));
+  resTf = watchdog.lookupTransform("left_track", clock_ptr->now(), rclcpp::Duration::from_seconds(1));
   EXPECT_FALSE(watchdog.isReachable("left_track"));
   EXPECT_FALSE((bool) resTf);
 
   // if looking up an unmonitored frame, the first lookup fails, but sets the frame as monitored
   EXPECT_FALSE(watchdog.isMonitored("rear_left_flipper"));
   EXPECT_FALSE(watchdog.isReachable("rear_left_flipper"));
-  resTf = watchdog.lookupTransform("rear_left_flipper", clock->now(), rclcpp::Duration::from_seconds(1));
+  resTf = watchdog.lookupTransform("rear_left_flipper", clock_ptr->now(), rclcpp::Duration::from_seconds(1));
   EXPECT_TRUE(watchdog.isMonitored("rear_left_flipper"));
   EXPECT_FALSE(watchdog.isReachable("rear_left_flipper"));
   EXPECT_FALSE((bool) resTf);
@@ -257,14 +257,14 @@ TEST(TfFramesWatchdog, LookupTransform)
   tf.transform.rotation.w = 1.0;
   for (double d = -5.0; d < 5.0; d += 0.1)
   {
-    tf.header.stamp = clock->now() + rclcpp::Duration::from_seconds(d);
+    tf.header.stamp = clock_ptr->now() + rclcpp::Duration::from_seconds(d);
     tfBuffer->setTransform(tf, "test");
   }
 
   EXPECT_TRUE(watchdog.isMonitored("rear_left_flipper"));
   EXPECT_FALSE(watchdog.isReachable("rear_left_flipper"));
   watchdog.markReachable("rear_left_flipper");
-  rclcpp::Time time = clock->now();
+  rclcpp::Time time = clock_ptr->now();
   resTf = watchdog.lookupTransform("rear_left_flipper", time, rclcpp::Duration::from_seconds(1));
   EXPECT_TRUE(watchdog.isMonitored("rear_left_flipper"));
   EXPECT_TRUE(watchdog.isReachable("rear_left_flipper"));
