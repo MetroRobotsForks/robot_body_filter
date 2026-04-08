@@ -15,7 +15,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set(THIS_PACKAGE_DEPS filters geometric_shapes laser_geometry moveit_core moveit_ros_perception pcl_conversions pluginlib
+set(THIS_PACKAGE_DEPS fcl filters geometric_shapes laser_geometry moveit_core moveit_ros_perception pcl_conversions pluginlib
     rclcpp sensor_msgs std_srvs tf2_ros tf2_sensor_msgs Eigen3 GLUT
 )
 set(MESSAGE_DEPS geometry_msgs std_msgs)
