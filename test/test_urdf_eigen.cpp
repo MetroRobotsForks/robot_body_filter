@@ -10,13 +10,15 @@ TEST(UrdfEigen, PoseTransform)
 
   const auto ePose = robot_body_filter::urdfPose2EigenTransform(uPose);
 
-  EXPECT_DOUBLE_EQ(1.0, ePose.translation().x());
-  EXPECT_DOUBLE_EQ(2.0, ePose.translation().y());
-  EXPECT_DOUBLE_EQ(3.0, ePose.translation().z());
+  EXPECT_DOUBLE_EQ(uPose.position.x, ePose.translation().x());
+  EXPECT_DOUBLE_EQ(uPose.position.y, ePose.translation().y());
+  EXPECT_DOUBLE_EQ(uPose.position.z, ePose.translation().z());
 
-  EXPECT_DOUBLE_EQ(0.0, fabs(ePose.rotation().eulerAngles(2, 1, 0).x()));
-  EXPECT_DOUBLE_EQ(M_PI_2, fabs(ePose.rotation().eulerAngles(2, 1, 0).y()));
-  EXPECT_DOUBLE_EQ(M_PI, fabs(ePose.rotation().eulerAngles(2, 1, 0).z()));
+  const Eigen::Quaterniond quat(ePose.rotation());
+  EXPECT_DOUBLE_EQ(uPose.rotation.x, quat.x());
+  EXPECT_DOUBLE_EQ(uPose.rotation.y, quat.y());
+  EXPECT_DOUBLE_EQ(uPose.rotation.z, quat.z());
+  EXPECT_DOUBLE_EQ(uPose.rotation.w, quat.w());
 }
 
 int main(int argc, char **argv)
