@@ -34,8 +34,8 @@
   <depend>urdf</depend>
   <depend>visualization_msgs</depend>
 
-  <build_depend>fcl</build_depend>
-  <exec_depend>fcl</exec_depend>
+  <build_depend>libfcl-dev</build_depend>
+  <exec_depend>libfcl</exec_depend>
 
   <build_depend>pcl_conversions</build_depend>
   <exec_depend>pcl_conversions</exec_depend>
