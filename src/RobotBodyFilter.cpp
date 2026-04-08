@@ -7,6 +7,8 @@
 
 #include <pluginlib/class_list_macros.hpp>
 
+#include <cras_cpp_common/urdf_utils.hpp>
+
 #include <geometric_shapes/bodies.h>
 #include <geometric_shapes/body_operations.h>
 #include <geometric_shapes/shape_operations.h>
@@ -27,7 +29,6 @@
 #include <robot_body_filter/utils/tf2_eigen.h>
 #include <robot_body_filter/utils/tf2_sensor_msgs.h>
 #include <robot_body_filter/utils/time_utils.hpp>
-#include <robot_body_filter/utils/urdf_eigen.hpp>
 
 using namespace std;
 using namespace sensor_msgs;
@@ -920,7 +921,7 @@ void RobotBodyFilter<T>::updateTransformCache(const rclcpp::Time &time, const rc
     const auto linkFrame = this->getLinkTfPrefix() + link->name;
 
     // the collision object may have a different origin than the visual, we need to account for that
-    const auto &collisionOffsetTransform = urdfPose2EigenTransform(collision->origin);
+    const auto &collisionOffsetTransform = cras::toEigen(collision->origin);
 
     {
       auto linkTransformTfOptional = this->tfFramesWatchdog->lookupTransform(

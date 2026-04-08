@@ -34,6 +34,9 @@
   <depend>urdf</depend>
   <depend>visualization_msgs</depend>
 
+  <build_depend>cras_cpp_common</build_depend>
+  <exec_depend>cras_cpp_common</exec_depend>
+
   <build_depend>libfcl-dev</build_depend>
   <exec_depend>libfcl</exec_depend>
 

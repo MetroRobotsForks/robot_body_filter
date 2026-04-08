@@ -15,7 +15,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set(THIS_PACKAGE_DEPS fcl filters geometric_shapes laser_geometry moveit_core moveit_ros_perception pcl_conversions pluginlib
+set(THIS_PACKAGE_DEPS cras_cpp_common fcl filters geometric_shapes laser_geometry moveit_core moveit_ros_perception pcl_conversions pluginlib
     rclcpp sensor_msgs std_srvs tf2_ros tf2_sensor_msgs Eigen3 GLUT
 )
 set(MESSAGE_DEPS geometry_msgs std_msgs)
@@ -119,10 +119,6 @@ if (BUILD_TESTING)
   ament_add_gtest(test_shapes_rbf test/test_shapes.cpp)
   target_link_libraries(test_shapes_rbf ${PROJECT_NAME}_utils)
   ament_target_dependencies(test_shapes_rbf ${THIS_PACKAGE_DEPS})
-
-  ament_add_gtest(test_urdf_eigen test/test_urdf_eigen.cpp)
-  target_link_libraries(test_urdf_eigen ${PROJECT_NAME}_utils)
-  ament_target_dependencies(test_urdf_eigen ${THIS_PACKAGE_DEPS})
 
   ament_add_gtest(test_time_utils test/test_time_utils.cpp)
   target_link_libraries(test_time_utils ${PROJECT_NAME}_utils)
