@@ -65,5 +65,7 @@ TEST(FilterUtils, getParamVerboseFromDict)
 int main(int argc, char **argv)
 {
   testing::InitGoogleTest(&argc, argv);
+  char* argv2[] = {(char*)"my_test"};
+  rclcpp::init(1, argv2);
   return RUN_ALL_TESTS();
 }
