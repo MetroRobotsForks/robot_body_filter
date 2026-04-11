@@ -1,3 +1,4 @@
+#include <optional>
 #include <utility>
 
 #include <robot_body_filter/TfFramesWatchdog.h>
@@ -107,7 +108,7 @@ void TFFramesWatchdog::clear() {
   reachableFrames.clear();
 }
 
-optional<geometry_msgs::msg::TransformStamped> TFFramesWatchdog::lookupTransform(
+std::optional<geometry_msgs::msg::TransformStamped> TFFramesWatchdog::lookupTransform(
     const std::string &frame,
     const rclcpp::Time &time,
     const rclcpp::Duration &timeout,
@@ -124,12 +125,12 @@ optional<geometry_msgs::msg::TransformStamped> TFFramesWatchdog::lookupTransform
           "monitoring it.", this->robotFrame.c_str(), frame.c_str());
       this->addMonitoredFrameNoLock(frame);
       // this lookup is lost, same as if the frame is unreachable
-      return nullopt;
+      return {};
     }
 
     // Return immediately for unreachable frames
     if (!this->isReachableNoLock(frame))
-      return nullopt;
+      return {};
   }
 
   std::string tmpErrstr;
@@ -145,7 +146,7 @@ optional<geometry_msgs::msg::TransformStamped> TFFramesWatchdog::lookupTransform
 
     // if we couldn't get TF for this reachable frame, mark it unreachable
     this->markUnreachable(frame);
-    return nullopt;
+    return {};
   }
 
   try
@@ -159,7 +160,7 @@ optional<geometry_msgs::msg::TransformStamped> TFFramesWatchdog::lookupTransform
 
     // if we couldn't get TF for this reachable frame, mark it unreachable
     this->markUnreachable(frame);
-    return nullopt;
+    return {};
   }
 }
 

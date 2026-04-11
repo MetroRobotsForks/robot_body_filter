@@ -1,15 +1,5 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.20.2)
 project(robot_body_filter)
-
-set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(DetectOptional)
-
-if(${ROBOT_BODY_FILTER_HAVE_CXX_OPTIONAL})
-  # add_compile_definitions would be nicer, but isn't available in Stretch
-  add_compile_options(-DROBOT_BODY_FILTER_USE_CXX_OPTIONAL=1)
-else()
-  add_compile_options(-DROBOT_BODY_FILTER_USE_CXX_OPTIONAL=0)
-endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)

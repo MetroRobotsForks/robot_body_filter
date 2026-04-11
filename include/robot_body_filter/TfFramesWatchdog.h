@@ -2,14 +2,13 @@
 #define ROBOT_BODY_FILTER_TFFRAMESWATCHDOG_H
 
 #include <mutex>
+#include <optional>
 #include <set>
 #include <string>
 #include <thread>
 
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
-
-#include <robot_body_filter/utils/optional.hpp>
 
 namespace robot_body_filter {
 
@@ -115,7 +114,7 @@ public:
    * \throws std::runtime_exception If you call this function before a call to
    *         start().
    */
-  optional<geometry_msgs::msg::TransformStamped> lookupTransform(
+  std::optional<geometry_msgs::msg::TransformStamped> lookupTransform(
       const std::string& frame,
       const rclcpp::Time& time,
       const rclcpp::Duration& timeout,

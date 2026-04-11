@@ -941,13 +941,13 @@ void RobotBodyFilter<T>::updateTransformCache(const rclcpp::Time &time, const rc
 
     if (afterScanTime.seconds() != 0)
     {
-      auto linkTransformTfOptional = this->tfFramesWatchdog->lookupTransform(
+      auto maybeLinkTransformTf = this->tfFramesWatchdog->lookupTransform(
           linkFrame, afterScanTime, remainingTime(clock_ptr, time, this->reachableTransformTimeout));
 
-      if (!linkTransformTfOptional)  // has no value
+      if (!maybeLinkTransformTf)  // has no value
         continue;
 
-      const auto &linkTransformTf = linkTransformTfOptional.value();
+      const auto &linkTransformTf = maybeLinkTransformTf.value();
       const auto &linkTransformEigen = tf2::transformToEigen(linkTransformTf);
 
       const auto &transform = linkTransformEigen * collisionOffsetTransform;
