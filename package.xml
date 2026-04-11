@@ -9,7 +9,9 @@
 
   <license file="LICENSE">BSD</license>
 
-  <url type="website">https://github.com/peci1/robot_body_filter</url>
+  <url type="repository">https://github.com/ctu-vras/robot_body_filter</url>
+  <url type="bugtracker">https://github.com/ctu-vras/robot_body_filter/issues</url>
+  <url type="website">https://index.ros.org/p/robot_body_filter</url>
 
   <author>Eitan Marder-Eppstein</author>
   <author>Tomas Petricek</author>
