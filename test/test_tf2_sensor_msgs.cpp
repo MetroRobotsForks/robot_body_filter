@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
 #include "gtest/gtest.h"
 #include <robot_body_filter/utils/tf2_sensor_msgs.h>
 #include <sensor_msgs/point_cloud2_iterator.hpp>

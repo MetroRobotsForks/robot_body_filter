@@ -1,4 +1,6 @@
 <?xml version="1.0"?>
+<!-- SPDX-License-Identifier: BSD-3-Clause -->
+<!-- SPDX-FileCopyrightText: Czech Technical University in Prague -->
 <launch>
     <!-- Prerequisite: sensor_filters -->
     <!-- http://wiki.ros.org/sensor_filters -->

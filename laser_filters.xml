@@ -1,3 +1,6 @@
+<?xml version="1.0" ?>
+<!-- SPDX-License-Identifier: BSD-3-Clause -->
+<!-- SPDX-FileCopyrightText: Czech Technical University in Prague -->
 <class_libraries>
     <library path="robot_body_filter">
         <class name="robot_body_filter/RobotBodyFilterLaserScan"

@@ -1,5 +1,8 @@
 #pragma once
 
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
 #include <pcl/filters/crop_box.h>
 
 namespace robot_body_filter

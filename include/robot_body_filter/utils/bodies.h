@@ -1,5 +1,8 @@
 #pragma once
 
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
 #include <geometric_shapes/bodies.h>
 #include <geometric_shapes/aabb.h>
 

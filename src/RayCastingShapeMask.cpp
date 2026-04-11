@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
 /* HACK HACK HACK */
 /* We want to subclass ShapeMask and use its private members. */
 #include <sstream>  // has to be there, otherwise we encounter build problems

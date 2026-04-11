@@ -1,5 +1,8 @@
 #pragma once
 
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
 #include <vector>
 #include <map>
 #include <unordered_set>

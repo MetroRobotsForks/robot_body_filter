@@ -1,4 +1,7 @@
 <?xml version="1.0"?>
+<!-- SPDX-License-Identifier: BSD-3-Clause -->
+<!-- SPDX-FileCopyrightText: Czech Technical University in Prague -->
+
 <!-- This is a full example that runs the LaserScan filter, spawns a robot from URDF, creates TF for it and publishes a pointcloud. -->
 <launch>
     <!-- Prerequisite: sensor_filters, rviz, robot_state_publisher, tf2_ros -->

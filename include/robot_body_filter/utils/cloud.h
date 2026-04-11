@@ -1,9 +1,13 @@
+#pragma once
+
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
 //
 // Created by Tomas Petricek on 3/28/19.
 // Edited by Martin Pecka
 //
 
-#pragma once
 
 #include <functional>
 

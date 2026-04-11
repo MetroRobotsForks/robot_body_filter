@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
 #include <robot_body_filter/utils/tf2_sensor_msgs.h>
 
 #include <robot_body_filter/utils/cloud.h>

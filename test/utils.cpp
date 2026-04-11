@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
 #include "gtest/gtest.h"
 #include <eigen_stl_containers/eigen_stl_vector_container.h>
 

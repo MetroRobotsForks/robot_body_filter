@@ -1,5 +1,8 @@
 #pragma once
 
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
 #include <unordered_map>
 #include <tf2_ros/buffer.h>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>

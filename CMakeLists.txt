@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-FileCopyrightText: Czech Technical University in Prague
+
 cmake_minimum_required(VERSION 3.20.2)
 project(robot_body_filter)
 

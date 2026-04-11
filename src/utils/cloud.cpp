@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-FileCopyrightText: Czech Technical University in Prague
+
 #include <sstream>
 #define private protected
 #include <sensor_msgs/point_cloud2_iterator.hpp>

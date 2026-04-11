@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-FileCopyrightText: Czech Technical University in Prague
+
 # This is an example filter config for tracked vehicle Jasmine from TU Darmstadt's Team Hector
 # with a rotating lidar Velodyne VLP-16.
 # It configures 4 instances of RobotBodyFilter - 2 for containment filtering, 2 for shadow
