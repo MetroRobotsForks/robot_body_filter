@@ -1,5 +1,4 @@
-#ifndef ROBOT_BODY_FILTER_ROBOTSELFFILTER_H_
-#define ROBOT_BODY_FILTER_ROBOTSELFFILTER_H_
+#pragma once
 
 #include <memory>
 #include <mutex>
@@ -489,5 +488,3 @@ protected:
 };
 
 }
-
-#endif //ROBOT_BODY_FILTER_ROBOTSELFFILTER_H_

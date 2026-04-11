@@ -1,5 +1,4 @@
-#ifndef ROBOT_BODY_FILTER_RAYCASTINGSHAPEMASK_H
-#define ROBOT_BODY_FILTER_RAYCASTINGSHAPEMASK_H
+#pragma once
 
 #include <vector>
 #include <map>
@@ -408,5 +407,3 @@ protected:
 };
 
 }
-
-#endif //ROBOT_BODY_FILTER_RAYCASTINGSHAPEMASK_H

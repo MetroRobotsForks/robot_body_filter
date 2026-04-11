@@ -1,5 +1,4 @@
-#ifndef ROBOT_BODY_FILTER_TF2_SENSOR_MSGS_H
-#define ROBOT_BODY_FILTER_TF2_SENSOR_MSGS_H
+#pragma once
 
 #include <unordered_map>
 #include <tf2_ros/buffer.h>
@@ -37,5 +36,3 @@ sensor_msgs::msg::PointCloud2& transformOnlyXYZ(
     const sensor_msgs::msg::PointCloud2& in, sensor_msgs::msg::PointCloud2& out, const geometry_msgs::msg::TransformStamped& tf);
 
 }
-
-#endif // ROBOT_BODY_FILTER_TF2_SENSOR_MSGS_H

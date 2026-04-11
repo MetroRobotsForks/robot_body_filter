@@ -1,5 +1,4 @@
-#ifndef ROBOT_BODY_FILTER_CROP_BOX_H
-#define ROBOT_BODY_FILTER_CROP_BOX_H
+#pragma once
 
 #include <pcl/filters/crop_box.h>
 
@@ -25,5 +24,3 @@ typedef pcl::CropBox<pcl::PCLPointCloud2> CropBoxPointCloud2;
 #endif
 
 }
-
-#endif //ROBOT_BODY_FILTER_CROP_BOX_H

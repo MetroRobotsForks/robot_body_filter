@@ -1,5 +1,4 @@
-#ifndef ROBOT_BODY_FILTER_SET_UTILS_HPP
-#define ROBOT_BODY_FILTER_SET_UTILS_HPP
+#pragma once
 
 namespace robot_body_filter
 {
@@ -17,5 +16,3 @@ bool isSetIntersectionEmpty(const std::set<T>& set1,
 }
 
 }
-
-#endif //ROBOT_BODY_FILTER_SET_UTILS_HPP

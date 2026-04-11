@@ -3,8 +3,7 @@
 // Edited by Martin Pecka
 //
 
-#ifndef ROBOT_BODY_FILTER_CLOUD_H
-#define ROBOT_BODY_FILTER_CLOUD_H
+#pragma once
 
 #include <functional>
 
@@ -150,4 +149,3 @@ size_t sizeOfPointField(const sensor_msgs::msg::PointField& field);
 void copyChannelData(const Cloud& in, Cloud& out, const std::string& fieldName);
 
 }
-#endif //ROBOT_BODY_FILTER_CLOUD_H

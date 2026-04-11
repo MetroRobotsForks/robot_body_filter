@@ -1,5 +1,4 @@
-#ifndef ROBOT_BODY_FILTER_BODIES_H
-#define ROBOT_BODY_FILTER_BODIES_H
+#pragma once
 
 #include <geometric_shapes/bodies.h>
 #include <geometric_shapes/aabb.h>
@@ -22,5 +21,3 @@ typedef bodies::OBB OrientedBoundingBox;
 void computeBoundingBoxAt(const bodies::Body* body, AxisAlignedBoundingBox& bbox, const Eigen::Isometry3d& pose);
 
 }
-
-#endif //ROBOT_BODY_FILTER_BODIES_H

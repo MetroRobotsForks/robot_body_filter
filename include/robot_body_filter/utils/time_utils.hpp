@@ -1,5 +1,4 @@
-#ifndef ROBOT_BODY_FILTER_UTILS_TIME_UTILS_HPP
-#define ROBOT_BODY_FILTER_UTILS_TIME_UTILS_HPP
+#pragma once
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -23,5 +22,3 @@ rclcpp::Duration remainingTime(const rclcpp::Clock::SharedPtr& clock_ptr, const 
                             const rclcpp::Duration &timeout);
 
 };
-
-#endif //ROBOT_BODY_FILTER_UTILS_TIME_UTILS_HPP

@@ -1,5 +1,4 @@
-#ifndef ROBOT_BODY_FILTER_UTILS_TOPIC_UTILS_HPP
-#define ROBOT_BODY_FILTER_UTILS_TOPIC_UTILS_HPP
+#pragma once
 
 #include <iterator>
 #include <map>
@@ -178,5 +177,4 @@ inline std::string to_string(const rclcpp::Duration& value)
   return ss.str();
 }
 
-};
-#endif //ROBOT_BODY_FILTER_UTILS_TOPIC_UTILS_HPP
+}

@@ -1,5 +1,4 @@
-#ifndef ROBOT_BODY_FILTER_TFFRAMESWATCHDOG_H
-#define ROBOT_BODY_FILTER_TFFRAMESWATCHDOG_H
+#pragma once
 
 #include <mutex>
 #include <optional>
@@ -196,5 +195,3 @@ private:
 };
 
 }
-
-#endif //ROBOT_BODY_FILTER_TFFRAMESWATCHDOG_H

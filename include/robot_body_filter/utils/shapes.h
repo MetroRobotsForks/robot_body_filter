@@ -1,5 +1,4 @@
-#ifndef ROBOT_BODY_FILTER_SHAPES_H
-#define ROBOT_BODY_FILTER_SHAPES_H
+#pragma once
 
 #include <urdf_model/types.h>
 #include <geometric_shapes/shapes.h>
@@ -16,5 +15,3 @@ namespace robot_body_filter
 shapes::ShapeConstPtr constructShape(const urdf::Geometry& geometry);
 
 }
-
-#endif //ROBOT_BODY_FILTER_SHAPES_H

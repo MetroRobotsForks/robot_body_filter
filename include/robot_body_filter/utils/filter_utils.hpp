@@ -1,5 +1,4 @@
-#ifndef ROBOT_BODY_FILTER_UTILS_FILTER_UTILS_HPP
-#define ROBOT_BODY_FILTER_UTILS_FILTER_UTILS_HPP
+#pragma once
 
 #include <map>
 
@@ -265,4 +264,3 @@ private:
 };
 
 }
-#endif //ROBOT_BODY_FILTER_UTILS_FILTER_UTILS_HPP
