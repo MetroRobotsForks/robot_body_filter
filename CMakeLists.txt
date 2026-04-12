@@ -98,10 +98,6 @@ pluginlib_export_plugin_description_file(filters laser_filters.xml)
 if (BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
-  ament_add_gtest(test_set_utils test/test_set_utils.cpp)
-  target_link_libraries(test_set_utils ${PROJECT_NAME}_utils)
-  ament_target_dependencies(test_set_utils ${THIS_PACKAGE_DEPS})
-
   ament_add_gtest(test_shapes_rbf test/test_shapes.cpp)
   target_link_libraries(test_shapes_rbf ${PROJECT_NAME}_utils)
   ament_target_dependencies(test_shapes_rbf ${THIS_PACKAGE_DEPS})

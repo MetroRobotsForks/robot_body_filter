@@ -11,6 +11,7 @@
 #include <pluginlib/class_list_macros.hpp>
 
 #include <cras_cpp_common/cloud.hpp>
+#include <cras_cpp_common/set_utils.hpp>
 #include <cras_cpp_common/tf2_sensor_msgs.hpp>
 #include <cras_cpp_common/urdf_utils.hpp>
 
@@ -27,7 +28,6 @@
 #include <tf2_eigen/tf2_eigen.hpp>
 
 #include <robot_body_filter/utils/bodies.h>
-#include <robot_body_filter/utils/set_utils.hpp>
 #include <robot_body_filter/utils/shapes.h>
 #include <robot_body_filter/utils/string_utils.hpp>
 #include <robot_body_filter/utils/tf2_eigen.h>
@@ -1027,14 +1027,14 @@ void RobotBodyFilter<T>::addRobotMaskFromUrdf(const string& urdfModel) {
 
         // if onlyLinks is nonempty, make sure this collision belongs to a specified link
         if (!this->onlyLinks.empty()) {
-          if (isSetIntersectionEmpty(collisionNamesSet, this->onlyLinks)) {
+          if (cras::isSetIntersectionEmpty(collisionNamesSet, this->onlyLinks)) {
             ++collisionIndex;
             continue;
           }
         }
 
         // if the link is ignored, go on
-        if (!isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredEverywhere)) {
+        if (!cras::isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredEverywhere)) {
           ++collisionIndex;
           continue;
         }
@@ -1062,19 +1062,19 @@ void RobotBodyFilter<T>::addRobotMaskFromUrdf(const string& urdfModel) {
             this->shapesToLinks[shapeHandle.bsphere] = this->shapesToLinks[shapeHandle.bbox] =
                 CollisionBodyWithLink(collision, link, collisionIndex, shapeHandle);
 
-        if (!isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredInBoundingSphere)) {
+        if (!cras::isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredInBoundingSphere)) {
           this->shapesIgnoredInBoundingSphere.insert(shapeHandle.bsphere);
         }
 
-        if (!isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredInBoundingBox)) {
+        if (!cras::isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredInBoundingBox)) {
           this->shapesIgnoredInBoundingBox.insert(shapeHandle.bbox);
         }
 
-        if (!isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredInContainsTest)) {
+        if (!cras::isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredInContainsTest)) {
           ignoreInContainsTest.insert(shapeHandle);
         }
 
-        if (!isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredInShadowTest)) {
+        if (!cras::isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredInShadowTest)) {
           ignoreInShadowTest.insert(shapeHandle);
         }
 
