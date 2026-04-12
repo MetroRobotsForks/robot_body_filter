@@ -61,7 +61,7 @@ TEST(Shapes, Mesh)
 {
   auto g = urdf::Mesh();
   g.scale = {1.0, 2.0, 3.0};
-  g.filename = "package://robot_body_filter/test/triangle.dae";
+  g.filename = std::string("file://") + TEST_DATA_DIR + "/triangle.dae";
 
   const auto shape = robot_body_filter::constructShape(g);
   const auto mesh = std::dynamic_pointer_cast<const shapes::Mesh>(shape);

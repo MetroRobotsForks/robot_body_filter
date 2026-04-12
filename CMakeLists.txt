@@ -100,6 +100,7 @@ if (BUILD_TESTING)
   ament_add_gtest(test_shapes_rbf test/test_shapes.cpp)
   target_link_libraries(test_shapes_rbf ${PROJECT_NAME}_utils)
   ament_target_dependencies(test_shapes_rbf ${THIS_PACKAGE_DEPS})
+  target_compile_definitions(test_shapes_rbf PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/test")
 
   ament_add_gtest(test_tf2_eigen test/test_tf2_eigen.cpp)
   target_link_libraries(test_tf2_eigen ${PROJECT_NAME}_utils)
