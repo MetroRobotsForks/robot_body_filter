@@ -41,8 +41,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 set(UTILS_SRCS
   src/utils/bodies.cpp
   src/utils/shapes.cpp
-  src/utils/tf2_eigen.cpp
-  src/utils/time_utils.cpp)
+  src/utils/tf2_eigen.cpp)
 
 add_library(${PROJECT_NAME}_utils ${UTILS_SRCS})
 target_include_directories(${PROJECT_NAME}_utils PUBLIC
@@ -100,10 +99,6 @@ if (BUILD_TESTING)
   ament_add_gtest(test_shapes_rbf test/test_shapes.cpp)
   target_link_libraries(test_shapes_rbf ${PROJECT_NAME}_utils)
   ament_target_dependencies(test_shapes_rbf ${THIS_PACKAGE_DEPS})
-
-  ament_add_gtest(test_time_utils test/test_time_utils.cpp)
-  target_link_libraries(test_time_utils ${PROJECT_NAME}_utils)
-  ament_target_dependencies(test_time_utils ${THIS_PACKAGE_DEPS})
 
   ament_add_gtest(test_tf2_eigen test/test_tf2_eigen.cpp)
   target_link_libraries(test_tf2_eigen ${PROJECT_NAME}_utils)

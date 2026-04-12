@@ -14,6 +14,7 @@
 #include <cras_cpp_common/set_utils.hpp>
 #include <cras_cpp_common/string_utils.hpp>
 #include <cras_cpp_common/tf2_sensor_msgs.hpp>
+#include <cras_cpp_common/time_utils.hpp>
 #include <cras_cpp_common/urdf_utils.hpp>
 
 #include <geometric_shapes/bodies.h>
@@ -31,7 +32,6 @@
 #include <robot_body_filter/utils/bodies.h>
 #include <robot_body_filter/utils/shapes.h>
 #include <robot_body_filter/utils/tf2_eigen.h>
-#include <robot_body_filter/utils/time_utils.hpp>
 
 using namespace std;
 using namespace sensor_msgs;
@@ -441,7 +441,7 @@ bool RobotBodyFilter<T>::computeMask(
     try {
       const auto sensorTf = this->tfBuffer->lookupTransform(
           this->filteringFrame, sensorFrame, scanTime,
-          remainingTime(clock_ptr, scanTime, this->reachableTransformTimeout));
+          cras::remainingTime(scanTime, this->reachableTransformTimeout, clock_ptr));
       tf2::fromMsg(sensorTf.transform.translation, sensorPosition);
     } catch (tf2::TransformException& e) {
       RCLCPP_ERROR(get_logger(), "RobotBodyFilter: Could not compute filtering mask due to this "
@@ -608,9 +608,9 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputSc
 
       string err;
       if (!this->tfBuffer->canTransform(this->fixedFrame, scanFrame, scanTime,
-            remainingTime(clock_ptr, scanTime, this->reachableTransformTimeout), &err) ||
+            cras::remainingTime(scanTime, this->reachableTransformTimeout, clock_ptr), &err) ||
             !this->tfBuffer->canTransform(this->fixedFrame, scanFrame, afterScanTime,
-                remainingTime(clock_ptr, afterScanTime, this->reachableTransformTimeout), &err)) {
+                cras::remainingTime(afterScanTime, this->reachableTransformTimeout, clock_ptr), &err)) {
         if (err.find("future") != string::npos) {
           const auto delay = nodeHandle->now() - scanTime;
           RCLCPP_ERROR_THROTTLE(get_logger(), *clock_ptr, 3, "RobotBodyFilter: Cannot transform laser scan to "
@@ -664,7 +664,7 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputSc
         std::string err;
         if (!this->tfBuffer->canTransform(this->filteringFrame,
             tmpPointCloud.header.frame_id, scanTime,
-            remainingTime(clock_ptr, scanTime, this->reachableTransformTimeout), &err)) {
+            cras::remainingTime(scanTime, this->reachableTransformTimeout, clock_ptr), &err)) {
           // TODO: originally was delayed-throttle
           RCLCPP_ERROR_THROTTLE(get_logger(), *clock_ptr, 3, "RobotBodyFilter: Cannot transform "
               "laser scan to filtering frame. Something's wrong with TFs: %s",
@@ -810,7 +810,7 @@ bool RobotBodyFilterPointCloud2::update(const sensor_msgs::msg::PointCloud2 &inp
     std::string err;
     if (!this->tfBuffer->canTransform(this->filteringFrame,
         inputCloud.header.frame_id, scanTime,
-        remainingTime(clock_ptr, scanTime, this->reachableTransformTimeout), &err)) {
+        cras::remainingTime(scanTime, this->reachableTransformTimeout, clock_ptr), &err)) {
       // TODO: Originally was delayed-throttle
       RCLCPP_ERROR_THROTTLE(get_logger(), *clock_ptr, 3, "RobotBodyFilter: Cannot transform "
           "point cloud to filtering frame. Something's wrong with TFs: %s",
@@ -849,7 +849,7 @@ bool RobotBodyFilterPointCloud2::update(const sensor_msgs::msg::PointCloud2 &inp
     std::string err;
     if (!this->tfBuffer->canTransform(this->outputFrame,
         tmpCloud.header.frame_id, scanTime,
-        remainingTime(clock_ptr, scanTime, this->reachableTransformTimeout), &err)) {
+        cras::remainingTime(scanTime, this->reachableTransformTimeout, clock_ptr), &err)) {
       // TODO: Originally was delayed-throttle
       RCLCPP_ERROR_THROTTLE(get_logger(), *clock_ptr, 3, "RobotBodyFilter: Cannot transform "
           "point cloud to output frame. Something's wrong with TFs: %s",
@@ -928,7 +928,7 @@ void RobotBodyFilter<T>::updateTransformCache(const rclcpp::Time &time, const rc
 
     {
       auto linkTransformTfOptional = this->tfFramesWatchdog->lookupTransform(
-          linkFrame, time, remainingTime(clock_ptr, time, this->reachableTransformTimeout));
+          linkFrame, time, cras::remainingTime(time, this->reachableTransformTimeout, clock_ptr));
 
       if (!linkTransformTfOptional)  // has no value
         continue;
@@ -945,7 +945,7 @@ void RobotBodyFilter<T>::updateTransformCache(const rclcpp::Time &time, const rc
     if (afterScanTime.seconds() != 0)
     {
       auto maybeLinkTransformTf = this->tfFramesWatchdog->lookupTransform(
-          linkFrame, afterScanTime, remainingTime(clock_ptr, time, this->reachableTransformTimeout));
+          linkFrame, afterScanTime, cras::remainingTime(time, this->reachableTransformTimeout, clock_ptr));
 
       if (!maybeLinkTransformTf)  // has no value
         continue;
@@ -1586,7 +1586,7 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
     if (!this->tfBuffer->canTransform(this->localBoundingBoxFrame,
                                       this->filteringFrame,
                                       scanTime,
-                                      remainingTime(clock_ptr, scanTime, this->reachableTransformTimeout),
+                                      cras::remainingTime(scanTime, this->reachableTransformTimeout, clock_ptr),
                                       &err)) {
       // TODO: Originally was delayed-throttle
       RCLCPP_ERROR_THROTTLE(get_logger(), *clock_ptr, 3.0, "Cannot get transform %s->%s. Error is %s.",

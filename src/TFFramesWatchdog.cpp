@@ -6,7 +6,7 @@
 
 #include <robot_body_filter/TfFramesWatchdog.h>
 
-#include <robot_body_filter/utils/time_utils.hpp>
+#include <cras_cpp_common/time_utils.hpp>
 
 namespace robot_body_filter
 {
@@ -142,7 +142,7 @@ std::optional<geometry_msgs::msg::TransformStamped> TFFramesWatchdog::lookupTran
   }
 
   if (!this->tfBuffer->canTransform(this->robotFrame, frame, time,
-      remainingTime(clock_ptr, time, timeout), errstr)) {
+      cras::remainingTime(time, timeout, clock_ptr), errstr)) {
     RCLCPP_WARN_THROTTLE(logger, *clock_ptr, 3,
         "TFFramesWatchdog (%s): Frame %s became unreachable. Cause: %s",
         this->robotFrame.c_str(), frame.c_str(), errstr->c_str());
@@ -155,7 +155,7 @@ std::optional<geometry_msgs::msg::TransformStamped> TFFramesWatchdog::lookupTran
   try
   {
     return this->tfBuffer->lookupTransform(
-        this->robotFrame, frame, time, remainingTime(clock_ptr, time, timeout));
+        this->robotFrame, frame, time, cras::remainingTime(time, timeout, clock_ptr));
   } catch (tf2::LookupException&) {
     RCLCPP_WARN_THROTTLE(logger, *clock_ptr, 3,
         "TFFramesWatchdog (%s): Frame %s is not reachable. Cause: %s",
