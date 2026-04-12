@@ -32,11 +32,34 @@ class TestMask : public RayCastingShapeMask
   friend class RayCastingShapeMask_ClassifyPoint_Test;
 };
 
+// Code for getting std::function address, from https://stackoverflow.com/q/18039723/1076564
+
+template <typename Function>
+struct function_traits
+    : public function_traits<decltype(&Function::operator())> {
+};
+
+template <typename ClassType, typename ReturnType, typename... Args>
+struct function_traits<ReturnType(ClassType::*)(Args...) const> {
+  typedef ReturnType (*pointer)(Args...);
+  typedef std::function<ReturnType(Args...)> function;
+};
+
+template <typename Function>
+typename function_traits<Function>::function
+to_function (Function & lambda) {
+  return static_cast<typename function_traits<Function>::function>(lambda);
+}
+
+template <typename Lambda>
+size_t getAddress(Lambda lambda) {
+  auto function = new decltype(to_function(lambda))(to_function(lambda));
+  void * func = static_cast<void *>(function);
+  return (size_t)func;
+}
+
 TEST(RayCastingShapeMask, Basic)
 {
-  // TODO: Figure out time travel
-  // ros::Time::init();
-  // ros::Time::setNow(ros::Time(1));
 
   rclcpp::Node nh("test_ray_casting_shape_mask");
   auto cb = [] (point_containment_filter::ShapeHandle, Eigen::Isometry3d& t) -> bool
@@ -46,8 +69,7 @@ TEST(RayCastingShapeMask, Basic)
   };
   TestMask mask(nh, cb, 1.0, 10.0, true, false, false);
 
-  // TODO: Figure out callback equality
-  // EXPECT_EQ(cb, mask.transform_callback_);
+  EXPECT_NE(0, getAddress(mask.transform_callback_));
   EXPECT_TRUE(mask.doClipping);
   EXPECT_FALSE(mask.doContainsTest);
   EXPECT_FALSE(mask.doShadowTest);
@@ -123,18 +145,13 @@ TEST(RayCastingShapeMask, Basic)
     t = Eigen::Isometry3d::Identity();
     return false;
   };
+  const auto prevAddress = getAddress(mask.transform_callback_);
   mask.setTransformCallback(cb2);
-  // TODO: Figure out callback equality
-  // EXPECT_NE(cb, mask.transform_callback_);
-  // EXPECT_EQ(cb2, mask.transform_callback_);
+  EXPECT_NE(prevAddress, getAddress(mask.transform_callback_));
 }
 
 TEST(RayCastingShapeMask, Bspheres)
 {
-  // TODO: Figure out time travel
-  // ros::Time::init();
-  // ros::Time::setNow(ros::Time(1));
-
   rclcpp::Node nh("test_ray_casting_shape_mask");
   auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
@@ -320,10 +337,6 @@ TEST(RayCastingShapeMask, Bspheres)
 
 TEST(RayCastingShapeMask, UpdateBodyPoses)
 {
-  // TODO: Figure out time travel
-  // ros::Time::init();
-  // ros::Time::setNow(ros::Time(1));
-
   rclcpp::Node nh("test_ray_casting_shape_mask");
   auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
@@ -390,10 +403,6 @@ TEST(RayCastingShapeMask, UpdateBodyPoses)
 
 TEST(RayCastingShapeMask, ClassifyPoint)
 {
-  // TODO: Figure out time travel
-  // ros::Time::init();
-  // ros::Time::setNow(ros::Time(1));
-
   rclcpp::Node nh("test_ray_casting_shape_mask");
   auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
@@ -733,10 +742,6 @@ TEST(RayCastingShapeMask, ClassifyPoint)
 
 TEST(RayCastingShapeMask, Mask)
 {
-  // TODO: Figure out time travel
-  // ros::Time::init();
-  // ros::Time::setNow(ros::Time(1));
-
   rclcpp::Node nh("test_ray_casting_shape_mask");
   auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
@@ -862,10 +867,6 @@ TEST(RayCastingShapeMask, Mask)
 
 TEST(RayCastingShapeMask, MaskPerformancePoints)
 {
-  // TODO: Figure out time travel
-  // ros::Time::init();
-  // ros::Time::setNow(ros::Time(1));
-
   rclcpp::Node nh("test_ray_casting_shape_mask");
   auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
@@ -946,10 +947,6 @@ TEST(RayCastingShapeMask, MaskPerformancePoints)
 
 TEST(RayCastingShapeMask, MaskPerformanceBodies)
 {
-  // TODO: Figure out time travel
-  // ros::Time::init();
-  // ros::Time::setNow(ros::Time(1));
-
   rclcpp::Node nh("test_ray_casting_shape_mask");
   auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
@@ -1015,10 +1012,6 @@ TEST(RayCastingShapeMask, MaskPerformanceBodies)
 
 TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh)
 {
-  // TODO: Figure out time travel
-  // ros::Time::init();
-  // ros::Time::setNow(ros::Time(1));
-
   rclcpp::Node nh("test_ray_casting_shape_mask");
   auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
