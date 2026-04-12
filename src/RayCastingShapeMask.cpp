@@ -13,9 +13,10 @@
 
 #include <robot_body_filter/RayCastingShapeMask.h>
 
+#include <cras_cpp_common/cloud.hpp>
 #include <geometric_shapes/body_operations.h>
-
 #include <rclcpp/logging.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 
 namespace robot_body_filter
 {
@@ -228,20 +229,20 @@ void RayCastingShapeMask::updateBodyPosesNoLock()
 }
 
 void RayCastingShapeMask::maskContainmentAndShadows(
-    const Cloud& data, std::vector<RayCastingShapeMask::MaskValue>& mask,
+    const sensor_msgs::msg::PointCloud2& data, std::vector<RayCastingShapeMask::MaskValue>& mask,
     const Eigen::Vector3d& sensorPos)
 {
   std::lock_guard _(this->shapes_lock_);
 
-  const auto np = num_points(data);
+  const auto np = cras::numPoints(data);
   mask.resize(np);
 
   this->updateBodyPosesNoLock();
 
   // we now decide which points we keep
-  CloudConstIter iter_x(data, "x");
-  CloudConstIter iter_y(data, "y");
-  CloudConstIter iter_z(data, "z");
+  cras::CloudConstIter iter_x(data, "x");
+  cras::CloudConstIter iter_y(data, "y");
+  cras::CloudConstIter iter_z(data, "z");
 
   // Cloud iterators are not incremented in the for loop, because of the pragma
   // Comment out below parallelization as it can result in very high CPU consumption

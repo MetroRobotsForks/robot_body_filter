@@ -3,6 +3,7 @@
 
 #include "gtest/gtest.h"
 
+#include <cras_cpp_common/cloud.hpp>
 #include <robot_body_filter/RayCastingShapeMask.h>
 #include <robot_body_filter/utils/shapes.h>
 #include <urdf_model/model.h>
@@ -811,13 +812,13 @@ TEST(RayCastingShapeMask, Mask)
   mask.maskContainmentAndShadows(pointAllNan, val, sensorPos);
   EXPECT_EQ(RayCastingShapeMask::MaskValue::OUTSIDE, val);
 
-  Cloud cloud;
-  CloudModifier mod(cloud);
+  cras::Cloud cloud;
+  cras::CloudModifier mod(cloud);
   mod.setPointCloud2FieldsByString(1, "xyz");
   mod.resize(13);
-  CloudIter it_x(cloud, "x");
-  CloudIter it_y(cloud, "y");
-  CloudIter it_z(cloud, "z");
+  cras::CloudIter it_x(cloud, "x");
+  cras::CloudIter it_y(cloud, "y");
+  cras::CloudIter it_z(cloud, "z");
 
   Eigen::Vector3f p;
   p = pointSensor; *it_x = p.x(); *it_y = p.y(); *it_z = p.z(); ++it_x; ++it_y; ++it_z;
@@ -896,13 +897,13 @@ TEST(RayCastingShapeMask, MaskPerformancePoints)
   const size_t numPoints = 100000;
 #endif
 
-  Cloud cloud;
-  CloudModifier mod(cloud);
+  cras::Cloud cloud;
+  cras::CloudModifier mod(cloud);
   mod.setPointCloud2FieldsByString(1, "xyz");
   mod.resize(numPoints);
-  CloudIter it_x(cloud, "x");
-  CloudIter it_y(cloud, "y");
-  CloudIter it_z(cloud, "z");
+  cras::CloudIter it_x(cloud, "x");
+  cras::CloudIter it_y(cloud, "y");
+  cras::CloudIter it_z(cloud, "z");
 
   // generate a bunch of points close the the bodies so that all filtering parts get activated
   random_numbers::RandomNumberGenerator rng;
@@ -971,13 +972,13 @@ TEST(RayCastingShapeMask, MaskPerformanceBodies)
 
   const size_t numPoints = 10;
 
-  Cloud cloud;
-  CloudModifier mod(cloud);
+  cras::Cloud cloud;
+  cras::CloudModifier mod(cloud);
   mod.setPointCloud2FieldsByString(1, "xyz");
   mod.resize(numPoints);
-  CloudIter it_x(cloud, "x");
-  CloudIter it_y(cloud, "y");
-  CloudIter it_z(cloud, "z");
+  cras::CloudIter it_x(cloud, "x");
+  cras::CloudIter it_y(cloud, "y");
+  cras::CloudIter it_z(cloud, "z");
 
   // generate a bunch of points close the the bodies so that all filtering parts get activated
   Eigen::Vector3d p;
@@ -1044,13 +1045,13 @@ TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh)
   const size_t numPoints = 10;
 #endif
 
-  Cloud cloud;
-  CloudModifier mod(cloud);
+  cras::Cloud cloud;
+  cras::CloudModifier mod(cloud);
   mod.setPointCloud2FieldsByString(1, "xyz");
   mod.resize(numPoints);
-  CloudIter it_x(cloud, "x");
-  CloudIter it_y(cloud, "y");
-  CloudIter it_z(cloud, "z");
+  cras::CloudIter it_x(cloud, "x");
+  cras::CloudIter it_y(cloud, "y");
+  cras::CloudIter it_z(cloud, "z");
 
   // generate a bunch of points close the the bodies so that all filtering parts get activated
   Eigen::Vector3d p;

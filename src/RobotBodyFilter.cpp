@@ -10,6 +10,8 @@
 
 #include <pluginlib/class_list_macros.hpp>
 
+#include <cras_cpp_common/cloud.hpp>
+#include <cras_cpp_common/tf2_sensor_msgs.hpp>
 #include <cras_cpp_common/urdf_utils.hpp>
 
 #include <geometric_shapes/bodies.h>
@@ -30,7 +32,6 @@
 #include <robot_body_filter/utils/shapes.h>
 #include <robot_body_filter/utils/string_utils.hpp>
 #include <robot_body_filter/utils/tf2_eigen.h>
-#include <robot_body_filter/utils/tf2_sensor_msgs.h>
 #include <robot_body_filter/utils/time_utils.hpp>
 
 using namespace std;
@@ -412,9 +413,9 @@ bool RobotBodyFilterPointCloud2::configure() {
   const auto directionChannels = this->getParamVerbose("cloud/direction_channels", std::vector<std::string>{"normal_"});
 
   for (const auto& channel : pointChannels)
-    this->channelsToTransform[channel] = CloudChannelType::POINT;
+    this->channelsToTransform[channel] = cras::CloudChannelType::POINT;
   for (const auto& channel : directionChannels)
-    this->channelsToTransform[channel] = CloudChannelType::DIRECTION;
+    this->channelsToTransform[channel] = cras::CloudChannelType::DIRECTION;
 
   stripLeadingSlash(this->outputFrame, true);
 
@@ -456,18 +457,18 @@ bool RobotBodyFilter<T>::computeMask(
     // for each shape) and masks contained points
     this->shapeMask->maskContainmentAndShadows(projectedPointCloud, pointMask, sensorPosition);
   } else {
-    CloudConstIter x_it(projectedPointCloud, "x");
-    CloudConstIter y_it(projectedPointCloud, "y");
-    CloudConstIter z_it(projectedPointCloud, "z");
-    CloudConstIter vp_x_it(projectedPointCloud, "vp_x");
-    CloudConstIter vp_y_it(projectedPointCloud, "vp_y");
-    CloudConstIter vp_z_it(projectedPointCloud, "vp_z");
-    CloudConstIter stamps_it(projectedPointCloud, "stamps");
+    cras::CloudConstIter x_it(projectedPointCloud, "x");
+    cras::CloudConstIter y_it(projectedPointCloud, "y");
+    cras::CloudConstIter z_it(projectedPointCloud, "z");
+    cras::CloudConstIter vp_x_it(projectedPointCloud, "vp_x");
+    cras::CloudConstIter vp_y_it(projectedPointCloud, "vp_y");
+    cras::CloudConstIter vp_z_it(projectedPointCloud, "vp_z");
+    cras::CloudConstIter stamps_it(projectedPointCloud, "stamps");
 
-    pointMask.resize(num_points(projectedPointCloud));
+    pointMask.resize(cras::numPoints(projectedPointCloud));
 
     double scanDuration = 0.0;
-    for (CloudConstIter stamps_end_it(projectedPointCloud, "stamps"); stamps_end_it != stamps_end_it.end(); ++stamps_end_it)
+    for (cras::CloudConstIter stamps_end_it(projectedPointCloud, "stamps"); stamps_end_it != stamps_end_it.end(); ++stamps_end_it)
     {
       if ((*stamps_end_it) > static_cast<float>(scanDuration))
         scanDuration = static_cast<double>(*stamps_end_it);
@@ -478,7 +479,7 @@ bool RobotBodyFilter<T>::computeMask(
     if (this->modelPoseUpdateInterval.seconds() == 0 && this->modelPoseUpdateInterval.nanoseconds() == 0) {
       updateBodyPosesEvery = 1;
     } else {
-      updateBodyPosesEvery = static_cast<size_t>(ceil(this->modelPoseUpdateInterval.seconds() / scanDuration * num_points(projectedPointCloud)));
+      updateBodyPosesEvery = static_cast<size_t>(ceil(this->modelPoseUpdateInterval.seconds() / scanDuration * cras::numPoints(projectedPointCloud)));
       // prevent division by zero
       if (updateBodyPosesEvery == 0)
         updateBodyPosesEvery = 1;
@@ -487,7 +488,7 @@ bool RobotBodyFilter<T>::computeMask(
     // prevent division by zero in ratio computation in case the pointcloud
     // isn't really taken point by point with different timestamps
     if (scanDuration == 0.0) {
-      updateBodyPosesEvery = num_points(projectedPointCloud) + 1;
+      updateBodyPosesEvery = cras::numPoints(projectedPointCloud) + 1;
       RCLCPP_WARN_ONCE(get_logger(), "RobotBodyFilter: sensor/point_by_point is set to true but "
                     "all points in the cloud have the same timestamp. You should"
                     " change the parameter to false to gain performance.");
@@ -501,7 +502,7 @@ bool RobotBodyFilter<T>::computeMask(
     RayCastingShapeMask::MaskValue mask;
 
     this->cacheLookupBetweenScansRatio = 0.0;
-    for (size_t i = 0; i < num_points(projectedPointCloud); ++i, ++x_it, ++y_it, ++z_it, ++vp_x_it, ++vp_y_it, ++vp_z_it, ++stamps_it)
+    for (size_t i = 0; i < cras::numPoints(projectedPointCloud); ++i, ++x_it, ++y_it, ++z_it, ++vp_x_it, ++vp_y_it, ++vp_z_it, ++stamps_it)
     {
       point.x() = *x_it;
       point.y() = *y_it;
@@ -672,7 +673,7 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputSc
           return false;
         }
 
-        transformWithChannels(tmpPointCloud, projectedPointCloud,
+        cras::transformWithChannels(tmpPointCloud, projectedPointCloud,
             *this->tfBuffer, this->filteringFrame, this->channelsToTransform);
       }
     }
@@ -818,8 +819,8 @@ bool RobotBodyFilterPointCloud2::update(const sensor_msgs::msg::PointCloud2 &inp
       return false;
     }
 
-    transformWithChannels(inputCloud, transformedCloud, *this->tfBuffer, this->filteringFrame,
-                          this->channelsToTransform);
+    cras::transformWithChannels(inputCloud, transformedCloud, *this->tfBuffer, this->filteringFrame,
+                                this->channelsToTransform);
   }
 
   // Compute the mask and use it (transform message only if sensorFrame is specified)
@@ -857,7 +858,7 @@ bool RobotBodyFilterPointCloud2::update(const sensor_msgs::msg::PointCloud2 &inp
       return false;
     }
 
-    transformWithChannels(tmpCloud, filteredCloud, *this->tfBuffer, this->outputFrame, this->channelsToTransform);
+    cras::transformWithChannels(tmpCloud, filteredCloud, *this->tfBuffer, this->outputFrame, this->channelsToTransform);
   }
 
   return true;

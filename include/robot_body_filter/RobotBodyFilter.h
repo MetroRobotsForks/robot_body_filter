@@ -14,9 +14,9 @@
 
 #include <pcl/filters/crop_box.h>
 
+#include <cras_cpp_common/tf2_sensor_msgs.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <robot_body_filter/utils/filter_utils.hpp>
-#include <robot_body_filter/utils/tf2_sensor_msgs.h>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <robot_body_filter/RayCastingShapeMask.h>
 #include <moveit/occupancy_map_monitor/occupancy_map_updater.hpp>
@@ -472,7 +472,8 @@ protected:
   laser_geometry::LaserProjection laserProjector;
 
   // in RobotBodyFilterLaserScan::update we project the scan to a pointcloud with viewpoints
-  const std::unordered_map<std::string, CloudChannelType> channelsToTransform { {"vp_", CloudChannelType::POINT} };
+  const std::unordered_map<std::string, cras::CloudChannelType> channelsToTransform {
+    {"vp_", cras::CloudChannelType::POINT} };
 };
 
 class RobotBodyFilterPointCloud2 : public RobotBodyFilter<sensor_msgs::msg::PointCloud2>
@@ -487,7 +488,7 @@ protected:
   /** \brief Frame into which the output data should be transformed. */
   std::string outputFrame;
 
-  std::unordered_map<std::string, CloudChannelType> channelsToTransform;
+  std::unordered_map<std::string, cras::CloudChannelType> channelsToTransform;
 };
 
 }

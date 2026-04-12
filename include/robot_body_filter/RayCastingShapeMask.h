@@ -10,9 +10,9 @@
 #include <moveit/point_containment_filter/shape_mask.hpp>
 
 #include <robot_body_filter/utils/bodies.h>
-#include <robot_body_filter/utils/cloud.h>
 #include <geometric_shapes/body_operations.h>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 
 namespace robot_body_filter
 {
@@ -239,7 +239,7 @@ public:
    * \note Updates bspheres_/boundingBoxes to contain the bounding spheres/boxes of links.
   */
   void maskContainmentAndShadows(
-      const Cloud& data,
+      const sensor_msgs::msg::PointCloud2& data,
       std::vector<MaskValue>& mask,
       const Eigen::Vector3d& sensorPos = Eigen::Vector3d::Zero());
 

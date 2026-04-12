@@ -40,11 +40,9 @@ link_directories(${PCL_LIBRARY_DIRS})
 
 set(UTILS_SRCS
   src/utils/bodies.cpp
-  src/utils/cloud.cpp
   src/utils/shapes.cpp
   src/utils/string_utils.cpp
   src/utils/tf2_eigen.cpp
-  src/utils/tf2_sensor_msgs.cpp
   src/utils/time_utils.cpp)
 
 add_library(${PROJECT_NAME}_utils ${UTILS_SRCS})
@@ -54,10 +52,6 @@ target_include_directories(${PROJECT_NAME}_utils PUBLIC
 )
 ament_target_dependencies(${PROJECT_NAME}_utils ${THIS_PACKAGE_DEPS})
 target_link_libraries(${PROJECT_NAME}_utils ${PCL_LIBRARIES})
-
-add_library(tf2_sensor_msgs_rbf src/utils/tf2_sensor_msgs.cpp)
-target_link_libraries(tf2_sensor_msgs_rbf ${PROJECT_NAME}_utils)
-ament_export_libraries(tf2_sensor_msgs_rbf)
 
 add_library(RayCastingShapeMask src/RayCastingShapeMask.cpp)
 target_link_libraries(RayCastingShapeMask ${PROJECT_NAME}_utils)
@@ -73,7 +67,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 target_link_libraries(${PROJECT_NAME}
   Eigen3::Eigen
   ${PROJECT_NAME}_utils
-  tf2_sensor_msgs_rbf
   TFFramesWatchdog
   RayCastingShapeMask
   "${cpp_typesupport_target}"
@@ -84,7 +77,7 @@ ament_export_targets(export_${PROJECT_NAME})
 install(DIRECTORY include/
         DESTINATION include
 )
-install(TARGETS ${PROJECT_NAME} TFFramesWatchdog RayCastingShapeMask ${PROJECT_NAME}_utils tf2_sensor_msgs_rbf
+install(TARGETS ${PROJECT_NAME} TFFramesWatchdog RayCastingShapeMask ${PROJECT_NAME}_utils
         EXPORT export_${PROJECT_NAME}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
@@ -128,14 +121,6 @@ if (BUILD_TESTING)
   ament_add_gtest(test_bodies test/test_bodies.cpp)
   target_link_libraries(test_bodies ${PROJECT_NAME}_utils)
   ament_target_dependencies(test_bodies ${THIS_PACKAGE_DEPS})
-
-  ament_add_gtest(test_cloud test/test_cloud.cpp)
-  target_link_libraries(test_cloud ${PROJECT_NAME}_utils)
-  ament_target_dependencies(test_cloud ${THIS_PACKAGE_DEPS})
-
-  ament_add_gtest(test_tf2_sensor_msgs test/test_tf2_sensor_msgs.cpp)
-  target_link_libraries(test_tf2_sensor_msgs ${PROJECT_NAME}_utils)
-  ament_target_dependencies(test_tf2_sensor_msgs ${THIS_PACKAGE_DEPS})
 
   ament_add_gtest(test_filter_utils test/test_filter_utils.test test/test_filter_utils.cpp)
   target_link_libraries(test_filter_utils ${PROJECT_NAME}_utils)

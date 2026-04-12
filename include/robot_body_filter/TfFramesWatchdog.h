@@ -9,8 +9,8 @@
 #include <string>
 #include <thread>
 
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.hpp>
+#include <tf2_ros/transform_listener.hpp>
 
 namespace robot_body_filter {
 

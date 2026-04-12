@@ -3,6 +3,7 @@
 
 #include "gtest/gtest.h"
 
+#include <cras_cpp_common/cloud.hpp>
 #include <robot_body_filter/RobotBodyFilter.h>
 #include "utils.cpp"
 
@@ -514,9 +515,9 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
   filterBase->configure("", "compute_mask_config_point_by_point", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
 
-  Cloud cloud;
+  cras::Cloud cloud;
   cloud.header.frame_id = filter->filteringFrame;
-  CloudModifier mod(cloud);
+  cras::CloudModifier mod(cloud);
   mod.setPointCloud2Fields(7,
                            "x", 1, sensor_msgs::msg::PointField::FLOAT32,
                            "y", 1, sensor_msgs::msg::PointField::FLOAT32,
@@ -528,13 +529,13 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   mod.resize(11);
 
   {
-    CloudIter x_it(cloud, "x");
-    CloudIter y_it(cloud, "y");
-    CloudIter z_it(cloud, "z");
-    CloudIter vp_x_it(cloud, "vp_x");
-    CloudIter vp_y_it(cloud, "vp_y");
-    CloudIter vp_z_it(cloud, "vp_z");
-    CloudIter stamps_it(cloud, "stamps");
+    cras::CloudIter x_it(cloud, "x");
+    cras::CloudIter y_it(cloud, "y");
+    cras::CloudIter z_it(cloud, "z");
+    cras::CloudIter vp_x_it(cloud, "vp_x");
+    cras::CloudIter vp_y_it(cloud, "vp_y");
+    cras::CloudIter vp_z_it(cloud, "vp_z");
+    cras::CloudIter stamps_it(cloud, "stamps");
 
     // pointSensor
     *x_it = -1.5; *y_it = 0; *z_it = 0; *vp_x_it = -1.5; *vp_y_it = 0; *vp_z_it = 0; *stamps_it = 0;
@@ -625,7 +626,7 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   std::vector<RayCastingShapeMask::MaskValue> mask;
   filter->computeMask(cloud, mask);
 
-  ASSERT_EQ(num_points(cloud), mask.size());
+  ASSERT_EQ(cras::numPoints(cloud), mask.size());
   EXPECT_EQ(RayCastingShapeMask::MaskValue::CLIP, mask[0]);
   EXPECT_EQ(RayCastingShapeMask::MaskValue::CLIP, mask[1]);
   EXPECT_EQ(RayCastingShapeMask::MaskValue::CLIP, mask[2]);
@@ -642,13 +643,13 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   // that the 5-meter motion is 10 seconds in future and the 10-meter motion is 20 seconds
   // this will test the filter->cacheLookupBetweenScansRatio usage
   {
-    CloudIter x_it(cloud, "x");
-    CloudIter y_it(cloud, "y");
-    CloudIter z_it(cloud, "z");
-    CloudIter vp_x_it(cloud, "vp_x");
-    CloudIter vp_y_it(cloud, "vp_y");
-    CloudIter vp_z_it(cloud, "vp_z");
-    CloudIter stamps_it(cloud, "stamps");
+    cras::CloudIter x_it(cloud, "x");
+    cras::CloudIter y_it(cloud, "y");
+    cras::CloudIter z_it(cloud, "z");
+    cras::CloudIter vp_x_it(cloud, "vp_x");
+    cras::CloudIter vp_y_it(cloud, "vp_y");
+    cras::CloudIter vp_z_it(cloud, "vp_z");
+    cras::CloudIter stamps_it(cloud, "stamps");
 
     // pointSensor
     *x_it = -1.5; *y_it = 0; *z_it = 0; *vp_x_it = -1.5; *vp_y_it = 0; *vp_z_it = 0; *stamps_it = 0;
@@ -775,7 +776,7 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
 
   filter->computeMask(cloud, mask);
 
-  ASSERT_EQ(num_points(cloud), mask.size());
+  ASSERT_EQ(cras::numPoints(cloud), mask.size());
   EXPECT_EQ(RayCastingShapeMask::MaskValue::CLIP, mask[0]);
   EXPECT_EQ(RayCastingShapeMask::MaskValue::CLIP, mask[1]);
   EXPECT_EQ(RayCastingShapeMask::MaskValue::CLIP, mask[2]);
@@ -930,8 +931,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   EXPECT_EQ("local_bounding_box", localBoundingBoxMarker->ns);
   EXPECT_EQ(1, localBoundingBoxMarker->frame_locked);
 
-  ASSERT_EQ(8, num_points(*pclNoBoundingSphere));
-  CloudConstIter x_it(*pclNoBoundingSphere, "x");
+  ASSERT_EQ(8, cras::numPoints(*pclNoBoundingSphere));
+  cras::CloudConstIter x_it(*pclNoBoundingSphere, "x");
 //  EXPECT_NEAR(-1.5, *x_it, 1e-6); ++x_it; // pointSensor
 //  EXPECT_NEAR(-1.47, *x_it, 1e-6); ++x_it; // pointSensor2
 //  EXPECT_NEAR(-1.42, *x_it, 1e-6); ++x_it; // pointClipMin
@@ -944,8 +945,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   EXPECT_NEAR(11.5, *x_it, 1e-6); ++x_it; // pointShadowBoth
   EXPECT_NEAR(7, *x_it, 1e-6); ++x_it; // pointOutside
 
-  ASSERT_EQ(8, num_points(*pclNoBoundingBox));
-  x_it = CloudConstIter(*pclNoBoundingBox, "x");
+  ASSERT_EQ(8, cras::numPoints(*pclNoBoundingBox));
+  x_it = cras::CloudConstIter(*pclNoBoundingBox, "x");
 //  EXPECT_NEAR(-1.5, *x_it, 1e-6); ++x_it; // pointSensor
 //  EXPECT_NEAR(-1.47, *x_it, 1e-6); ++x_it; // pointSensor2
 //  EXPECT_NEAR(-1.42, *x_it, 1e-6); ++x_it; // pointClipMin
@@ -958,8 +959,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   EXPECT_NEAR(11.5, *x_it, 1e-6); ++x_it; // pointShadowBoth
   EXPECT_NEAR(7, *x_it, 1e-6); ++x_it; // pointOutside
 
-  ASSERT_EQ(8, num_points(*pclNoOrientedBoundingBox));
-  x_it = CloudConstIter(*pclNoOrientedBoundingBox, "x");
+  ASSERT_EQ(8, cras::numPoints(*pclNoOrientedBoundingBox));
+  x_it = cras::CloudConstIter(*pclNoOrientedBoundingBox, "x");
 //  EXPECT_NEAR(-1.5, *x_it, 1e-6); ++x_it; // pointSensor
 //  EXPECT_NEAR(-1.47, *x_it, 1e-6); ++x_it; // pointSensor2
 //  EXPECT_NEAR(-1.42, *x_it, 1e-6); ++x_it; // pointClipMin
@@ -972,8 +973,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   EXPECT_NEAR(11.5, *x_it, 1e-6); ++x_it; // pointShadowBoth
   EXPECT_NEAR(7, *x_it, 1e-6); ++x_it; // pointOutside
 
-  ASSERT_EQ(8, num_points(*pclNoLocalBoundingBox));
-  x_it = CloudConstIter(*pclNoLocalBoundingBox, "x");
+  ASSERT_EQ(8, cras::numPoints(*pclNoLocalBoundingBox));
+  x_it = cras::CloudConstIter(*pclNoLocalBoundingBox, "x");
 //  EXPECT_NEAR(-1.5, *x_it, 1e-6); ++x_it; // pointSensor
 //  EXPECT_NEAR(-1.47, *x_it, 1e-6); ++x_it; // pointSensor2
 //  EXPECT_NEAR(-1.42, *x_it, 1e-6); ++x_it; // pointClipMin
@@ -986,8 +987,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
   EXPECT_NEAR(11.5, *x_it, 1e-6); ++x_it; // pointShadowBoth
   EXPECT_NEAR(7, *x_it, 1e-6); ++x_it; // pointOutside
 
-  ASSERT_EQ(3, num_points(*pclInside));
-  x_it = CloudConstIter(*pclInside, "x");
+  ASSERT_EQ(3, cras::numPoints(*pclInside));
+  x_it = cras::CloudConstIter(*pclInside, "x");
 //  EXPECT_NEAR(-1.5, *x_it, 1e-6); ++x_it; // pointSensor
 //  EXPECT_NEAR(-1.47, *x_it, 1e-6); ++x_it; // pointSensor2
 //  EXPECT_NEAR(-1.42, *x_it, 1e-6); ++x_it; // pointClipMin
@@ -1000,8 +1001,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
 //  EXPECT_NEAR(11.5, *x_it, 1e-6); ++x_it; // pointShadowBoth
 //  EXPECT_NEAR(7, *x_it, 1e-6); ++x_it; // pointOutside
 
-  ASSERT_EQ(4, num_points(*pclClip));
-  x_it = CloudConstIter(*pclClip, "x");
+  ASSERT_EQ(4, cras::numPoints(*pclClip));
+  x_it = cras::CloudConstIter(*pclClip, "x");
   EXPECT_NEAR(-1.5, *x_it, 1e-6); ++x_it; // pointSensor
   EXPECT_NEAR(-1.47, *x_it, 1e-6); ++x_it; // pointSensor2
   EXPECT_NEAR(-1.42, *x_it, 1e-6); ++x_it; // pointClipMin
@@ -1014,8 +1015,8 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
 //  EXPECT_NEAR(11.5, *x_it, 1e-6); ++x_it; // pointShadowBoth
 //  EXPECT_NEAR(7, *x_it, 1e-6); ++x_it; // pointOutside
 
-  ASSERT_EQ(3, num_points(*pclShadow));
-  x_it = CloudConstIter(*pclShadow, "x");
+  ASSERT_EQ(3, cras::numPoints(*pclShadow));
+  x_it = cras::CloudConstIter(*pclShadow, "x");
 //  EXPECT_NEAR(-1.5, *x_it, 1e-6); ++x_it; // pointSensor
 //  EXPECT_NEAR(-1.47, *x_it, 1e-6); ++x_it; // pointSensor2
 //  EXPECT_NEAR(-1.42, *x_it, 1e-6); ++x_it; // pointClipMin
@@ -1451,9 +1452,9 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
   filterBase->configure("", "compute_mask_config_all_at_once", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
 
-  Cloud cloud;
+  cras::Cloud cloud;
   cloud.header.frame_id = filter->filteringFrame;
-  CloudModifier mod(cloud);
+  cras::CloudModifier mod(cloud);
   mod.setPointCloud2Fields(3,
                            "x", 1, sensor_msgs::msg::PointField::FLOAT32,
                            "y", 1, sensor_msgs::msg::PointField::FLOAT32,
@@ -1464,9 +1465,9 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   cloud.row_step = cloud.width * cloud.point_step;
 
   {
-    CloudIter x_it(cloud, "x");
-    CloudIter y_it(cloud, "y");
-    CloudIter z_it(cloud, "z");
+    cras::CloudIter x_it(cloud, "x");
+    cras::CloudIter y_it(cloud, "y");
+    cras::CloudIter z_it(cloud, "z");
 
     *x_it = 1.5 + -1.5; *y_it = 0; *z_it = 0; ++x_it, ++y_it, ++z_it; // pointSensor
     *x_it = 1.5 + -1.47; *y_it = 0; *z_it = 0; ++x_it, ++y_it, ++z_it; // pointSensor2
@@ -1559,7 +1560,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   std::vector<RayCastingShapeMask::MaskValue> mask;
   filter->computeMask(cloud, mask, "laser");
 
-  ASSERT_EQ(num_points(cloud), mask.size());
+  ASSERT_EQ(cras::numPoints(cloud), mask.size());
   EXPECT_EQ(RayCastingShapeMask::MaskValue::CLIP, mask[0]);
   EXPECT_EQ(RayCastingShapeMask::MaskValue::CLIP, mask[1]);
   EXPECT_EQ(RayCastingShapeMask::MaskValue::CLIP, mask[2]);
@@ -1715,7 +1716,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_EQ("local_bounding_box", localBoundingBoxMarker->ns);
   EXPECT_EQ(1, localBoundingBoxMarker->frame_locked);
 
-  ASSERT_EQ(12, num_points(*pclNoBoundingSphere));
+  ASSERT_EQ(12, cras::numPoints(*pclNoBoundingSphere));
   EXPECT_EQ(cloud.header.frame_id, pclNoBoundingSphere->header.frame_id);
   EXPECT_EQ(cloud.header.stamp, pclNoBoundingSphere->header.stamp);
   EXPECT_EQ(cloud.height, pclNoBoundingSphere->height);
@@ -1723,7 +1724,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_EQ(cloud.fields, pclNoBoundingSphere->fields);
   EXPECT_EQ(cloud.point_step, pclNoBoundingSphere->point_step);
   EXPECT_EQ(cloud.row_step, pclNoBoundingSphere->row_step);
-  CloudConstIter x_it(*pclNoBoundingSphere, "x");
+  cras::CloudConstIter x_it(*pclNoBoundingSphere, "x");
   EXPECT_NAN(*x_it); ++x_it; // pointSensor
   EXPECT_NAN(*x_it); ++x_it; // pointSensor2
   EXPECT_NAN(*x_it); ++x_it; // pointClipMin
@@ -1737,7 +1738,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_NEAR(1.5 + -3.0, *x_it, 1e-6); ++x_it; // pointOutside
   EXPECT_NEAR(1.5 + -4.0, *x_it, 1e-6); ++x_it; // pointOutside2
 
-  ASSERT_EQ(12, num_points(*pclNoBoundingBox));
+  ASSERT_EQ(12, cras::numPoints(*pclNoBoundingBox));
   EXPECT_EQ(cloud.header.frame_id, pclNoBoundingBox->header.frame_id);
   EXPECT_EQ(cloud.header.stamp, pclNoBoundingBox->header.stamp);
   EXPECT_EQ(cloud.height, pclNoBoundingBox->height);
@@ -1745,7 +1746,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_EQ(cloud.fields, pclNoBoundingBox->fields);
   EXPECT_EQ(cloud.point_step, pclNoBoundingBox->point_step);
   EXPECT_EQ(cloud.row_step, pclNoBoundingBox->row_step);
-  x_it = CloudConstIter(*pclNoBoundingBox, "x");
+  x_it = cras::CloudConstIter(*pclNoBoundingBox, "x");
   EXPECT_NAN(*x_it); ++x_it; // pointSensor
   EXPECT_NAN(*x_it); ++x_it; // pointSensor2
   EXPECT_NAN(*x_it); ++x_it; // pointClipMin
@@ -1758,7 +1759,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_NEAR(1.5 +  1.5, *x_it, 1e-6); ++x_it; // pointShadowBoth
   EXPECT_NEAR(1.5 + -3.0, *x_it, 1e-6); ++x_it; // pointOutside
 
-  ASSERT_EQ(12, num_points(*pclNoOrientedBoundingBox));
+  ASSERT_EQ(12, cras::numPoints(*pclNoOrientedBoundingBox));
   EXPECT_EQ(cloud.header.frame_id, pclNoOrientedBoundingBox->header.frame_id);
   EXPECT_EQ(cloud.header.stamp, pclNoOrientedBoundingBox->header.stamp);
   EXPECT_EQ(cloud.height, pclNoOrientedBoundingBox->height);
@@ -1766,7 +1767,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_EQ(cloud.fields, pclNoOrientedBoundingBox->fields);
   EXPECT_EQ(cloud.point_step, pclNoOrientedBoundingBox->point_step);
   EXPECT_EQ(cloud.row_step, pclNoOrientedBoundingBox->row_step);
-  x_it = CloudConstIter(*pclNoOrientedBoundingBox, "x");
+  x_it = cras::CloudConstIter(*pclNoOrientedBoundingBox, "x");
   EXPECT_NAN(*x_it); ++x_it; // pointSensor
   EXPECT_NAN(*x_it); ++x_it; // pointSensor2
   EXPECT_NAN(*x_it); ++x_it; // pointClipMin
@@ -1779,7 +1780,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_NEAR(1.5 +  1.5, *x_it, 1e-6); ++x_it; // pointShadowBoth
   EXPECT_NEAR(1.5 + -3.0, *x_it, 1e-6); ++x_it; // pointOutside
 
-  ASSERT_EQ(12, num_points(*pclNoLocalBoundingBox));
+  ASSERT_EQ(12, cras::numPoints(*pclNoLocalBoundingBox));
   EXPECT_EQ(cloud.header.frame_id, pclNoLocalBoundingBox->header.frame_id);
   EXPECT_EQ(cloud.header.stamp, pclNoLocalBoundingBox->header.stamp);
   EXPECT_EQ(cloud.height, pclNoLocalBoundingBox->height);
@@ -1787,7 +1788,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_EQ(cloud.fields, pclNoLocalBoundingBox->fields);
   EXPECT_EQ(cloud.point_step, pclNoLocalBoundingBox->point_step);
   EXPECT_EQ(cloud.row_step, pclNoLocalBoundingBox->row_step);
-  x_it = CloudConstIter(*pclNoLocalBoundingBox, "x");
+  x_it = cras::CloudConstIter(*pclNoLocalBoundingBox, "x");
   EXPECT_NAN(*x_it); ++x_it; // pointSensor
   EXPECT_NAN(*x_it); ++x_it; // pointSensor2
   EXPECT_NAN(*x_it); ++x_it; // pointClipMin
@@ -1800,7 +1801,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_NEAR(1.5 +  1.5, *x_it, 1e-6); ++x_it; // pointShadowBoth
   EXPECT_NEAR(1.5 + -3.0, *x_it, 1e-6); ++x_it; // pointOutside
 
-  ASSERT_EQ(12, num_points(*pclInside));
+  ASSERT_EQ(12, cras::numPoints(*pclInside));
   EXPECT_EQ(cloud.header.frame_id, pclInside->header.frame_id);
   EXPECT_EQ(cloud.header.stamp, pclInside->header.stamp);
   EXPECT_EQ(cloud.height, pclInside->height);
@@ -1808,7 +1809,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_EQ(cloud.fields, pclInside->fields);
   EXPECT_EQ(cloud.point_step, pclInside->point_step);
   EXPECT_EQ(cloud.row_step, pclInside->row_step);
-  x_it = CloudConstIter(*pclInside, "x");
+  x_it = cras::CloudConstIter(*pclInside, "x");
   EXPECT_NAN(*x_it); ++x_it; // pointSensor
   EXPECT_NAN(*x_it); ++x_it; // pointSensor2
   EXPECT_NAN(*x_it); ++x_it; // pointClipMin
@@ -1821,7 +1822,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_NAN(*x_it); ++x_it; // pointShadowBoth
   EXPECT_NAN(*x_it); ++x_it; // pointOutside
 
-  ASSERT_EQ(12, num_points(*pclClip));
+  ASSERT_EQ(12, cras::numPoints(*pclClip));
   EXPECT_EQ(cloud.header.frame_id, pclClip->header.frame_id);
   EXPECT_EQ(cloud.header.stamp, pclClip->header.stamp);
   EXPECT_EQ(cloud.height, pclClip->height);
@@ -1829,7 +1830,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_EQ(cloud.fields, pclClip->fields);
   EXPECT_EQ(cloud.point_step, pclClip->point_step);
   EXPECT_EQ(cloud.row_step, pclClip->row_step);
-  x_it = CloudConstIter(*pclClip, "x");
+  x_it = cras::CloudConstIter(*pclClip, "x");
   EXPECT_NEAR(1.5 + -1.5, *x_it, 1e-6); ++x_it; // pointSensor
   EXPECT_NEAR(1.5 + -1.47, *x_it, 1e-6); ++x_it; // pointSensor2
   EXPECT_NEAR(1.5 + -1.42, *x_it, 1e-6); ++x_it; // pointClipMin
@@ -1842,7 +1843,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_NAN(*x_it); ++x_it; // pointShadowBoth
   EXPECT_NAN(*x_it); ++x_it; // pointOutside
 
-  ASSERT_EQ(12, num_points(*pclShadow));
+  ASSERT_EQ(12, cras::numPoints(*pclShadow));
   EXPECT_EQ(cloud.header.frame_id, pclShadow->header.frame_id);
   EXPECT_EQ(cloud.header.stamp, pclShadow->header.stamp);
   EXPECT_EQ(cloud.height, pclShadow->height);
@@ -1850,7 +1851,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
   EXPECT_EQ(cloud.fields, pclShadow->fields);
   EXPECT_EQ(cloud.point_step, pclShadow->point_step);
   EXPECT_EQ(cloud.row_step, pclShadow->row_step);
-  x_it = CloudConstIter(*pclShadow, "x");
+  x_it = cras::CloudConstIter(*pclShadow, "x");
   EXPECT_NAN(*x_it); ++x_it; // pointSensor
   EXPECT_NAN(*x_it); ++x_it; // pointSensor2
   EXPECT_NAN(*x_it); ++x_it; // pointClipMin
@@ -2385,9 +2386,9 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
   nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
   filterBase->configure("", "compute_mask_config_all_at_once", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
 
-  Cloud cloud;
+  cras::Cloud cloud;
   cloud.header.frame_id = "laser";
-  CloudModifier mod(cloud);
+  cras::CloudModifier mod(cloud);
   mod.setPointCloud2Fields(3,
                            "x", 1, sensor_msgs::msg::PointField::FLOAT32,
                            "y", 1, sensor_msgs::msg::PointField::FLOAT32,
@@ -2398,9 +2399,9 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
   cloud.row_step = cloud.width * cloud.point_step;
 
   {
-    CloudIter x_it(cloud, "x");
-    CloudIter y_it(cloud, "y");
-    CloudIter z_it(cloud, "z");
+    cras::CloudIter x_it(cloud, "x");
+    cras::CloudIter y_it(cloud, "y");
+    cras::CloudIter z_it(cloud, "z");
 
     *x_it = 1.5 + -1.5; *y_it = 0; *z_it = 0; ++x_it, ++y_it, ++z_it; // pointSensor
     *x_it = 1.5 + -1.47; *y_it = 0; *z_it = 0; ++x_it, ++y_it, ++z_it; // pointSensor2
@@ -2450,7 +2451,7 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
   sensor_msgs::msg::PointCloud2 outCloud;
   filter->update(cloud, outCloud);
 
-  ASSERT_EQ(num_points(cloud), num_points(outCloud));
+  ASSERT_EQ(cras::numPoints(cloud), cras::numPoints(outCloud));
   EXPECT_EQ("base_link", outCloud.header.frame_id);
   EXPECT_EQ(cloud.header.stamp, outCloud.header.stamp);
   EXPECT_EQ(cloud.height, outCloud.height);
@@ -2459,9 +2460,9 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
   EXPECT_EQ(cloud.point_step, outCloud.point_step);
   EXPECT_EQ(cloud.row_step, outCloud.row_step);
 
-  CloudConstIter x_it(outCloud, "x");
-  CloudConstIter y_it(outCloud, "y");
-  CloudConstIter z_it(outCloud, "z");
+  cras::CloudConstIter x_it(outCloud, "x");
+  cras::CloudConstIter y_it(outCloud, "y");
+  cras::CloudConstIter z_it(outCloud, "z");
 
   // PointSensor
   EXPECT_NAN(*x_it); EXPECT_NAN(*y_it); EXPECT_NAN(*z_it);
@@ -2506,7 +2507,7 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
 
   filter->update(cloud, outCloud);
 
-  ASSERT_EQ(2, num_points(outCloud));
+  ASSERT_EQ(2, cras::numPoints(outCloud));
   EXPECT_EQ("base_link", outCloud.header.frame_id);
   EXPECT_EQ(cloud.header.stamp, outCloud.header.stamp);
   EXPECT_EQ(1, outCloud.height);
@@ -2514,9 +2515,9 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
   EXPECT_EQ(cloud.fields, outCloud.fields);
   EXPECT_EQ(cloud.point_step, outCloud.point_step);
 
-  x_it = CloudConstIter(outCloud, "x");
-  y_it = CloudConstIter(outCloud, "y");
-  z_it = CloudConstIter(outCloud, "z");
+  x_it = cras::CloudConstIter(outCloud, "x");
+  y_it = cras::CloudConstIter(outCloud, "y");
+  z_it = cras::CloudConstIter(outCloud, "z");
 
   // PointOutside
   EXPECT_NEAR(-3.122, *x_it, 1e-5); EXPECT_NEAR(0, *y_it, 1e-6); EXPECT_NEAR(0, *z_it, 1e-6);
