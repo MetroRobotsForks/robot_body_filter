@@ -27,7 +27,6 @@
 #include <tf2_eigen/tf2_eigen.hpp>
 
 #include <robot_body_filter/utils/bodies.h>
-#include <robot_body_filter/utils/crop_box.h>
 #include <robot_body_filter/utils/set_utils.hpp>
 #include <robot_body_filter/utils/shapes.h>
 #include <robot_body_filter/utils/string_utils.hpp>
@@ -1427,7 +1426,7 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
       pcl::PCLPointCloud2::Ptr bboxCropInput(new pcl::PCLPointCloud2());
       pcl_conversions::toPCL(projectedPointCloud, *(bboxCropInput));
 
-      robot_body_filter::CropBoxPointCloud2 cropBox;
+      pcl::CropBox<pcl::PCLPointCloud2> cropBox;
       cropBox.setNegative(true);
       cropBox.setInputCloud(bboxCropInput);
       cropBox.setKeepOrganized(this->keepCloudsOrganized);
@@ -1549,7 +1548,7 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
       pcl::PCLPointCloud2::Ptr bboxCropInput(new pcl::PCLPointCloud2());
       pcl_conversions::toPCL(projectedPointCloud, *(bboxCropInput));
 
-      robot_body_filter::CropBoxPointCloud2 cropBox;
+      pcl::CropBox<pcl::PCLPointCloud2> cropBox;
       cropBox.setNegative(true);
       cropBox.setInputCloud(bboxCropInput);
       cropBox.setKeepOrganized(this->keepCloudsOrganized);
@@ -1691,7 +1690,7 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
       pcl::PCLPointCloud2::Ptr bboxCropInput(new pcl::PCLPointCloud2());
       pcl_conversions::toPCL(projectedPointCloud, *(bboxCropInput));
 
-      robot_body_filter::CropBoxPointCloud2 cropBox;
+      pcl::CropBox<pcl::PCLPointCloud2> cropBox;
       cropBox.setNegative(true);
       cropBox.setInputCloud(bboxCropInput);
       cropBox.setKeepOrganized(this->keepCloudsOrganized);
