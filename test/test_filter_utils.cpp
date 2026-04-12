@@ -16,59 +16,60 @@ class TestFilter : public robot_body_filter::FilterBase<std::string>
   protected: bool configure() override
   {
     bool defaultUsed;
-    EXPECT_EQ(false, this->getParamVerbose("debug/pcl/inside", true, "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
-    EXPECT_EQ(true, this->getParamVerbose("debug/pcl/nonexistent", true, "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
-    EXPECT_EQ(-1, this->getParamVerbose("test/negative", 1, "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
+    EXPECT_EQ(false, this->getParamVerbose("debug.pcl.inside", true, "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
+    EXPECT_EQ(true, this->getParamVerbose("debug.pcl.nonexistent", true, "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
+    EXPECT_EQ(-1, this->getParamVerbose("test.negative", 1, "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
     EXPECT_EQ(1, this->getParamVerbose("nonexistent", 1, "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
-    EXPECT_EQ(0.1, this->getParamVerbose("sensor/min_distance", 0.01, "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
+    EXPECT_EQ(0.1, this->getParamVerbose("sensor.min_distance", 0.01, "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
     EXPECT_EQ(0.01, this->getParamVerbose("nonexistent", 0.01, "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
-    EXPECT_EQ("odom", this->getParamVerbose("frames/fixed", std::string("fixed"), "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
+    EXPECT_EQ("odom", this->getParamVerbose("frames.fixed", std::string("fixed"), "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
     EXPECT_EQ("fixed", this->getParamVerbose("nonexistent", std::string("fixed"), "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
-    EXPECT_EQ("odom", this->getParamVerbose("frames/fixed", "fixed", "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
+    EXPECT_EQ("odom", this->getParamVerbose("frames.fixed", "fixed", "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
     EXPECT_EQ("fixed", this->getParamVerbose("nonexistent", "fixed", "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
     EXPECT_EQ("test", this->getParamVerbose("test_value", "test", "", &defaultUsed)); EXPECT_TRUE(defaultUsed); // wrong value type
-    EXPECT_EQ(1, this->getParamVerbose("frames/fixed", 1, "", &defaultUsed)); EXPECT_TRUE(defaultUsed); // wrong value type
-    EXPECT_THROW(this->getParamVerbose("test/negative", static_cast<uint64_t>(1)),
+    EXPECT_EQ(1, this->getParamVerbose("frames.fixed", 1, "", &defaultUsed)); EXPECT_TRUE(defaultUsed); // wrong value type
+    EXPECT_THROW(this->getParamVerbose("test.negative", static_cast<uint64_t>(1)),
       std::invalid_argument);
     EXPECT_EQ(1, this->getParamVerbose("nonexistent", static_cast<uint64_t>(1), "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
-    EXPECT_THROW(this->getParamVerbose("test/negative", static_cast<unsigned int>(1)),
+    EXPECT_THROW(this->getParamVerbose("test.negative", static_cast<unsigned int>(1)),
       std::invalid_argument);
-    EXPECT_EQ(1, this->getParamVerbose("non/existent", static_cast<unsigned int>(1), "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
-    EXPECT_EQ(rclcpp::Duration::from_seconds(60), this->getParamDuration("transforms/buffer_length",
+    EXPECT_EQ(1, this->getParamVerbose("non.existent", static_cast<unsigned int>(1), "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
+    EXPECT_EQ(rclcpp::Duration::from_seconds(60), this->getParamDuration("transforms.buffer_length",
         rclcpp::Duration::from_seconds(30), "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
     EXPECT_EQ(rclcpp::Duration::from_seconds(30), this->getParamDuration("nonexistent", rclcpp::Duration::from_seconds(30), "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
     EXPECT_EQ(std::vector<std::string>({"antenna", "base_link::big_collision_box"}),
-              this->getParamVerbose("ignored_links/bounding_sphere", std::vector<std::string>(), "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
+              this->getParamVerbose("ignored_links.bounding_sphere", std::vector<std::string>(), "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
     EXPECT_EQ(std::set<std::string>({"antenna", "base_link::big_collision_box"}),
-        this->getParamVerboseSet<std::string>("ignored_links/bounding_sphere", {}, "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
+        this->getParamVerboseSet<std::string>("ignored_links.bounding_sphere", {}, "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
     EXPECT_EQ(std::set<double>({0, 1}),
         this->getParamVerboseSet<double>("nonexistent_set", {0, 1}, "", &defaultUsed)); EXPECT_TRUE(defaultUsed);
     EXPECT_EQ((std::map<std::string, double>({{"antenna::contains", 1.2}, {"antenna::bounding_sphere", 1.2}, {"antenna::bounding_box", 1.2}, {"*::big_collision_box::contains", 2.0}, {"*::big_collision_box::bounding_sphere", 2.0}, {"*::big_collision_box::bounding_box", 2.0}, {"*::big_collision_box::shadow", 3.0}})),
-        this->getParamVerboseMap<double>("body_model/inflation/per_link/scale", {}, "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
+        this->getParamVerboseMap<double>("body_model.inflation.per_link.scale", {}, "", &defaultUsed)); EXPECT_FALSE(defaultUsed);
     EXPECT_EQ((std::map<std::string, double>({{"laser::shadow", 0.015}, {"base_link", 0.05}})),
-        this->getParamVerboseMap<double>("body_model/inflation/per_link/padding", {}, "m", &defaultUsed)); EXPECT_FALSE(defaultUsed);
+        this->getParamVerboseMap<double>("body_model.inflation.per_link.padding", {}, "m", &defaultUsed)); EXPECT_FALSE(defaultUsed);
     EXPECT_EQ((std::map<std::string, double>({{"a", 1}, {"b", 2}})),
         this->getParamVerboseMap<double>("nonexistent_map", {{"a", 1}, {"b", 2}}, "m", &defaultUsed)); EXPECT_TRUE(defaultUsed);
     EXPECT_EQ((std::map<std::string, double>({{"a", 1}, {"b", 2}})),
-        this->getParamVerboseMap<double>("body_model/inflation/per_link/all_wrong", {{"a", 1}, {"b", 2}}, "m", &defaultUsed)); EXPECT_TRUE(defaultUsed);
+        this->getParamVerboseMap<double>("body_model.inflation.per_link.all_wrong", {{"a", 1}, {"b", 2}}, "m", &defaultUsed)); EXPECT_TRUE(defaultUsed);
     return true;
   }
 };
 
 TEST(FilterUtils, getParamVerboseFromDict)
 {
-  rclcpp::Node nh("filter_utils");
+  rclcpp::Node nh("test_chain_config");
 
-  auto filter = std::make_shared<TestFilter>();
-  auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<std::string>>(filter);
+  const auto filter = std::make_shared<TestFilter>();
+  const auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<std::string>>(filter);
 
-  filterBase->configure("", "test_dict_config", nh.get_node_logging_interface(), nh.get_node_parameters_interface());
+  filterBase->configure("filter1.params", "robot_body_filter", nh.get_node_logging_interface(), nh.get_node_parameters_interface());
 }
 
 int main(int argc, char **argv)
 {
-  testing::InitGoogleTest(&argc, argv);
-  char* argv2[] = {(char*)"my_test"};
-  rclcpp::init(1, argv2);
-  return RUN_ALL_TESTS();
+  ::testing::InitGoogleTest(&argc, argv);
+  rclcpp::init(argc, argv);
+  int result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

@@ -95,6 +95,7 @@ pluginlib_export_plugin_description_file(filters laser_filters.xml)
 
 if (BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(ros_testing REQUIRED)
 
   ament_add_gtest(test_shapes_rbf test/test_shapes.cpp)
   target_link_libraries(test_shapes_rbf ${PROJECT_NAME}_utils)
@@ -108,9 +109,13 @@ if (BUILD_TESTING)
   target_link_libraries(test_bodies ${PROJECT_NAME}_utils)
   ament_target_dependencies(test_bodies ${THIS_PACKAGE_DEPS})
 
-  ament_add_gtest(test_filter_utils test/test_filter_utils.test test/test_filter_utils.cpp)
-  target_link_libraries(test_filter_utils ${PROJECT_NAME}_utils)
+  ament_add_gtest_executable(test_filter_utils test/test_filter_utils.cpp)
+  target_include_directories(test_filter_utils PUBLIC
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+          $<INSTALL_INTERFACE:include>
+  )
   ament_target_dependencies(test_filter_utils ${THIS_PACKAGE_DEPS})
+  add_ros_test(test/test_filter_utils.test.py TIMEOUT 30 ARGS "test_binary_dir:=${CMAKE_CURRENT_BINARY_DIR}")
 
   ament_add_gtest(test_tf_frames_watchdog test/test_tf_frames_watchdog.cpp)
   target_link_libraries(test_tf_frames_watchdog TFFramesWatchdog)

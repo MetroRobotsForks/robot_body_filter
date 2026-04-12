@@ -20,15 +20,21 @@ protected:
   /** \brief Type of function that converts anything to a string. */
   template <typename T> using ToStringFn = std::string (*)(const T&);
 
+  bool hasParam(const std::string& name) const
+  {
+    const auto paramName = this->param_prefix_ + name;
+    if (this->params_interface_->has_parameter(paramName))
+      return true;
+    const auto overrides = this->params_interface_->get_parameter_overrides();
+    return overrides.count(paramName) > 0;
+  }
+
   /**
    * \brief Get the value of the given filter parameter, falling back to the
    *        specified default value, and print out a ROS info/warning message with
    *        the loaded values.
    * \tparam T Param type.
-   * \param name Name of the parameter. If the name contains slashes and the full name is not found,
-   *             a "recursive" search is tried using the parts of the name separated by slashes.
-   *             This is useful if the filter config isn't loaded via a filterchain config, but via
-   *             a dict loaded directly to ROS parameter server.
+   * \param name Name of the parameter (without the `filterN.params.` prefix).
    * \param defaultValue The default value to use.
    * \param unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
    *             messages more informative.
@@ -43,17 +49,25 @@ protected:
              ToStringFn<T> valueToStringFn = &cras::to_string)
   {
     T value;
-    if (this->params_interface_->has_parameter(name) && filters::FilterBase<F>::getParam(name, value))
+    try
     {
-      if (valueToStringFn != nullptr)
+      if (this->hasParam(name) && filters::FilterBase<F>::getParam(name, value))
       {
-        RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
-                                        ", value: " << valueToStringFn(value) <<
-                                        cras::prependIfNonEmpty(unit, " "));
+        if (valueToStringFn != nullptr)
+        {
+          RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
+                                          ", value: " << valueToStringFn(value) <<
+                                          cras::prependIfNonEmpty(unit, " "));
+        }
+        if (defaultUsed != nullptr)
+          *defaultUsed = false;
+        return value;
       }
-      if (defaultUsed != nullptr)
-        *defaultUsed = false;
-      return value;
+    }
+    catch (const std::exception& e)
+    {
+      RCLCPP_ERROR_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Error getting value of parameter "
+        << name << ": " << e.what());
     }
 
     if (valueToStringFn != nullptr)
@@ -71,10 +85,7 @@ protected:
   /** \brief Get the value of the given filter parameter, falling back to the
    *        specified default value, and print out a ROS info/warning message with
    *        the loaded values.
-   * \param name Name of the parameter. If the name contains slashes and the full name is not found,
-   *             a "recursive" search is tried using the parts of the name separated by slashes.
-   *             This is useful if the filter config isn't loaded via a filterchain config, but via
-   *             a dict loaded directly to ROS parameter server.
+   * \param name Name of the parameter (without the `filterN.params.` prefix).
    * \param defaultValue The default value to use.
    * \param unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
    *             messages more informative.
@@ -94,10 +105,7 @@ protected:
   /** \brief Get the value of the given filter parameter, falling back to the
    *        specified default value, and print out a ROS info/warning message with
    *        the loaded values.
-   * \param name Name of the parameter. If the name contains slashes and the full name is not found,
-   *             a "recursive" search is tried using the parts of the name separated by slashes.
-   *             This is useful if the filter config isn't loaded via a filterchain config, but via
-   *             a dict loaded directly to ROS parameter server.
+   * \param name Name of the parameter (without the `filterN.params.` prefix).
    * \param defaultValue The default value to use.
    * \param unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
    *             messages more informative.
@@ -118,10 +126,7 @@ protected:
   /** \brief Get the value of the given filter parameter, falling back to the
    *        specified default value, and print out a ROS info/warning message with
    *        the loaded values.
-   * \param name Name of the parameter. If the name contains slashes and the full name is not found,
-   *             a "recursive" search is tried using the parts of the name separated by slashes.
-   *             This is useful if the filter config isn't loaded via a filterchain config, but via
-   *             a dict loaded directly to ROS parameter server.
+   * \param name Name of the parameter (without the `filterN.params.` prefix).
    * \param defaultValue The default value to use.
    * \param unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
    *             messages more informative.
@@ -143,10 +148,7 @@ protected:
   /** \brief Get the value of the given filter parameter, falling back to the
    *        specified default value, and print out a ROS info/warning message with
    *        the loaded values.
-   * \param name Name of the parameter. If the name contains slashes and the full name is not found,
-   *             a "recursive" search is tried using the parts of the name separated by slashes.
-   *             This is useful if the filter config isn't loaded via a filterchain config, but via
-   *             a dict loaded directly to ROS parameter server.
+   * \param name Name of the parameter (without the `filterN.params.` prefix).
    * \param defaultValue The default value to use.
    * \param unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
    *             messages more informative.
@@ -166,10 +168,7 @@ protected:
    *        specified default value, and print out a ROS info/warning message with
    *        the loaded values.
    * \tparam T Type of the values in the set. Only std::string and double are supported.
-   * \param name Name of the parameter. If the name contains slashes and the full name is not found,
-   *             a "recursive" search is tried using the parts of the name separated by slashes.
-   *             This is useful if the filter config isn't loaded via a filterchain config, but via
-   *             a dict loaded directly to ROS parameter server.
+   * \param name Name of the parameter (without the `filterN.params.` prefix).
    * \param defaultValue The default value to use.
    * \param unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
    *             messages more informative.
@@ -188,6 +187,17 @@ protected:
     return std::set<T>(vector.begin(), vector.end());
   }
 
+   /** \brief Get the value of the given filter parameter as a map with string keys, falling back to the
+    *        specified default value, and print out a ROS info/warning message with
+    *        the loaded values.
+    * \tparam T Type of the values in the map.
+    * \tparam MapType Type of the map. Only maps with string keys are expected to be used.
+    * \param name Name of the parameter (without the `filterN.params.` prefix).
+    * \param defaultValue The default value to use.
+    * \param unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
+    *             messages more informative.
+    * \return The loaded param value.
+    */
   template<typename T, typename MapType=std::map<std::string, T>>
   MapType getParamVerboseMap(
       const std::string &name,
@@ -198,14 +208,37 @@ protected:
   {
     MapType value;
 
-    std::string prefix = this->param_prefix_ + name;
+    std::string prefix = this->param_prefix_ + name + ".";
     auto parameter_value_map = this->params_interface_->get_parameter_overrides();
-    for (auto& pairParam : parameter_value_map)
+    for (const auto& [paramName, paramValue] : parameter_value_map)
     {
-      if (!cras::startsWith(pairParam.first, prefix)) continue;
-      std::string sub_name = pairParam.first.substr(prefix.length() + 1);
-      auto v = pairParam.second.template get<T>();
-      value[sub_name] = v;
+      if (!cras::startsWith(paramName, prefix))
+        continue;
+      std::string sub_name = paramName.substr(prefix.length());
+      try
+      {
+        value[sub_name] = paramValue.template get<T>();
+      }
+      catch (const std::exception& e)
+      {
+        if constexpr (std::is_same_v<double, T>)
+        {
+          try
+          {
+            value[sub_name] = static_cast<double>(paramValue.template get<int>());
+          }
+          catch (const std::exception&)
+          {
+            RCLCPP_ERROR_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Error getting value of parameter "
+            << paramName << ": " << e.what());
+          }
+        }
+        else
+        {
+          RCLCPP_ERROR_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Error getting value of parameter "
+            << paramName << ": " << e.what());
+        }
+      }
     }
 
     if (value.empty())
@@ -223,6 +256,8 @@ protected:
     }
     else
     {
+      if (defaultUsed != nullptr)
+        *defaultUsed = false;
       RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
                                                                  ", value: " << valueToStringFn(value) <<
                                                                  cras::prependIfNonEmpty(unit, " "));
