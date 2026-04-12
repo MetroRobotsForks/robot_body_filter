@@ -5,9 +5,8 @@
 
 #include <map>
 
+#include <cras_cpp_common/string_utils.hpp>
 #include <filters/filter_base.hpp>
-
-#include "robot_body_filter/utils/string_utils.hpp"
 
 namespace robot_body_filter
 {
@@ -41,7 +40,7 @@ protected:
   template<typename T>
   T getParamVerbose(const std::string &name, const T &defaultValue = T(),
              const std::string &unit = "", bool* defaultUsed = nullptr,
-             ToStringFn<T> valueToStringFn = &to_string)
+             ToStringFn<T> valueToStringFn = &cras::to_string)
   {
     T value;
     if (this->params_interface_->has_parameter(name) && filters::FilterBase<F>::getParam(name, value))
@@ -50,7 +49,7 @@ protected:
       {
         RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
                                         ", value: " << valueToStringFn(value) <<
-                                        prependIfNonEmpty(unit, " "));
+                                        cras::prependIfNonEmpty(unit, " "));
       }
       if (defaultUsed != nullptr)
         *defaultUsed = false;
@@ -62,7 +61,7 @@ protected:
       RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Parameter " << name
                                       << " not defined, assigning default: "
                                       << valueToStringFn(defaultValue)
-                                      << prependIfNonEmpty(unit, " "));
+                                      << cras::prependIfNonEmpty(unit, " "));
     }
     if (defaultUsed != nullptr)
       *defaultUsed = true;
@@ -83,7 +82,7 @@ protected:
    */
   std::string getParamVerbose(const std::string &name, const char* defaultValue,
                               const std::string &unit = "", bool* defaultUsed = nullptr,
-                              ToStringFn<std::string> valueToStringFn = &to_string)
+                              ToStringFn<std::string> valueToStringFn = &cras::to_string)
   {
     return this->getParamVerbose(name, std::string(defaultValue), unit, defaultUsed, valueToStringFn);
   }
@@ -107,7 +106,7 @@ protected:
    */
   uint64_t getParamVerbose(const std::string &name, const uint64_t &defaultValue,
                            const std::string &unit = "", bool* defaultUsed = nullptr,
-                           ToStringFn<int> valueToStringFn = &to_string)
+                           ToStringFn<int> valueToStringFn = &cras::to_string)
   {
     return this->getParamUnsigned<uint64_t, int>(name, defaultValue, unit, defaultUsed,
         valueToStringFn);
@@ -133,7 +132,7 @@ protected:
                                const unsigned int &defaultValue,
                                const std::string &unit = "",
                                bool* defaultUsed = nullptr,
-                               ToStringFn<int> valueToStringFn = &to_string)
+                               ToStringFn<int> valueToStringFn = &cras::to_string)
   {
     return this->getParamUnsigned<unsigned int, int>(name, defaultValue, unit, defaultUsed,
         valueToStringFn);
@@ -157,7 +156,7 @@ protected:
                                 const rclcpp::Duration &defaultValue,
                                 const std::string &unit = "",
                                 bool* defaultUsed = nullptr,
-                                ToStringFn<double> valueToStringFn = &to_string)
+                                ToStringFn<double> valueToStringFn = &cras::to_string)
   {
     double temp_value = getParamVerbose(name, defaultValue.seconds(), unit, defaultUsed, valueToStringFn);
     return rclcpp::Duration::from_seconds(temp_value);
@@ -182,7 +181,7 @@ protected:
       const std::set<T> &defaultValue = std::set<T>(),
       const std::string &unit = "",
       bool* defaultUsed = nullptr,
-      ToStringFn<std::vector<T>> valueToStringFn = &to_string)
+      ToStringFn<std::vector<T>> valueToStringFn = &cras::to_string)
   {
     std::vector<T> vector(defaultValue.begin(), defaultValue.end());
     vector = this->getParamVerbose(name, vector, unit, defaultUsed, valueToStringFn);
@@ -195,7 +194,7 @@ protected:
       const std::map<std::string, T> &defaultValue = std::map<std::string, T>(),
       const std::string &unit = "",
       bool* defaultUsed = nullptr,
-      ToStringFn<MapType> valueToStringFn = &to_string)
+      ToStringFn<MapType> valueToStringFn = &cras::to_string)
   {
     MapType value;
 
@@ -203,7 +202,7 @@ protected:
     auto parameter_value_map = this->params_interface_->get_parameter_overrides();
     for (auto& pairParam : parameter_value_map)
     {
-      if (!startsWith(pairParam.first, prefix)) continue;
+      if (!cras::startsWith(pairParam.first, prefix)) continue;
       std::string sub_name = pairParam.first.substr(prefix.length() + 1);
       auto v = pairParam.second.template get<T>();
       value[sub_name] = v;
@@ -219,14 +218,14 @@ protected:
           RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Parameter " << name
                                           << " not defined, assigning default: "
                                           << valueToStringFn(defaultValue)
-                                          << prependIfNonEmpty(unit, " "));
+                                          << cras::prependIfNonEmpty(unit, " "));
       }
     }
     else
     {
       RCLCPP_INFO_STREAM(this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
                                                                  ", value: " << valueToStringFn(value) <<
-                                                                 prependIfNonEmpty(unit, " "));
+                                                                 cras::prependIfNonEmpty(unit, " "));
     }
 
     return value;
@@ -237,7 +236,7 @@ private:
   template<typename Result, typename Param>
   Result getParamUnsigned(const std::string &name, const Result &defaultValue,
                           const std::string &unit = "", bool* defaultUsed = nullptr,
-                          ToStringFn<Param> valueToStringFn = &to_string)
+                          ToStringFn<Param> valueToStringFn = &cras::to_string)
   {
     const Param signedValue = this->getParamVerbose(name, static_cast<Param>(defaultValue), unit,
         defaultUsed, valueToStringFn);
@@ -257,7 +256,7 @@ private:
   template<typename Result, typename Param>
   Result getParamCast(const std::string &name, const Param &defaultValue,
                       const std::string &unit = "", bool* defaultUsed = nullptr,
-                      ToStringFn<Param> valueToStringFn = &to_string)
+                      ToStringFn<Param> valueToStringFn = &cras::to_string)
   {
     const Param paramValue = this->getParamVerbose(name, defaultValue, unit, defaultUsed,
         valueToStringFn);

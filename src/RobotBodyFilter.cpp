@@ -12,6 +12,7 @@
 
 #include <cras_cpp_common/cloud.hpp>
 #include <cras_cpp_common/set_utils.hpp>
+#include <cras_cpp_common/string_utils.hpp>
 #include <cras_cpp_common/tf2_sensor_msgs.hpp>
 #include <cras_cpp_common/urdf_utils.hpp>
 
@@ -29,7 +30,6 @@
 
 #include <robot_body_filter/utils/bodies.h>
 #include <robot_body_filter/utils/shapes.h>
-#include <robot_body_filter/utils/string_utils.hpp>
 #include <robot_body_filter/utils/tf2_eigen.h>
 #include <robot_body_filter/utils/time_utils.hpp>
 
@@ -68,11 +68,11 @@ bool RobotBodyFilter<T>::configure() {
   }
 
   this->fixedFrame = this->getParamVerbose("frames/fixed", "base_link");
-  stripLeadingSlash(this->fixedFrame, true);
+  cras::stripLeadingSlash(this->fixedFrame, true);
   this->sensorFrame = this->getParamVerbose("frames/sensor", "");
-  stripLeadingSlash(this->sensorFrame, true);
+  cras::stripLeadingSlash(this->sensorFrame, true);
   this->filteringFrame = this->getParamVerbose("frames/filtering", this->fixedFrame);
-  stripLeadingSlash(this->filteringFrame, true);
+  cras::stripLeadingSlash(this->filteringFrame, true);
   this->minDistance = this->getParamVerbose("sensor/min_distance", 0.0, "m");
   this->maxDistance = this->getParamVerbose("sensor/max_distance", 0.0, "m");
   this->robotDescriptionParam = this->getParamVerbose("body_model/robot_description_param", "robot_description");
@@ -132,10 +132,10 @@ bool RobotBodyFilter<T>::configure() {
     bool bboxOnly;
 
     auto linkName = inflationPair.first;
-    linkName = removeSuffix(linkName, CONTAINS_SUFFIX, &containsOnly);
-    linkName = removeSuffix(linkName, SHADOW_SUFFIX, &shadowOnly);
-    linkName = removeSuffix(linkName, BSPHERE_SUFFIX, &bsphereOnly);
-    linkName = removeSuffix(linkName, BBOX_SUFFIX, &bboxOnly);
+    linkName = cras::removeSuffix(linkName, CONTAINS_SUFFIX, &containsOnly);
+    linkName = cras::removeSuffix(linkName, SHADOW_SUFFIX, &shadowOnly);
+    linkName = cras::removeSuffix(linkName, BSPHERE_SUFFIX, &bsphereOnly);
+    linkName = cras::removeSuffix(linkName, BBOX_SUFFIX, &bboxOnly);
 
     if (!shadowOnly && !bsphereOnly && !bboxOnly)
       this->perLinkContainsInflation[linkName] =
@@ -161,10 +161,10 @@ bool RobotBodyFilter<T>::configure() {
     bool bboxOnly;
 
     auto linkName = inflationPair.first;
-    linkName = removeSuffix(linkName, CONTAINS_SUFFIX, &containsOnly);
-    linkName = removeSuffix(linkName, SHADOW_SUFFIX, &shadowOnly);
-    linkName = removeSuffix(linkName, BSPHERE_SUFFIX, &bsphereOnly);
-    linkName = removeSuffix(linkName, BBOX_SUFFIX, &bboxOnly);
+    linkName = cras::removeSuffix(linkName, CONTAINS_SUFFIX, &containsOnly);
+    linkName = cras::removeSuffix(linkName, SHADOW_SUFFIX, &shadowOnly);
+    linkName = cras::removeSuffix(linkName, BSPHERE_SUFFIX, &bsphereOnly);
+    linkName = cras::removeSuffix(linkName, BBOX_SUFFIX, &bboxOnly);
 
     if (!shadowOnly && !bsphereOnly && !bboxOnly)
     {
@@ -377,13 +377,13 @@ bool RobotBodyFilter<T>::configure() {
     if (this->linksIgnoredEverywhere.empty()) {
       RCLCPP_INFO(get_logger(), "RobotBodyFilter: Filtering applied to all links.");
     } else {
-      RCLCPP_INFO(get_logger(), "RobotBodyFilter: Filtering applied to all links except %s.", to_string(this->linksIgnoredEverywhere).c_str());
+      RCLCPP_INFO(get_logger(), "RobotBodyFilter: Filtering applied to all links except %s.", cras::to_string(this->linksIgnoredEverywhere).c_str());
     }
   } else {
     if (this->linksIgnoredEverywhere.empty()) {
-      RCLCPP_INFO(get_logger(), "RobotBodyFilter: Filtering applied to links %s.", to_string(this->onlyLinks).c_str());
+      RCLCPP_INFO(get_logger(), "RobotBodyFilter: Filtering applied to links %s.", cras::to_string(this->onlyLinks).c_str());
     } else {
-      RCLCPP_INFO(get_logger(), "RobotBodyFilter: Filtering applied to links %s with these links excluded: %s.", to_string(this->onlyLinks).c_str(), to_string(this->linksIgnoredEverywhere).c_str());
+      RCLCPP_INFO(get_logger(), "RobotBodyFilter: Filtering applied to links %s with these links excluded: %s.", cras::to_string(this->onlyLinks).c_str(), cras::to_string(this->linksIgnoredEverywhere).c_str());
     }
   }
 
@@ -416,7 +416,7 @@ bool RobotBodyFilterPointCloud2::configure() {
   for (const auto& channel : directionChannels)
     this->channelsToTransform[channel] = cras::CloudChannelType::DIRECTION;
 
-  stripLeadingSlash(this->outputFrame, true);
+  cras::stripLeadingSlash(this->outputFrame, true);
 
   return true;
 }
@@ -563,7 +563,7 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputSc
   }
 
   // tf2 doesn't like frames starting with slash
-  const auto scanFrame = stripLeadingSlash(inputScan.header.frame_id, true);
+  const auto scanFrame = cras::stripLeadingSlash(inputScan.header.frame_id, true);
 
   // Passing a sensorFrame does not make sense. Scan messages can't be transformed to other frames.
   if (!this->sensorFrame.empty() && this->sensorFrame != scanFrame) {
@@ -615,7 +615,7 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan &inputSc
           const auto delay = nodeHandle->now() - scanTime;
           RCLCPP_ERROR_THROTTLE(get_logger(), *clock_ptr, 3, "RobotBodyFilter: Cannot transform laser scan to "
             "fixed frame. The scan is too much delayed (%s s). TF error: %s",
-            to_string(delay).c_str(), err.c_str());
+            cras::to_string(delay).c_str(), err.c_str());
         } else {
           // TODO: Originally was delayed-throttle
           RCLCPP_ERROR_THROTTLE(get_logger(), *clock_ptr, 3, "RobotBodyFilter: Cannot transform laser scan to "
@@ -742,7 +742,7 @@ bool RobotBodyFilterPointCloud2::update(const sensor_msgs::msg::PointCloud2 &inp
   }
 
   const auto inputCloudFrame = this->sensorFrame.empty() ?
-      stripLeadingSlash(inputCloud.header.frame_id, true) : this->sensorFrame;
+      cras::stripLeadingSlash(inputCloud.header.frame_id, true) : this->sensorFrame;
 
   if (!this->tfFramesWatchdog->isReachable(inputCloudFrame))
   {
