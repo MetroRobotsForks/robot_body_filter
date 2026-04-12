@@ -15,14 +15,14 @@ using namespace point_containment_filter;
 class TestMask : public RayCastingShapeMask
 {
   public:
-  TestMask(const point_containment_filter::ShapeMask::TransformCallback &transformCallback,
+  TestMask(rclcpp::Node& node, const point_containment_filter::ShapeMask::TransformCallback &transformCallback,
                    double minSensorDist,
                    double maxSensorDist,
                    bool doClipping,
                    bool doContainsTest,
                    bool doShadowTest) :
-    RayCastingShapeMask(nullptr, nullptr, transformCallback, minSensorDist, maxSensorDist, doClipping, doContainsTest,
-        doShadowTest)
+    RayCastingShapeMask(node.get_node_logging_interface(), node.get_clock(),
+      transformCallback, minSensorDist, maxSensorDist, doClipping, doContainsTest, doShadowTest)
   {
 
   }
@@ -38,12 +38,13 @@ TEST(RayCastingShapeMask, Basic)
   // ros::Time::init();
   // ros::Time::setNow(ros::Time(1));
 
+  rclcpp::Node nh("test_ray_casting_shape_mask");
   auto cb = [] (point_containment_filter::ShapeHandle, Eigen::Isometry3d& t) -> bool
   {
     t = Eigen::Isometry3d::Identity();
     return true;
   };
-  TestMask mask(cb, 1.0, 10.0, true, false, false);
+  TestMask mask(nh, cb, 1.0, 10.0, true, false, false);
 
   // TODO: Figure out callback equality
   // EXPECT_EQ(cb, mask.transform_callback_);
@@ -134,12 +135,13 @@ TEST(RayCastingShapeMask, Bspheres)
   // ros::Time::init();
   // ros::Time::setNow(ros::Time(1));
 
+  rclcpp::Node nh("test_ray_casting_shape_mask");
   auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
     t = Eigen::Isometry3d::Identity();
     return true;
   };
-  TestMask mask(cb, 1.0, 10.0, true, true, true);
+  TestMask mask(nh, cb, 1.0, 10.0, true, true, true);
 
   shapes::ShapeConstPtr shape1(new shapes::Box(1.0, 2.0, 3.0));
   const auto multiHandle1 = mask.addShape(shape1, 1.0, 0.0, false, "box");
@@ -322,11 +324,12 @@ TEST(RayCastingShapeMask, UpdateBodyPoses)
   // ros::Time::init();
   // ros::Time::setNow(ros::Time(1));
 
+  rclcpp::Node nh("test_ray_casting_shape_mask");
   auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
     return true;
   };
-  TestMask mask(fooCb, 1.0, 10.0, true, true, true);
+  TestMask mask(nh, fooCb, 1.0, 10.0, true, true, true);
 
   shapes::ShapeConstPtr shape1(new shapes::Box(1.0, 2.0, 3.0));
   const auto multiHandle1 = mask.addShape(shape1, 1.0, 0.0, false, "box");
@@ -391,11 +394,12 @@ TEST(RayCastingShapeMask, ClassifyPoint)
   // ros::Time::init();
   // ros::Time::setNow(ros::Time(1));
 
+  rclcpp::Node nh("test_ray_casting_shape_mask");
   auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
     return true;
   };
-  TestMask mask(fooCb, 0.1, 10.0, false, false, false);
+  TestMask mask(nh, fooCb, 0.1, 10.0, false, false, false);
 
   shapes::ShapeConstPtr shape1(new shapes::Box(1.8, 1.8, 1.8));
   const auto multiHandle1 = mask.addShape(shape1, 1.0, 0.02, 1.1, 0.01, 1.0, 0.02, 1.0, 0.02, false, "box");
@@ -733,11 +737,12 @@ TEST(RayCastingShapeMask, Mask)
   // ros::Time::init();
   // ros::Time::setNow(ros::Time(1));
 
+  rclcpp::Node nh("test_ray_casting_shape_mask");
   auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
     return true;
   };
-  TestMask mask(fooCb, 0.1, 10.0, true, true, true);
+  TestMask mask(nh, fooCb, 0.1, 10.0, true, true, true);
 
   shapes::ShapeConstPtr shape1(new shapes::Box(1.8, 1.8, 1.8));
   const auto multiHandle1 = mask.addShape(shape1, 1.0, 0.02, 1.1, 0.01, 1.0, 0.02, 1.0, 0.02, false, "box");
@@ -861,11 +866,12 @@ TEST(RayCastingShapeMask, MaskPerformancePoints)
   // ros::Time::init();
   // ros::Time::setNow(ros::Time(1));
 
+  rclcpp::Node nh("test_ray_casting_shape_mask");
   auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
   {
     return true;
   };
-  TestMask mask(fooCb, 0.1, 10.0, true, true, true);
+  TestMask mask(nh, fooCb, 0.1, 10.0, true, true, true);
 
   shapes::ShapeConstPtr shape1(new shapes::Box(2.0, 2.0, 2.0));
   const auto multiHandle1 = mask.addShape(shape1, 1.0, 0.0, false, "box");
@@ -944,6 +950,7 @@ TEST(RayCastingShapeMask, MaskPerformanceBodies)
   // ros::Time::init();
   // ros::Time::setNow(ros::Time(1));
 
+  rclcpp::Node nh("test_ray_casting_shape_mask");
   auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
     t = randomPose();
@@ -951,7 +958,7 @@ TEST(RayCastingShapeMask, MaskPerformanceBodies)
     t.translation() *= 10.0; // so that we don't get too far behind the clipping plane
     return true;
   };
-  TestMask mask(cb, 0.1, 10.0, true, true, true);
+  TestMask mask(nh, cb, 0.1, 10.0, true, true, true);
 
 #if RELEASE_BUILD == 1
   const size_t numBodies = 1000000;
@@ -1012,6 +1019,7 @@ TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh)
   // ros::Time::init();
   // ros::Time::setNow(ros::Time(1));
 
+  rclcpp::Node nh("test_ray_casting_shape_mask");
   auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
   {
     t = randomPose();
@@ -1019,7 +1027,7 @@ TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh)
     t.translation() *= 10.0; // so that we don't get too far behind the clipping plane
     return true;
   };
-  TestMask mask(cb, 0.1, 10.0, true, true, true);
+  TestMask mask(nh, cb, 0.1, 10.0, true, true, true);
 
 #if RELEASE_BUILD == 1
   const size_t numBodies = 10000;
@@ -1029,7 +1037,7 @@ TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh)
 
   auto g = urdf::Mesh();
   g.scale = {1.0, 2.0, 3.0};
-  g.filename = "package://robot_body_filter/test/box.dae";
+  g.filename = std::string("file://") + TEST_DATA_DIR + "/box.dae";
   for (size_t i = 0; i < numBodies; ++i)
   {
     const auto shape = robot_body_filter::constructShape(g);
@@ -1081,6 +1089,9 @@ TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh)
 
 int main(int argc, char **argv)
 {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+  ::testing::InitGoogleTest(&argc, argv);
+  rclcpp::init(argc, argv);
+  int result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

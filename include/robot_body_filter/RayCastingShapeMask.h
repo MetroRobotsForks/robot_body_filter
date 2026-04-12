@@ -369,7 +369,7 @@ protected:
   bodies::BoundingSphere getBoundingSphereForContainsTestNoLock() const;
 
   rclcpp::Logger logger;
-  const rclcpp::Clock::SharedPtr& clock_ptr;
+  rclcpp::Clock::SharedPtr clock_ptr;
 
   double minSensorDist; //!< Minimum sensing distance of the sensor.
   double maxSensorDist; //!< Maximum sensing distance of the sensor.

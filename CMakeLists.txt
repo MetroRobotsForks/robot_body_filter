@@ -123,7 +123,7 @@ if (BUILD_TESTING)
   target_link_libraries(test_tf_frames_watchdog TFFramesWatchdog)
   ament_target_dependencies(test_tf_frames_watchdog ${THIS_PACKAGE_DEPS})
 
-  ament_add_gtest(test_ray_casting_shape_mask test/test_ray_casting_shape_mask.cpp)
+  ament_add_gtest_executable(test_ray_casting_shape_mask test/test_ray_casting_shape_mask.cpp)
   target_link_libraries(test_ray_casting_shape_mask RayCastingShapeMask)
   ament_target_dependencies(test_ray_casting_shape_mask ${THIS_PACKAGE_DEPS})
   if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
@@ -131,6 +131,9 @@ if (BUILD_TESTING)
   else()
     target_compile_definitions(test_ray_casting_shape_mask PRIVATE RELEASE_BUILD=0)
   endif()
+  target_compile_definitions(test_ray_casting_shape_mask PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/test")
+  add_ros_test(test/test_with_ros.test.py TIMEOUT 30 TARGET test_ray_casting_shape_mask_rostest ARGS
+    "test_binary_dir:=${CMAKE_CURRENT_BINARY_DIR}" "binary:=test_ray_casting_shape_mask" "name:=test_ray_casting_mask")
 
   ament_add_gtest(test_robot_body_filter test/test_robot_body_filter.test test/test_robot_body_filter.cpp)
   target_link_libraries(test_robot_body_filter ${PROJECT_NAME})
