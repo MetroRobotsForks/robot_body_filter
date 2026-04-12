@@ -108,6 +108,7 @@ if (BUILD_TESTING)
   ament_add_gtest(test_bodies test/test_bodies.cpp)
   target_link_libraries(test_bodies ${PROJECT_NAME}_utils)
   ament_target_dependencies(test_bodies ${THIS_PACKAGE_DEPS})
+  target_compile_definitions(test_bodies PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/test")
 
   ament_add_gtest_executable(test_filter_utils test/test_filter_utils.cpp)
   target_include_directories(test_filter_utils PUBLIC

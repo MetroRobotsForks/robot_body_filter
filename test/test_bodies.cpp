@@ -239,7 +239,7 @@ TEST(Bodies, ComputeBoundingBoxConvexMesh)
 
   // box (1.0, 2.0, 3.0)
   const shapes::Shape* shape = shapes::createMeshFromResource(
-      "package://robot_body_filter/test/box.dae");
+      std::string("file://") + TEST_DATA_DIR + "/box.dae");
   const auto mesh = new ConvexMesh(shape);
   const auto body = dynamic_cast<Body*>(mesh);
 
