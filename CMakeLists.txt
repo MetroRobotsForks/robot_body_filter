@@ -137,10 +137,11 @@ if (BUILD_TESTING)
   add_ros_test(test/test_with_ros.test.py TIMEOUT 30 TARGET test_ray_casting_shape_mask_rostest ARGS
     "test_binary_dir:=${CMAKE_CURRENT_BINARY_DIR}" "binary:=test_ray_casting_shape_mask" "name:=test_ray_casting_mask")
 
-  ament_add_gtest(test_robot_body_filter test/test_robot_body_filter.test test/test_robot_body_filter.cpp)
+  ament_add_gtest_executable(test_robot_body_filter test/test_robot_body_filter.test test/test_robot_body_filter.cpp)
   target_link_libraries(test_robot_body_filter ${PROJECT_NAME})
   ament_target_dependencies(test_robot_body_filter ${THIS_PACKAGE_DEPS})
   target_compile_options(test_robot_body_filter PRIVATE -fno-var-tracking-assignments)  # speed up build
+  add_ros_test(test/test_robot_body_filter.test.py TIMEOUT 30 ARGS "test_binary_dir:=${CMAKE_CURRENT_BINARY_DIR}")
 
   install(FILES test/box.dae test/triangle.dae
     DESTINATION share/robot_body_filter/test)

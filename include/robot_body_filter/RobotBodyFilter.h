@@ -32,6 +32,7 @@
 #include <robot_body_filter/msg/oriented_bounding_box_stamped.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <std_srvs/srv/trigger.hpp>
 
 #include <robot_body_filter/TfFramesWatchdog.h>
@@ -104,6 +105,11 @@ public:
   bool configure() override;
 
   bool update(const T& data_in, T& data_out) override = 0;
+
+  /**
+   * \brief Tell whether some robot model has been already received.
+   */
+  virtual bool hasModel() const;
 
 protected:
 
@@ -201,10 +207,10 @@ protected:
   //! Elements not present in this list are scaled and padded with defaultBboxInflation.
   std::map<std::string, ScaleAndPadding> perLinkBboxInflation;
 
-  //! Name of the parameter where the robot model can be found.
-  std::string robotDescriptionParam;
+  //! Name of the topic where the robot model is published.
+  std::string robotDescriptionTopic;
 
-  //! Callback for robot_description updates.
+  //! Callback for parameter updates.
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_cb_;
 
   std::set<std::string> linksIgnoredInBoundingSphere;
@@ -257,6 +263,9 @@ protected:
 
   //! Service server for reloading robot model.
   rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr reloadRobotModelServiceServer;
+
+  //! Subscriber for robot model.
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr reloadRobotModelSubscriber;
 
   //! Whether to compute bounding sphere of the robot.
   bool computeBoundingSphere;
@@ -315,6 +324,9 @@ protected:
 
   //! A mutex that has to be locked in order to work with shapesToLinks or tfBuffer.
   std::shared_ptr<std::mutex> modelMutex;
+
+  //! The string representation of the currently used robot model.
+  std::string robotDescriptionString;
 
   //! tf buffer length
   rclcpp::Duration tfBufferLength;
@@ -400,11 +412,16 @@ protected:
   void updateTransformCache(const rclcpp::Time& time, const rclcpp::Time& afterScanTime = rclcpp::Time(0));
 
   /**
-   * \brief Callback handling update of the robot_description parameter using dynamic parameters.
+   * \brief Callback handling update of the parameters.
    *
    * \param parameters The updated config.
    */
   rcl_interfaces::msg::SetParametersResult paramUpdateCallback(const std::vector<rclcpp::Parameter> & parameters);
+
+  /**
+   * \brief Callback for ~reload_model service. Reloads the URDF from parameter.
+   */
+  void onRobotModelMsg(const std_msgs::msg::String::ConstSharedPtr& msg);
 
   /**
    * \brief Callback for ~reload_model service. Reloads the URDF from parameter.

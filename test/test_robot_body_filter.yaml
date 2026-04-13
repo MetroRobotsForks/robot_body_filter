@@ -50,7 +50,7 @@ test_chain_config:
               all_wrong:
                 "laser": "0.015"
                 "base_link": "0.05"
-          robot_description_param: 'test_robot_description'
+          robot_description_topic: 'test_robot_description'
         transforms:
           buffer_length: 60.0
           timeout:
@@ -118,7 +118,7 @@ all_config:
           inflation:
             scale: 1.1
             padding: 0.01
-          robot_description_param: 'test_robot_description'
+          robot_description_topic: 'test_robot_description'
         transforms:
           buffer_length: 60.0
           timeout:
@@ -188,7 +188,7 @@ compute_mask_config_point_by_point:
                 "base_link::0::contains": 0.02
                 "base_link::0::bounding_sphere": 0.02
                 "base_link::0::bounding_box": 0.02
-          robot_description_param: 'test_robot_description'
+          robot_description_topic: 'test_robot_description'
         transforms:
           buffer_length: 60.0
           timeout:
@@ -259,7 +259,7 @@ compute_mask_config_all_at_once:
                 "base_link::0::contains": 0.02
                 "base_link::0::bounding_sphere": 0.02
                 "base_link::0::bounding_box": 0.02
-          robot_description_param: 'test_robot_description'
+          robot_description_topic: 'test_robot_description'
         transforms:
           buffer_length: 60.0
           timeout:

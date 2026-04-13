@@ -52,10 +52,10 @@ template<typename T>
 bool RobotBodyFilter<T>::configure() {
 
   // Need to create NodeHandle because FilterBase does not provide get_node_topics_interface
-  nodeHandle =  std::make_shared<rclcpp::Node>("robot_body_filter", "debug");
+  nodeHandle =  std::make_shared<rclcpp::Node>(this->getName());
   clock_ptr = this->nodeHandle->get_clock();
 
-  this->tfBufferLength = this->getParamDuration("transforms/buffer_length", rclcpp::Duration::from_seconds(60.0), "s");
+  this->tfBufferLength = this->getParamDuration("transforms.buffer_length", rclcpp::Duration::from_seconds(60.0), "s");
 
   if (this->tfBuffer == nullptr)
   {
@@ -67,63 +67,63 @@ bool RobotBodyFilter<T>::configure() {
     this->tfBuffer->clear();
   }
 
-  this->fixedFrame = this->getParamVerbose("frames/fixed", "base_link");
+  this->fixedFrame = this->getParamVerbose("frames.fixed", "base_link");
   cras::stripLeadingSlash(this->fixedFrame, true);
-  this->sensorFrame = this->getParamVerbose("frames/sensor", "");
+  this->sensorFrame = this->getParamVerbose("frames.sensor", "");
   cras::stripLeadingSlash(this->sensorFrame, true);
-  this->filteringFrame = this->getParamVerbose("frames/filtering", this->fixedFrame);
+  this->filteringFrame = this->getParamVerbose("frames.filtering", this->fixedFrame);
   cras::stripLeadingSlash(this->filteringFrame, true);
-  this->minDistance = this->getParamVerbose("sensor/min_distance", 0.0, "m");
-  this->maxDistance = this->getParamVerbose("sensor/max_distance", 0.0, "m");
-  this->robotDescriptionParam = this->getParamVerbose("body_model/robot_description_param", "robot_description");
-  this->keepCloudsOrganized = this->getParamVerbose("filter/keep_clouds_organized", true);
-  this->modelPoseUpdateInterval = this->getParamDuration("filter/model_pose_update_interval", rclcpp::Duration(0, 0), "s");
-  const bool doClipping = this->getParamVerbose("filter/do_clipping", true);
-  const bool doContainsTest = this->getParamVerbose("filter/do_contains_test", true);
-  const bool doShadowTest = this->getParamVerbose("filter/do_shadow_test", true);
-  const double maxShadowDistance = this->getParamVerbose("filter/max_shadow_distance", this->maxDistance, "m");
-  this->reachableTransformTimeout = this->getParamDuration("transforms/timeout/reachable", rclcpp::Duration::from_seconds(0.1), "s");
-  this->unreachableTransformTimeout = this->getParamDuration("transforms/timeout/unreachable", rclcpp::Duration::from_seconds(0.2), "s");
-  this->requireAllFramesReachable = this->getParamVerbose("transforms/require_all_reachable", false);
-  this->linkTfPrefix = this->getParamVerbose("transforms/link_tf_prefix", "");
-  this->publishNoBoundingSpherePointcloud = this->getParamVerbose("bounding_sphere/publish_cut_out_pointcloud", false);
-  this->publishNoBoundingBoxPointcloud = this->getParamVerbose("bounding_box/publish_cut_out_pointcloud", false);
-  this->publishNoOrientedBoundingBoxPointcloud = this->getParamVerbose("oriented_bounding_box/publish_cut_out_pointcloud", false);
-  this->publishNoLocalBoundingBoxPointcloud = this->getParamVerbose("local_bounding_box/publish_cut_out_pointcloud", false);
-  this->computeBoundingSphere = this->getParamVerbose("bounding_sphere/compute", false) || this->publishNoBoundingSpherePointcloud;
-  this->computeBoundingBox = this->getParamVerbose("bounding_box/compute", false) || this->publishNoBoundingBoxPointcloud;
-  this->computeOrientedBoundingBox = this->getParamVerbose("oriented_bounding_box/compute", false) || this->publishNoOrientedBoundingBoxPointcloud;
-  this->computeLocalBoundingBox = this->getParamVerbose("local_bounding_box/compute", false) || this->publishNoLocalBoundingBoxPointcloud;
-  this->computeDebugBoundingSphere = this->getParamVerbose("bounding_sphere/debug", false);
-  this->computeDebugBoundingBox = this->getParamVerbose("bounding_box/debug", false);
-  this->computeDebugOrientedBoundingBox = this->getParamVerbose("oriented_bounding_box/debug", false);
-  this->computeDebugLocalBoundingBox = this->getParamVerbose("local_bounding_box/debug", false);
-  this->publishBoundingSphereMarker = this->getParamVerbose("bounding_sphere/marker", false);
-  this->publishBoundingBoxMarker = this->getParamVerbose("bounding_box/marker", false);
-  this->publishOrientedBoundingBoxMarker = this->getParamVerbose("oriented_bounding_box/marker", false);
-  this->publishLocalBoundingBoxMarker = this->getParamVerbose("local_bounding_box/marker", false);
-  this->localBoundingBoxFrame = this->getParamVerbose("local_bounding_box/frame_id", this->fixedFrame);
-  this->publishDebugPclInside = this->getParamVerbose("debug/pcl/inside", false);
-  this->publishDebugPclClip = this->getParamVerbose("debug/pcl/clip", false);
-  this->publishDebugPclShadow = this->getParamVerbose("debug/pcl/shadow", false);
-  this->publishDebugContainsMarker = this->getParamVerbose("debug/marker/contains", false);
-  this->publishDebugShadowMarker = this->getParamVerbose("debug/marker/shadow", false);
-  this->publishDebugBsphereMarker = this->getParamVerbose("debug/marker/bounding_sphere", false);
-  this->publishDebugBboxMarker = this->getParamVerbose("debug/marker/bounding_box", false);
+  this->minDistance = this->getParamVerbose("sensor.min_distance", 0.0, "m");
+  this->maxDistance = this->getParamVerbose("sensor.max_distance", 0.0, "m");
+  this->robotDescriptionTopic = this->getParamVerbose("body_model.robot_description_topic", "robot_description");
+  this->keepCloudsOrganized = this->getParamVerbose("filter.keep_clouds_organized", true);
+  this->modelPoseUpdateInterval = this->getParamDuration("filter.model_pose_update_interval", rclcpp::Duration(0, 0), "s");
+  const bool doClipping = this->getParamVerbose("filter.do_clipping", true);
+  const bool doContainsTest = this->getParamVerbose("filter.do_contains_test", true);
+  const bool doShadowTest = this->getParamVerbose("filter.do_shadow_test", true);
+  const double maxShadowDistance = this->getParamVerbose("filter.max_shadow_distance", this->maxDistance, "m");
+  this->reachableTransformTimeout = this->getParamDuration("transforms.timeout.reachable", rclcpp::Duration::from_seconds(0.1), "s");
+  this->unreachableTransformTimeout = this->getParamDuration("transforms.timeout.unreachable", rclcpp::Duration::from_seconds(0.2), "s");
+  this->requireAllFramesReachable = this->getParamVerbose("transforms.require_all_reachable", false);
+  this->linkTfPrefix = this->getParamVerbose("transforms.link_tf_prefix", "");
+  this->publishNoBoundingSpherePointcloud = this->getParamVerbose("bounding_sphere.publish_cut_out_pointcloud", false);
+  this->publishNoBoundingBoxPointcloud = this->getParamVerbose("bounding_box.publish_cut_out_pointcloud", false);
+  this->publishNoOrientedBoundingBoxPointcloud = this->getParamVerbose("oriented_bounding_box.publish_cut_out_pointcloud", false);
+  this->publishNoLocalBoundingBoxPointcloud = this->getParamVerbose("local_bounding_box.publish_cut_out_pointcloud", false);
+  this->computeBoundingSphere = this->getParamVerbose("bounding_sphere.compute", false) || this->publishNoBoundingSpherePointcloud;
+  this->computeBoundingBox = this->getParamVerbose("bounding_box.compute", false) || this->publishNoBoundingBoxPointcloud;
+  this->computeOrientedBoundingBox = this->getParamVerbose("oriented_bounding_box.compute", false) || this->publishNoOrientedBoundingBoxPointcloud;
+  this->computeLocalBoundingBox = this->getParamVerbose("local_bounding_box.compute", false) || this->publishNoLocalBoundingBoxPointcloud;
+  this->computeDebugBoundingSphere = this->getParamVerbose("bounding_sphere.debug", false);
+  this->computeDebugBoundingBox = this->getParamVerbose("bounding_box.debug", false);
+  this->computeDebugOrientedBoundingBox = this->getParamVerbose("oriented_bounding_box.debug", false);
+  this->computeDebugLocalBoundingBox = this->getParamVerbose("local_bounding_box.debug", false);
+  this->publishBoundingSphereMarker = this->getParamVerbose("bounding_sphere.marker", false);
+  this->publishBoundingBoxMarker = this->getParamVerbose("bounding_box.marker", false);
+  this->publishOrientedBoundingBoxMarker = this->getParamVerbose("oriented_bounding_box.marker", false);
+  this->publishLocalBoundingBoxMarker = this->getParamVerbose("local_bounding_box.marker", false);
+  this->localBoundingBoxFrame = this->getParamVerbose("local_bounding_box.frame_id", this->fixedFrame);
+  this->publishDebugPclInside = this->getParamVerbose("debug.pcl.inside", false);
+  this->publishDebugPclClip = this->getParamVerbose("debug.pcl.clip", false);
+  this->publishDebugPclShadow = this->getParamVerbose("debug.pcl.shadow", false);
+  this->publishDebugContainsMarker = this->getParamVerbose("debug.marker.contains", false);
+  this->publishDebugShadowMarker = this->getParamVerbose("debug.marker.shadow", false);
+  this->publishDebugBsphereMarker = this->getParamVerbose("debug.marker.bounding_sphere", false);
+  this->publishDebugBboxMarker = this->getParamVerbose("debug.marker.bounding_box", false);
 
-  const auto inflationPadding = this->getParamVerbose("body_model/inflation/padding", 0.0, "m");
-  const auto inflationScale = this->getParamVerbose("body_model/inflation/scale", 1.0);
-  this->defaultContainsInflation.padding = this->getParamVerbose("body_model/inflation/contains_test/padding", inflationPadding, "m");
-  this->defaultContainsInflation.scale = this->getParamVerbose("body_model/inflation/contains_test/scale", inflationScale);
-  this->defaultShadowInflation.padding = this->getParamVerbose("body_model/inflation/shadow_test/padding", inflationPadding, "m");
-  this->defaultShadowInflation.scale = this->getParamVerbose("body_model/inflation/shadow_test/scale", inflationScale);
-  this->defaultBsphereInflation.padding = this->getParamVerbose("body_model/inflation/bounding_sphere/padding", inflationPadding, "m");
-  this->defaultBsphereInflation.scale = this->getParamVerbose("body_model/inflation/bounding_sphere/scale", inflationScale);
-  this->defaultBboxInflation.padding = this->getParamVerbose("body_model/inflation/bounding_box/padding", inflationPadding, "m");
-  this->defaultBboxInflation.scale = this->getParamVerbose("body_model/inflation/bounding_box/scale", inflationScale);
+  const auto inflationPadding = this->getParamVerbose("body_model.inflation.padding", 0.0, "m");
+  const auto inflationScale = this->getParamVerbose("body_model.inflation.scale", 1.0);
+  this->defaultContainsInflation.padding = this->getParamVerbose("body_model.inflation.contains_test.padding", inflationPadding, "m");
+  this->defaultContainsInflation.scale = this->getParamVerbose("body_model.inflation.contains_test.scale", inflationScale);
+  this->defaultShadowInflation.padding = this->getParamVerbose("body_model.inflation.shadow_test.padding", inflationPadding, "m");
+  this->defaultShadowInflation.scale = this->getParamVerbose("body_model.inflation.shadow_test.scale", inflationScale);
+  this->defaultBsphereInflation.padding = this->getParamVerbose("body_model.inflation.bounding_sphere.padding", inflationPadding, "m");
+  this->defaultBsphereInflation.scale = this->getParamVerbose("body_model.inflation.bounding_sphere.scale", inflationScale);
+  this->defaultBboxInflation.padding = this->getParamVerbose("body_model.inflation.bounding_box.padding", inflationPadding, "m");
+  this->defaultBboxInflation.scale = this->getParamVerbose("body_model.inflation.bounding_box.scale", inflationScale);
 
   // read per-link padding
-  const auto perLinkInflationPadding = this->getParamVerboseMap("body_model/inflation/per_link/padding", std::map<std::string, double>(), "m");
+  const auto perLinkInflationPadding = this->getParamVerboseMap("body_model.inflation.per_link.padding", std::map<std::string, double>(), "m");
   for (const auto& inflationPair : perLinkInflationPadding)
   {
     bool containsOnly;
@@ -152,7 +152,7 @@ bool RobotBodyFilter<T>::configure() {
   }
 
   // read per-link scale
-  const auto perLinkInflationScale = this->getParamVerboseMap("body_model/inflation/per_link/scale", std::map<std::string, double>());
+  const auto perLinkInflationScale = this->getParamVerboseMap("body_model.inflation.per_link.scale", std::map<std::string, double>());
   for (const auto& inflationPair : perLinkInflationScale)
   {
     bool containsOnly;
@@ -200,19 +200,22 @@ bool RobotBodyFilter<T>::configure() {
   }
 
   // can contain either whole link names, or scoped names of their collisions (i.e. "link::collision_1" or "link::my_collision")
-  this->linksIgnoredInBoundingSphere = this->template getParamVerboseSet<string>("ignored_links/bounding_sphere");
-  this->linksIgnoredInBoundingBox = this->template getParamVerboseSet<string>("ignored_links/bounding_box");
-  this->linksIgnoredInContainsTest = this->template getParamVerboseSet<string>("ignored_links/contains_test");
-  this->linksIgnoredInShadowTest = this->template getParamVerboseSet<string>("ignored_links/shadow_test", { "laser" });
-  this->linksIgnoredEverywhere = this->template getParamVerboseSet<string>("ignored_links/everywhere");
+  this->linksIgnoredInBoundingSphere = this->template getParamVerboseSet<string>("ignored_links.bounding_sphere");
+  this->linksIgnoredInBoundingBox = this->template getParamVerboseSet<string>("ignored_links.bounding_box");
+  this->linksIgnoredInContainsTest = this->template getParamVerboseSet<string>("ignored_links.contains_test");
+  this->linksIgnoredInShadowTest = this->template getParamVerboseSet<string>("ignored_links.shadow_test", { "laser" });
+  this->linksIgnoredEverywhere = this->template getParamVerboseSet<string>("ignored_links.everywhere");
   this->onlyLinks = this->template getParamVerboseSet<string>("only_links");
 
-  // subscribe for robot_description param changes
-  this->params_interface_->declare_parameter(this->robotDescriptionParam, rclcpp::ParameterType::PARAMETER_STRING);
-  param_cb_ = this->params_interface_->add_on_set_parameters_callback(std::bind(&RobotBodyFilter<T>::paramUpdateCallback, this, std::placeholders::_1));
+  // subscribe for robot_description
+  this->reloadRobotModelSubscriber = this->nodeHandle->template create_subscription<std_msgs::msg::String>(
+    this->robotDescriptionTopic, rclcpp::QoS(1).transient_local(), std::bind(&RobotBodyFilter<T>::onRobotModelMsg, this, std::placeholders::_1));
+
+  // TODO enabling this callback breaks params queried later during configure(), like frames.output
+  // this->param_cb_ = this->params_interface_->add_on_set_parameters_callback(std::bind(&RobotBodyFilter<T>::paramUpdateCallback, this, std::placeholders::_1));
 
   this->reloadRobotModelServiceServer = this->nodeHandle->create_service<std_srvs::srv::Trigger>(
-      "reload_model", std::bind(&RobotBodyFilter<T>::triggerModelReload, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+      this->getName() + "/reload_model", std::bind(&RobotBodyFilter<T>::triggerModelReload, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
   if (this->computeBoundingSphere) {
     this->boundingSpherePublisher = nodeHandle->create_publisher<robot_body_filter::msg::SphereStamped>("robot_bounding_sphere", 100);
@@ -342,27 +345,11 @@ bool RobotBodyFilter<T>::configure() {
     this->tfFramesWatchdog->start();
   }
 
-  { // initialize the robot body to be masked out
-    rclcpp::Parameter description_param;
-    while (!this->params_interface_->get_parameter(this->robotDescriptionParam, description_param) || description_param.as_string().length() == 0) {
-      if (this->failWithoutRobotDescription)
-      {
-        throw std::runtime_error(
-            "RobotBodyFilter: " + this->robotDescriptionParam + " is empty or not set.");
-      }
-      if (!rclcpp::ok())
-        return false;
-
-      RCLCPP_ERROR(get_logger(), "RobotBodyFilter: %s is empty or not set. Please, provide the robot model. Waiting 1s.",
-                robotDescriptionParam.c_str());
-      rclcpp::sleep_for(std::chrono::seconds(1));
-    }
-
-    // happens when configure() is called again from update() (e.g. when a new bag file started
-    // playing)
-    if (!this->shapesToLinks.empty())
-      this->clearRobotMask();
-    this->addRobotMaskFromUrdf(description_param.as_string());
+  // happens when configure() is called again from update() (e.g. when a new bag file started playing)
+  if (!this->shapesToLinks.empty() && this->hasModel())
+  {
+    this->clearRobotMask();
+    this->addRobotMaskFromUrdf(this->robotDescriptionString);
   }
 
   RCLCPP_INFO(get_logger(), "RobotBodyFilter: Successfully configured.");
@@ -393,23 +380,23 @@ bool RobotBodyFilter<T>::configure() {
 }
 
 bool RobotBodyFilterLaserScan::configure() {
-  this->pointByPointScan = this->getParamVerbose("sensor/point_by_point", true);
+  this->pointByPointScan = this->getParamVerbose("sensor.point_by_point", true);
 
   bool success = RobotBodyFilter::configure();
   return success;
 }
 
 bool RobotBodyFilterPointCloud2::configure() {
-  this->pointByPointScan = this->getParamVerbose("sensor/point_by_point", false);
+  this->pointByPointScan = this->getParamVerbose("sensor.point_by_point", false);
 
   bool success = RobotBodyFilter::configure();
   if (!success)
     return false;
 
-  this->outputFrame = this->getParamVerbose("frames/output", this->filteringFrame);
+  this->outputFrame = this->getParamVerbose("frames.output", this->filteringFrame);
 
-  const auto pointChannels = this->getParamVerbose("cloud/point_channels", std::vector<std::string>{"vp_"});
-  const auto directionChannels = this->getParamVerbose("cloud/direction_channels", std::vector<std::string>{"normal_"});
+  const auto pointChannels = this->getParamVerbose("cloud.point_channels", std::vector<std::string>{"", "vp_"});
+  const auto directionChannels = this->getParamVerbose("cloud.direction_channels", std::vector<std::string>{"normal_"});
 
   for (const auto& channel : pointChannels)
     this->channelsToTransform[channel] = cras::CloudChannelType::POINT;
@@ -973,10 +960,13 @@ void RobotBodyFilter<T>::addRobotMaskFromUrdf(const string& urdfModel) {
   urdf::Model parsedUrdfModel;
   bool urdfParseSucceeded = parsedUrdfModel.initString(urdfModel);
   if (!urdfParseSucceeded) {
-    RCLCPP_ERROR_STREAM(get_logger(), "RobotBodyFilter: The URDF model given in parameter '" <<
-        this->robotDescriptionParam << "' cannot be parsed. See "
+    RCLCPP_ERROR_STREAM(get_logger(), "RobotBodyFilter: The given URDF model cannot be parsed. See "
         "urdf::Model::initString for debugging, or try running "
-        "'gzsdf my_robot.urdf'");
+        "'gz sdf -p my_robot.urdf'");
+    // Issue #6: Monitor sensor frame even if it is not a part of the model
+    if (!this->sensorFrame.empty())
+      this->tfFramesWatchdog->setMonitoredFrames(std::set<std::string>{this->sensorFrame});
+
     return;
   }
 
@@ -1132,6 +1122,12 @@ void RobotBodyFilter<T>::clearRobotMask() {
   }
 
   this->tfFramesWatchdog->clear();
+}
+
+template<typename T>
+bool RobotBodyFilter<T>::hasModel() const
+{
+  return !this->robotDescriptionString.empty();
 }
 
 template <typename T>
@@ -1751,43 +1747,32 @@ template<typename T>
 rcl_interfaces::msg::SetParametersResult RobotBodyFilter<T>::paramUpdateCallback(const std::vector<rclcpp::Parameter> & parameters)
 {
   rcl_interfaces::msg::SetParametersResult result;
-  result.successful = true;
+  result.successful = false;
+  result.reason = "No dynamic parameters are supported yet.";
+  return result;
+}
 
-  auto robotDescriptionIdx = static_cast<size_t>(-1);
-  for (size_t i = 0; i < parameters.size(); ++i) {
-    if (parameters[i].get_name() == this->robotDescriptionParam) {
-      robotDescriptionIdx = i;
-      break;
-    }
-  }
+template<typename T>
+void RobotBodyFilter<T>::onRobotModelMsg(const std_msgs::msg::String::ConstSharedPtr& msg)
+{
+  if (!this->configured_)
+    return;
 
-  // robot_description parameter was not found, so we don't have to restart the filter
-  if (robotDescriptionIdx == static_cast<size_t>(-1))
-    return result;
+  RCLCPP_INFO(get_logger(), "RobotBodyFilter: Reloading robot model because a new model was received. Filter operation stopped.");
 
-  RCLCPP_INFO(get_logger(),"RobotBodyFilter: Reloading robot model because of parameter update. Filter operation stopped.");
-  const rclcpp::Parameter& description_param = parameters[robotDescriptionIdx];
-
-  if (description_param.get_type() != rclcpp::ParameterType::PARAMETER_STRING)
-  {
-    result.successful = false;
-    result.reason = "description must be a string";
-    return result;
-  }
+  this->robotDescriptionString = msg->data;
 
   this->tfFramesWatchdog->pause();
   this->configured_ = false;
 
   this->clearRobotMask();
-  this->addRobotMaskFromUrdf(description_param.as_string());
+  this->addRobotMaskFromUrdf(this->robotDescriptionString);
 
   this->tfFramesWatchdog->unpause();
   this->timeConfigured = nodeHandle->now();
   this->configured_ = true;
 
-  RCLCPP_DEBUG(get_logger(), "RobotBodyFilter: Robot model reloaded, resuming filter operation.");
-
-  return result;
+  RCLCPP_INFO(get_logger(), "RobotBodyFilter: Robot model reloaded, resuming filter operation.");
 }
 
 template<typename T>
@@ -1795,15 +1780,8 @@ void RobotBodyFilter<T>::triggerModelReload(const std::shared_ptr<rmw_request_id
                           const std::shared_ptr<std_srvs::srv::Trigger::Request>,
                           std::shared_ptr<std_srvs::srv::Trigger::Response> res)
 {
-  rclcpp::Parameter description_param;
-  res->success = this->params_interface_->get_parameter(this->robotDescriptionParam, description_param);
-
-  if (!res->success)
-  {
-    RCLCPP_ERROR_STREAM(get_logger(), "RobotBodyFilter: Parameter " << this->robotDescriptionParam
-        << " doesn't exist.");
+  if (!this->configured_)
     return;
-  }
 
   RCLCPP_INFO(get_logger(), "RobotBodyFilter: Reloading robot model because of trigger. Filter operation stopped.");
 
@@ -1811,14 +1789,14 @@ void RobotBodyFilter<T>::triggerModelReload(const std::shared_ptr<rmw_request_id
   this->configured_ = false;
 
   this->clearRobotMask();
-  this->addRobotMaskFromUrdf(description_param.as_string());
+  this->addRobotMaskFromUrdf(this->robotDescriptionString);
 
   this->tfFramesWatchdog->unpause();
   this->timeConfigured = nodeHandle->now();
   this->configured_ = true;
 
   RCLCPP_INFO(get_logger(), "RobotBodyFilter: Robot model reloaded, resuming filter operation.");
-  return;
+  res->success = true;
 }
 
 template<typename T>

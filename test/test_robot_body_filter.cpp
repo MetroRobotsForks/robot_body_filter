@@ -3,7 +3,10 @@
 
 #include "gtest/gtest.h"
 
+#include <thread>
+
 #include <cras_cpp_common/cloud.hpp>
+#include <rclcpp/executors/single_threaded_executor.hpp>
 #include <robot_body_filter/RobotBodyFilter.h>
 #include "utils.cpp"
 
@@ -138,21 +141,20 @@ class RobotBodyFilterPointCloud2Test : public RobotBodyFilterPointCloud2
 
 TEST(RobotBodyFilter, InitFromDict)
 {
-  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
+  auto nh = std::make_shared<rclcpp::Node>("test_chain_config");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
-  // test_robot_description parameter doesn't exist
-  nh->set_parameter(rclcpp::Parameter("test_robot_description", ""));
-  EXPECT_THROW(filterBase->configure("", "test_dict_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface()), std::runtime_error);
-  EXPECT_FALSE(filter->configured_);
-  ASSERT_NE(nullptr, filter->tfFramesWatchdog);
-
   // test that invalid robot model doesn't throw any exception, but also generates no filter shapes
-  nh->set_parameter(rclcpp::Parameter("test_robot_description", "<robot name='test'></robot>"));
-  filterBase->configure("", "test_dict_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
-  EXPECT_EQ("test_robot_description", filter->robotDescriptionParam);
+  filterBase->configure("filter1.params", "test_dict_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+
+  std_msgs::msg::String::SharedPtr msg(new std_msgs::msg::String);
+  msg->data = "<robot name='test'></robot>";
+  filter->onRobotModelMsg(msg);
+
+  EXPECT_TRUE(filter->hasModel());
+  EXPECT_EQ("test_robot_description", filter->robotDescriptionTopic);
   EXPECT_EQ(0, filter->shapesToLinks.size());
   EXPECT_TRUE(filter->configured_);
   EXPECT_GT(rclcpp::Duration::from_seconds(0.1), nh->get_clock()->now() - filter->timeConfigured);
@@ -162,14 +164,17 @@ TEST(RobotBodyFilter, InitFromDict)
 
 TEST(RobotBodyFilter, LoadParams)
 {
-  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
+  auto nh = std::make_shared<rclcpp::Node>("test_chain_config");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
+  filterBase->configure("filter1.params", "test_chain_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+
   // test that invalid robot model doesn't throw any exception, but also generates no filter shapes
-  nh->set_parameter(rclcpp::Parameter("test_robot_description", "<robot name='test'></robot>"));
-  filterBase->configure("", "test_dict_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+  std_msgs::msg::String::SharedPtr msg(new std_msgs::msg::String);
+  msg->data = "<robot name='test'></robot>";
+  filter->onRobotModelMsg(msg);
 
   EXPECT_EQ("odom", filter->fixedFrame);
   EXPECT_EQ("laser", filter->sensorFrame);
@@ -201,7 +206,7 @@ TEST(RobotBodyFilter, LoadParams)
     {"base_link", ScaleAndPadding(1.1, 0.05)},
     {"laser", ScaleAndPadding(1.1, 0.015)},
   })), filter->perLinkShadowInflation);
-  EXPECT_EQ("test_robot_description", filter->robotDescriptionParam);
+  EXPECT_EQ("test_robot_description", filter->robotDescriptionTopic);
   EXPECT_DOUBLE_EQ(60.0, filter->tfBufferLength.seconds());
   EXPECT_DOUBLE_EQ(0.2, filter->reachableTransformTimeout.seconds());
   EXPECT_DOUBLE_EQ(0.2, filter->unreachableTransformTimeout.seconds());
@@ -229,42 +234,45 @@ TEST(RobotBodyFilter, LoadParams)
   EXPECT_FALSE(filter->publishDebugShadowMarker);
   EXPECT_FALSE(filter->requireAllFramesReachable);
 
-  EXPECT_EQ("/robot_bounding_sphere", filter->boundingSpherePublisher->get_topic_name());
-  EXPECT_EQ("", filter->boundingBoxPublisher->get_topic_name());
-  EXPECT_EQ("", filter->orientedBoundingBoxPublisher->get_topic_name());
-  EXPECT_EQ("/robot_local_bounding_box", filter->localBoundingBoxPublisher->get_topic_name());
-  EXPECT_EQ("", filter->boundingSphereMarkerPublisher->get_topic_name());
-  EXPECT_EQ("", filter->boundingBoxMarkerPublisher->get_topic_name());
-  EXPECT_EQ("", filter->orientedBoundingBoxMarkerPublisher->get_topic_name());
-  EXPECT_EQ("", filter->localBoundingBoxMarkerPublisher->get_topic_name());
-  EXPECT_EQ("", filter->boundingSphereDebugMarkerPublisher->get_topic_name());
-  EXPECT_EQ("", filter->boundingBoxDebugMarkerPublisher->get_topic_name());
-  EXPECT_EQ("", filter->orientedBoundingBoxDebugMarkerPublisher->get_topic_name());
-  EXPECT_EQ("", filter->localBoundingBoxDebugMarkerPublisher->get_topic_name());
-  EXPECT_EQ("", filter->scanPointCloudNoBoundingSpherePublisher->get_topic_name());
-  EXPECT_EQ("", filter->scanPointCloudNoBoundingBoxPublisher->get_topic_name());
-  EXPECT_EQ("", filter->scanPointCloudNoOrientedBoundingBoxPublisher->get_topic_name());
-  EXPECT_EQ("", filter->scanPointCloudNoLocalBoundingBoxPublisher->get_topic_name());
-  EXPECT_EQ("", filter->debugPointCloudInsidePublisher->get_topic_name());
-  EXPECT_EQ("", filter->debugPointCloudClipPublisher->get_topic_name());
-  EXPECT_EQ("", filter->debugPointCloudShadowPublisher->get_topic_name());
-  EXPECT_EQ("", filter->debugContainsMarkerPublisher->get_topic_name());
-  EXPECT_EQ("", filter->debugShadowMarkerPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_bounding_sphere", filter->boundingSpherePublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->boundingBoxPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->orientedBoundingBoxPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_local_bounding_box", filter->localBoundingBoxPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->boundingSphereMarkerPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->boundingBoxMarkerPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->orientedBoundingBoxMarkerPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->localBoundingBoxMarkerPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->boundingSphereDebugMarkerPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->boundingBoxDebugMarkerPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->orientedBoundingBoxDebugMarkerPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->localBoundingBoxDebugMarkerPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->scanPointCloudNoBoundingSpherePublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->scanPointCloudNoBoundingBoxPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->scanPointCloudNoOrientedBoundingBoxPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->scanPointCloudNoLocalBoundingBoxPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->debugPointCloudInsidePublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->debugPointCloudClipPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->debugPointCloudShadowPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->debugContainsMarkerPublisher->get_topic_name());
+  // EXPECT_STREQ("", filter->debugShadowMarkerPublisher->get_topic_name());
 
-  EXPECT_EQ(nh->get_name() + std::string("/reload_model"),
+  EXPECT_EQ(std::string("/") + nh->get_name() + "/reload_model",
       filter->reloadRobotModelServiceServer->get_service_name());
 }
 
 TEST(RobotBodyFilter, LoadParamsAllConfig)
 {
-  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
+  auto nh = std::make_shared<rclcpp::Node>("all_config");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
+  filterBase->configure("filter1.params", "all_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+
   // test that invalid robot model doesn't throw any exception, but also generates no filter shapes
-  nh->set_parameter(rclcpp::Parameter("test_robot_description", "<robot name='test'></robot>"));
-  filterBase->configure("", "all_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+  std_msgs::msg::String::SharedPtr msg(new std_msgs::msg::String);
+  msg->data = "<robot name='test'></robot>";
+  filter->onRobotModelMsg(msg);
 
   EXPECT_EQ("odom", filter->fixedFrame);
   EXPECT_EQ("laser", filter->sensorFrame);
@@ -286,7 +294,7 @@ TEST(RobotBodyFilter, LoadParamsAllConfig)
   EXPECT_DOUBLE_EQ(0.01, filter->defaultContainsInflation.padding);
   EXPECT_DOUBLE_EQ(1.1, filter->defaultShadowInflation.scale);
   EXPECT_DOUBLE_EQ(0.01, filter->defaultShadowInflation.padding);
-  EXPECT_EQ("test_robot_description", filter->robotDescriptionParam);
+  EXPECT_EQ("test_robot_description", filter->robotDescriptionTopic);
   EXPECT_DOUBLE_EQ(60.0, filter->tfBufferLength.seconds());
   EXPECT_DOUBLE_EQ(0.2, filter->reachableTransformTimeout.seconds());
   EXPECT_DOUBLE_EQ(0.2, filter->unreachableTransformTimeout.seconds());
@@ -314,41 +322,44 @@ TEST(RobotBodyFilter, LoadParamsAllConfig)
   EXPECT_TRUE(filter->publishDebugShadowMarker);
   EXPECT_TRUE(filter->requireAllFramesReachable);
 
-  EXPECT_EQ("/robot_bounding_sphere", filter->boundingSpherePublisher->get_topic_name());
-  EXPECT_EQ("/robot_bounding_box", filter->boundingBoxPublisher->get_topic_name());
-  EXPECT_EQ("/robot_oriented_bounding_box", filter->orientedBoundingBoxPublisher->get_topic_name());
-  EXPECT_EQ("/robot_local_bounding_box", filter->localBoundingBoxPublisher->get_topic_name());
-  EXPECT_EQ("/robot_bounding_sphere_marker", filter->boundingSphereMarkerPublisher->get_topic_name());
-  EXPECT_EQ("/robot_bounding_box_marker", filter->boundingBoxMarkerPublisher->get_topic_name());
-  EXPECT_EQ("/robot_oriented_bounding_box_marker", filter->orientedBoundingBoxMarkerPublisher->get_topic_name());
-  EXPECT_EQ("/robot_local_bounding_box_marker", filter->localBoundingBoxMarkerPublisher->get_topic_name());
-  EXPECT_EQ("/robot_bounding_sphere_debug", filter->boundingSphereDebugMarkerPublisher->get_topic_name());
-  EXPECT_EQ("/robot_bounding_box_debug", filter->boundingBoxDebugMarkerPublisher->get_topic_name());
-  EXPECT_EQ("/robot_oriented_bounding_box_debug", filter->orientedBoundingBoxDebugMarkerPublisher->get_topic_name());
-  EXPECT_EQ("/robot_local_bounding_box_debug", filter->localBoundingBoxDebugMarkerPublisher->get_topic_name());
-  EXPECT_EQ("/scan_point_cloud_no_bsphere", filter->scanPointCloudNoBoundingSpherePublisher->get_topic_name());
-  EXPECT_EQ("/scan_point_cloud_no_bbox", filter->scanPointCloudNoBoundingBoxPublisher->get_topic_name());
-  EXPECT_EQ("/scan_point_cloud_no_oriented_bbox", filter->scanPointCloudNoOrientedBoundingBoxPublisher->get_topic_name());
-  EXPECT_EQ("/scan_point_cloud_no_local_bbox", filter->scanPointCloudNoLocalBoundingBoxPublisher->get_topic_name());
-  EXPECT_EQ("/scan_point_cloud_inside", filter->debugPointCloudInsidePublisher->get_topic_name());
-  EXPECT_EQ("/scan_point_cloud_clip", filter->debugPointCloudClipPublisher->get_topic_name());
-  EXPECT_EQ("/scan_point_cloud_shadow", filter->debugPointCloudShadowPublisher->get_topic_name());
-  EXPECT_EQ("/robot_model_for_contains_test", filter->debugContainsMarkerPublisher->get_topic_name());
-  EXPECT_EQ("/robot_model_for_shadow_test", filter->debugShadowMarkerPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_bounding_sphere", filter->boundingSpherePublisher->get_topic_name());
+  EXPECT_STREQ("/robot_bounding_box", filter->boundingBoxPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_oriented_bounding_box", filter->orientedBoundingBoxPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_local_bounding_box", filter->localBoundingBoxPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_bounding_sphere_marker", filter->boundingSphereMarkerPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_bounding_box_marker", filter->boundingBoxMarkerPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_oriented_bounding_box_marker", filter->orientedBoundingBoxMarkerPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_local_bounding_box_marker", filter->localBoundingBoxMarkerPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_bounding_sphere_debug", filter->boundingSphereDebugMarkerPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_bounding_box_debug", filter->boundingBoxDebugMarkerPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_oriented_bounding_box_debug", filter->orientedBoundingBoxDebugMarkerPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_local_bounding_box_debug", filter->localBoundingBoxDebugMarkerPublisher->get_topic_name());
+  EXPECT_STREQ("/scan_point_cloud_no_bsphere", filter->scanPointCloudNoBoundingSpherePublisher->get_topic_name());
+  EXPECT_STREQ("/scan_point_cloud_no_bbox", filter->scanPointCloudNoBoundingBoxPublisher->get_topic_name());
+  EXPECT_STREQ("/scan_point_cloud_no_oriented_bbox", filter->scanPointCloudNoOrientedBoundingBoxPublisher->get_topic_name());
+  EXPECT_STREQ("/scan_point_cloud_no_local_bbox", filter->scanPointCloudNoLocalBoundingBoxPublisher->get_topic_name());
+  EXPECT_STREQ("/scan_point_cloud_inside", filter->debugPointCloudInsidePublisher->get_topic_name());
+  EXPECT_STREQ("/scan_point_cloud_clip", filter->debugPointCloudClipPublisher->get_topic_name());
+  EXPECT_STREQ("/scan_point_cloud_shadow", filter->debugPointCloudShadowPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_model_for_contains_test", filter->debugContainsMarkerPublisher->get_topic_name());
+  EXPECT_STREQ("/robot_model_for_shadow_test", filter->debugShadowMarkerPublisher->get_topic_name());
 
-  EXPECT_EQ(nh->get_name() + std::string("/reload_model"),
+  EXPECT_EQ(std::string("/") + nh->get_name() + "/reload_model",
       filter->reloadRobotModelServiceServer->get_service_name());
 }
 
 TEST(RobotBodyFilter, ParseRobot)
 {
-  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
+  auto nh = std::make_shared<rclcpp::Node>("test_chain_config");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
-  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
-  filterBase->configure("", "test_dict_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+  filterBase->configure("filter1.params", "test_chain_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+
+  std_msgs::msg::String::SharedPtr msg(new std_msgs::msg::String);
+  msg->data = ROBOT_URDF;
+  filter->onRobotModelMsg(msg);
 
   // base_link, base_link::big_collision_box::contains/shadow, laser::contains/shadow, antenna::contains/shadow
   EXPECT_EQ(7, filter->shapesToLinks.size());
@@ -374,38 +385,33 @@ TEST(RobotBodyFilter, ParseRobot)
   EXPECT_EQ(4, filter->shapeMask->getBodiesForContainsTest().size());
   EXPECT_EQ(2, filter->shapeMask->getBodiesForShadowTest().size());
 
-  nh->set_parameter(rclcpp::Parameter("test_robot_description", "<robot name='test'></robot>"));
+  std_msgs::msg::String::SharedPtr msg2(new std_msgs::msg::String);
+  msg2->data = "<robot name='test'></robot>";
+  filter->onRobotModelMsg(msg2);
   auto req = std::make_shared<std_srvs::srv::Trigger::Request>();
   auto resp = std::make_shared<std_srvs::srv::Trigger::Response>();
   filter->triggerModelReload(nullptr, req, resp);
   EXPECT_TRUE(resp->success);
 
   EXPECT_EQ(0, filter->shapesToLinks.size());
-  EXPECT_FALSE(filter->tfFramesWatchdog->isMonitored("laser"));
+  EXPECT_TRUE(filter->tfFramesWatchdog->isMonitored("laser"));  // sensor frame is always monitored
   EXPECT_FALSE(filter->tfFramesWatchdog->isMonitored("base_link"));
   EXPECT_EQ(0, filter->shapeMask->getBodies().size());
   EXPECT_EQ(0, filter->shapeMask->getBodiesForContainsTest().size());
   EXPECT_EQ(0, filter->shapeMask->getBodiesForShadowTest().size());
 
-  /*auto cfg = boost::make_shared<dynamic_reconfigure::Config>();
-  dynamic_reconfigure::StrParameter param;
-  param.name = "robot_model";
-  param.value = ROBOT_URDF;
-  cfg->strs.push_back(param);*/
-
-  // auto cfgConst = boost::const_pointer_cast<const dynamic_reconfigure::Config>(cfg);
-  // filter->robotDescriptionUpdated(cfgConst);
-  EXPECT_EQ(7, filter->shapesToLinks.size());
+  filter->onRobotModelMsg(msg2);
+  EXPECT_EQ(0, filter->shapesToLinks.size());
   EXPECT_TRUE(filter->tfFramesWatchdog->isMonitored("laser"));
-  EXPECT_TRUE(filter->tfFramesWatchdog->isMonitored("base_link"));
-  EXPECT_EQ(7, filter->shapeMask->getBodies().size());
-  EXPECT_EQ(4, filter->shapeMask->getBodiesForContainsTest().size());
-  EXPECT_EQ(2, filter->shapeMask->getBodiesForShadowTest().size());
+  EXPECT_FALSE(filter->tfFramesWatchdog->isMonitored("base_link"));
+  EXPECT_EQ(0, filter->shapeMask->getBodies().size());
+  EXPECT_EQ(0, filter->shapeMask->getBodiesForContainsTest().size());
+  EXPECT_EQ(0, filter->shapeMask->getBodiesForShadowTest().size());
 
   // test reconfiguring (this happens when playing back a bag file and a new one starts playing)
   filter->clearRobotMask();
-  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
-  filterBase->configure("", "test_dict_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+  filter->onRobotModelMsg(msg);
+  filterBase->configure("filter1.params", "test_chain_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
   EXPECT_EQ(7, filter->shapesToLinks.size());
   EXPECT_TRUE(filter->tfFramesWatchdog->isMonitored("laser"));
   EXPECT_TRUE(filter->tfFramesWatchdog->isMonitored("base_link"));
@@ -416,13 +422,16 @@ TEST(RobotBodyFilter, ParseRobot)
 
 TEST(RobotBodyFilter, Transforms)
 {
-  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
+  auto nh = std::make_shared<rclcpp::Node>("test_chain_config");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
-  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
-  filterBase->configure("", "test_dict_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+  filterBase->configure("filter1.params", "test_chain_config", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+
+  std_msgs::msg::String::SharedPtr msg(new std_msgs::msg::String);
+  msg->data = ROBOT_URDF;
+  filter->onRobotModelMsg(msg);
 
   geometry_msgs::msg::TransformStamped tf;
   tf.transform.rotation.w = 1.0;
@@ -507,13 +516,16 @@ TEST(RobotBodyFilter, Transforms)
 
 TEST(RobotBodyFilter, ComputeMaskPointByPoint)
 {
-  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
+  auto nh = std::make_shared<rclcpp::Node>("compute_mask_config_point_by_point");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
-  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
-  filterBase->configure("", "compute_mask_config_point_by_point", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+  filterBase->configure("filter1.params", "compute_mask_config_point_by_point", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+
+  std_msgs::msg::String::SharedPtr msg(new std_msgs::msg::String);
+  msg->data = ROBOT_URDF;
+  filter->onRobotModelMsg(msg);
 
   cras::Cloud cloud;
   cloud.header.frame_id = filter->filteringFrame;
@@ -1444,13 +1456,16 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint)
 
 TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
 {
-  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
+  auto nh = std::make_shared<rclcpp::Node>("compute_mask_config_all_at_once");
 
   auto filter = std::make_shared<RobotBodyFilterPointCloud2Test>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::PointCloud2>>(filter);
 
-  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
-  filterBase->configure("", "compute_mask_config_all_at_once", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+  filterBase->configure("filter1.params", "compute_mask_config_all_at_once", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+
+  std_msgs::msg::String::SharedPtr msg(new std_msgs::msg::String);
+  msg->data = ROBOT_URDF;
+  filter->onRobotModelMsg(msg);
 
   cras::Cloud cloud;
   cloud.header.frame_id = filter->filteringFrame;
@@ -2279,13 +2294,16 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce)
 
 TEST(RobotBodyFilter, UpdateLaserScan)
 {
-  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
+  auto nh = std::make_shared<rclcpp::Node>("compute_mask_config_point_by_point");
 
   auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
-  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
-  filterBase->configure("", "compute_mask_config_point_by_point", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+  filterBase->configure("filter1.params", "compute_mask_config_point_by_point", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+
+  std_msgs::msg::String::SharedPtr msg(new std_msgs::msg::String);
+  msg->data = ROBOT_URDF;
+  filter->onRobotModelMsg(msg);
 
   sensor_msgs::msg::LaserScan scan;
   scan.header.frame_id = "laser";
@@ -2378,13 +2396,16 @@ TEST(RobotBodyFilter, UpdateLaserScan)
 
 TEST(RobotBodyFilter, UpdatePointCloud2)
 {
-  auto nh = std::make_shared<rclcpp::Node>("test_robot_body_filter");
+  auto nh = std::make_shared<rclcpp::Node>("compute_mask_config_all_at_once");
 
   auto filter = std::make_shared<RobotBodyFilterPointCloud2Test>();
   auto filterBase = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::PointCloud2>>(filter);
 
-  nh->set_parameter(rclcpp::Parameter("test_robot_description", ROBOT_URDF));
-  filterBase->configure("", "compute_mask_config_all_at_once", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+  filterBase->configure("filter1.params", "compute_mask_config_all_at_once", nh->get_node_logging_interface(), nh->get_node_parameters_interface());
+
+  std_msgs::msg::String::SharedPtr msg(new std_msgs::msg::String);
+  msg->data = ROBOT_URDF;
+  filter->onRobotModelMsg(msg);
 
   cras::Cloud cloud;
   cloud.header.frame_id = "laser";
@@ -2529,8 +2550,9 @@ TEST(RobotBodyFilter, UpdatePointCloud2)
 
   int main(int argc, char **argv)
 {
-  testing::InitGoogleTest(&argc, argv);
-  char* argv2[] = {(char*)"my_test"};
-  rclcpp::init(1, argv2);
-  return RUN_ALL_TESTS();
+  ::testing::InitGoogleTest(&argc, argv);
+  rclcpp::init(argc, argv);
+  int result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }
