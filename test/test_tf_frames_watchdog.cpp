@@ -9,13 +9,14 @@ using namespace robot_body_filter;
 class TestWatchdog : public TFFramesWatchdog
 {
   public:
-  TestWatchdog(const std::string &robotFrame,
+  TestWatchdog(rclcpp::Node::SharedPtr node,
+               const std::string &robotFrame,
                const std::set<std::string> &monitoredFrames,
                const std::shared_ptr<tf2_ros::Buffer> &tfBuffer,
                const rclcpp::Duration &unreachableTfLookupTimeout,
                const rclcpp::Rate::SharedPtr &unreachableFramesCheckRate) :
-    TFFramesWatchdog(nullptr, nullptr, robotFrame, monitoredFrames, tfBuffer, unreachableTfLookupTimeout,
-        unreachableFramesCheckRate)
+    TFFramesWatchdog(node->get_node_logging_interface(), node->get_clock(),
+      robotFrame, monitoredFrames, tfBuffer, unreachableTfLookupTimeout, unreachableFramesCheckRate)
   {
 
   }
@@ -28,13 +29,9 @@ class TestWatchdog : public TFFramesWatchdog
 
 TEST(TfFramesWatchdog, Basic)
 {
-  auto clock_ptr = std::make_shared<rclcpp::Clock>();
-  // TODO: Figure out time travel
-  // rclcpp::Time::init();
-  // rclcpp::Time::setNow(ros::Time(1));
-
-  const std::shared_ptr<tf2_ros::Buffer> tfBuffer(new tf2_ros::Buffer(clock_ptr));
-  TestWatchdog watchdog("base_link", {"left_track", "front_left_flipper"}, tfBuffer,
+  const auto nh = std::make_shared<rclcpp::Node>("test_ray_casting_shape_mask");
+  const auto tfBuffer = std::make_shared<tf2_ros::Buffer>(nh->get_clock(), tf2::BUFFER_CORE_DEFAULT_CACHE_TIME, nh);
+  TestWatchdog watchdog(nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
       rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
   EXPECT_TRUE(watchdog.isMonitored("left_track"));
@@ -76,13 +73,9 @@ TEST(TfFramesWatchdog, Basic)
 
 TEST(TfFramesWatchdog, ThreadControl)
 {
-  auto clock_ptr = std::make_shared<rclcpp::Clock>();
-  // TODO: Figure out time travel
-  // ros::Time::init();
-  // ros::Time::setNow(ros::Time(1));
-
-  const std::shared_ptr<tf2_ros::Buffer> tfBuffer(new tf2_ros::Buffer(clock_ptr));
-  TestWatchdog watchdog("base_link", {"left_track", "front_left_flipper"}, tfBuffer,
+  const auto nh = std::make_shared<rclcpp::Node>("test_ray_casting_shape_mask");
+  const auto tfBuffer = std::make_shared<tf2_ros::Buffer>(nh->get_clock(), tf2::BUFFER_CORE_DEFAULT_CACHE_TIME, nh);
+  TestWatchdog watchdog(nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
                         rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
   EXPECT_FALSE(watchdog.started);
@@ -140,13 +133,11 @@ TEST(TfFramesWatchdog, ThreadControl)
 
 TEST(TfFramesWatchdog, SearchForReachableFrames)
 {
-  auto clock_ptr = std::make_shared<rclcpp::Clock>();
-  // TODO: Figure out time travel
-  // ros::Time::init(); // use system time for this test so that we don't have problems with timeouts
-
-  const std::shared_ptr<tf2_ros::Buffer> tfBuffer(new tf2_ros::Buffer(clock_ptr));
+  const auto nh = std::make_shared<rclcpp::Node>("test_ray_casting_shape_mask");
+  const auto clock_ptr = nh->get_clock();
+  const auto tfBuffer = std::make_shared<tf2_ros::Buffer>(nh->get_clock(), tf2::BUFFER_CORE_DEFAULT_CACHE_TIME, nh);
   tfBuffer->setUsingDedicatedThread(true);
-  TestWatchdog watchdog("base_link", {"left_track", "front_left_flipper"}, tfBuffer,
+  TestWatchdog watchdog(nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
                         rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
   watchdog.unpause(); // searchForReachableFrames checks this->paused
@@ -199,13 +190,11 @@ TEST(TfFramesWatchdog, SearchForReachableFrames)
 
 TEST(TfFramesWatchdog, LookupTransform)
 {
-  auto clock_ptr = std::make_shared<rclcpp::Clock>();
-  // TODO: Figure out time travel
-  // rclcpp::Time::init(); // use system time for this test so that we don't have problems with timeouts
-
-  const std::shared_ptr<tf2_ros::Buffer> tfBuffer(new tf2_ros::Buffer(clock_ptr));
+  const auto nh = std::make_shared<rclcpp::Node>("test_ray_casting_shape_mask");
+  const auto clock_ptr = nh->get_clock();
+  const auto tfBuffer = std::make_shared<tf2_ros::Buffer>(nh->get_clock(), tf2::BUFFER_CORE_DEFAULT_CACHE_TIME, nh);
   tfBuffer->setUsingDedicatedThread(true);
-  TestWatchdog watchdog("base_link", {"left_track", "front_left_flipper"}, tfBuffer,
+  TestWatchdog watchdog(nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
                         rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
   EXPECT_THROW(watchdog.lookupTransform("left_track", clock_ptr->now(), rclcpp::Duration::from_seconds(1)), std::runtime_error);
@@ -286,6 +275,9 @@ TEST(TfFramesWatchdog, LookupTransform)
 
 int main(int argc, char **argv)
 {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+  ::testing::InitGoogleTest(&argc, argv);
+  rclcpp::init(argc, argv);
+  int result = RUN_ALL_TESTS();
+  rclcpp::shutdown();
+  return result;
 }

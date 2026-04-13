@@ -194,7 +194,7 @@ private:
   std::thread thisThread;
 
   rclcpp::Logger logger;
-  const rclcpp::Clock::SharedPtr& clock_ptr;
+  rclcpp::Clock::SharedPtr clock_ptr;
 };
 
 }

@@ -119,9 +119,11 @@ if (BUILD_TESTING)
   ament_target_dependencies(test_filter_utils ${THIS_PACKAGE_DEPS})
   add_ros_test(test/test_filter_utils.test.py TIMEOUT 30 ARGS "test_binary_dir:=${CMAKE_CURRENT_BINARY_DIR}")
 
-  ament_add_gtest(test_tf_frames_watchdog test/test_tf_frames_watchdog.cpp)
+  ament_add_gtest_executable(test_tf_frames_watchdog test/test_tf_frames_watchdog.cpp)
   target_link_libraries(test_tf_frames_watchdog TFFramesWatchdog)
   ament_target_dependencies(test_tf_frames_watchdog ${THIS_PACKAGE_DEPS})
+  add_ros_test(test/test_with_ros.test.py TIMEOUT 30 TARGET test_tf_frames_watchdog_rostest ARGS
+    "test_binary_dir:=${CMAKE_CURRENT_BINARY_DIR}" "binary:=test_tf_frames_watchdog" "name:=test_tf_frames_watchdog")
 
   ament_add_gtest_executable(test_ray_casting_shape_mask test/test_ray_casting_shape_mask.cpp)
   target_link_libraries(test_ray_casting_shape_mask RayCastingShapeMask)
