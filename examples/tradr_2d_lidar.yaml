@@ -28,7 +28,7 @@ scan_filter_chain:
           inflation:
             scale: 1.07
             padding: 0.01
-          robot_description_param: '/nifti_robot_description'
+          robot_description_topic: '/nifti_robot_description'
         transforms:
           buffer_length: 60.0
           timeout:

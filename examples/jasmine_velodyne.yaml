@@ -32,7 +32,7 @@ cloud_filter_chain:
           inflation:
             scale: 1.0
             padding: 0.03
-          robot_description_param: /robot_description
+          robot_description_topic: /robot_description
         filter:
           do_clipping: true
           do_contains_test: true
@@ -74,7 +74,7 @@ cloud_filter_chain:
           inflation:
             scale: 1.0
             padding: 0.1
-          robot_description_param: /robot_description
+          robot_description_topic: /robot_description
         filter:
           do_clipping: false
           do_contains_test: true
@@ -106,7 +106,7 @@ cloud_filter_chain:
           inflation:
             scale: 1.0
             padding: 0.01
-          robot_description_param: /robot_description
+          robot_description_topic: /robot_description
         filter:
           do_clipping: false
         only_links:
