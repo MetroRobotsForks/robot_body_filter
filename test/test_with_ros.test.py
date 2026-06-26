@@ -14,34 +14,34 @@ def generate_test_description():
     gtest_node = launch_ros.actions.Node(
         executable=launch.substitutions.PathJoinSubstitution(
             [
-                launch.substitutions.LaunchConfiguration("test_binary_dir"),
-                launch.substitutions.LaunchConfiguration("binary"),
+                launch.substitutions.LaunchConfiguration('test_binary_dir'),
+                launch.substitutions.LaunchConfiguration('binary'),
             ]
         ),
-        name=launch.substitutions.LaunchConfiguration("name"),
-        output="screen",
+        name=launch.substitutions.LaunchConfiguration('name'),
+        output='screen',
     )
 
     return launch.LaunchDescription(
         [
             launch.actions.DeclareLaunchArgument(
-                name="test_binary_dir",
-                description="Binary directory of package containing test executables",
+                name='test_binary_dir',
+                description='Binary directory of package containing test executables',
             ),
             launch.actions.DeclareLaunchArgument(
-                name="binary",
-                description="The binary to run",
+                name='binary',
+                description='The binary to run',
             ),
             launch.actions.DeclareLaunchArgument(
-                name="name",
-                description="The name of the node",
+                name='name',
+                description='The name of the node',
             ),
             gtest_node,
             launch_testing.util.KeepAliveProc(),
             launch_testing.actions.ReadyToTest(),
         ]
     ), {
-        "gtest_node": gtest_node,
+        'gtest_node': gtest_node,
     }
 
 

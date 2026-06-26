@@ -64,11 +64,11 @@ void expectTransformsDoubleEq(const Eigen::Isometry3d& i1, const Eigen::Isometry
 
 #define WAIT_FOR_MESSAGE(node_ptr, msg) \
   { \
-    size_t i = 0;\
+    size_t i = 0; \
     while (rclcpp::ok() && msg == nullptr && i < 100) { \
       rclcpp::spin_some(node_ptr); \
       rclcpp::sleep_for(std::chrono::milliseconds(10)); \
-      ++i;\
+      ++i; \
     } \
     if (i == 100) { \
       GTEST_FAIL(); \

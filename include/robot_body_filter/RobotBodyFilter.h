@@ -3,10 +3,14 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
+#include <map>
 #include <memory>
 #include <mutex>
 #include <set>
+#include <string>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -17,10 +21,10 @@
 #include <laser_geometry/laser_geometry.hpp>
 #include <moveit/occupancy_map_monitor/occupancy_map_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <robot_body_filter/RayCastingShapeMask.h>
-#include <robot_body_filter/TfFramesWatchdog.h>
 #include <robot_body_filter/msg/oriented_bounding_box_stamped.hpp>
 #include <robot_body_filter/msg/sphere_stamped.hpp>
+#include <robot_body_filter/RayCastingShapeMask.h>
+#include <robot_body_filter/TfFramesWatchdog.h>
 #include <robot_body_filter/utils/filter_utils.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <std_msgs/msg/string.hpp>
@@ -68,13 +72,13 @@ struct ScaleAndPadding {
 };
 
 /** \brief Suffix added to link/collision names to distinguish their usage in contains tests only. */
-static const std::string kContainsSuffix = "::contains";
+static inline constexpr char kContainsSuffix[] = "::contains";
 /** \brief Suffix added to link/collision names to distinguish their usage in shadow tests only. */
-static const std::string kShadowSuffix = "::shadow";
+static inline constexpr char kShadowSuffix[] = "::shadow";
 /** \brief Suffix added to link/collision names to distinguish their usage in bounding sphere computation only. */
-static const std::string kBsphereSuffix = "::bounding_sphere";
+static inline constexpr char kBsphereSuffix[] = "::bounding_sphere";
 /** \brief Suffix added to link/collision names to distinguish their usage in bounding box computation only. */
-static const std::string kBboxSuffix = "::bounding_box";
+static inline constexpr char kBboxSuffix[] = "::bounding_box";
 
 /**
  * \brief Filter to remove robot's own body from laser scan.

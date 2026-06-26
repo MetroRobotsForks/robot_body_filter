@@ -4,6 +4,8 @@
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
 #include <map>
+#include <memory>
+#include <string>
 #include <unordered_set>
 #include <vector>
 
@@ -75,10 +77,10 @@ namespace robot_body_filter {
 class RayCastingShapeMask : protected point_containment_filter::ShapeMask {
 public:
   enum class MaskValue : std::uint8_t {
-    INSIDE = 0, //!< The point is inside robot body.
-    OUTSIDE = 1, //!< The point is outside robot body and is not a shadow (invalid points with NaNs also fall here).
-    CLIP = 2, //!< The point is outside measurement range.
-    SHADOW = 3, //!< Line segment sensor-point intersects the robot body and the point is not INSIDE.
+    INSIDE = 0,  //!< The point is inside robot body.
+    OUTSIDE = 1,  //!< The point is outside robot body and is not a shadow (invalid points with NaNs also fall here).
+    CLIP = 2,  //!< The point is outside measurement range.
+    SHADOW = 3,  //!< Line segment sensor-point intersects the robot body and the point is not INSIDE.
   };
 
   /**

@@ -5,14 +5,14 @@
 
 #include <robot_body_filter/utils/filter_utils.hpp>
 
-using namespace robot_body_filter;
-
 class TestFilter : public robot_body_filter::FilterBase<std::string> {
-  public: bool update(const std::string &, std::string &) override {
+public:
+  bool update(const std::string&, std::string&) override {
     return false;
   }
 
-  protected: bool configure() override {
+protected:
+  bool configure() override {
     bool default_used;
     EXPECT_EQ(false, this->getParamVerbose("debug.pcl.inside", true, "", &default_used)); EXPECT_FALSE(default_used);
     EXPECT_EQ(true, this->getParamVerbose("debug.pcl.nonexistent", true, "", &default_used)); EXPECT_TRUE(default_used);

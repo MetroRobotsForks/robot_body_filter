@@ -7,19 +7,30 @@
 
 #include <geometric_shapes/mesh_operations.h>
 #include <robot_body_filter/utils/bodies.h>
-#include "utils.cpp"
 
-using namespace bodies;
+#include "utils.cpp"  // NOLINT
 
-#define EXPECT_VECTORS_EQUAL(v1, v2, error)                                                                            \
-  EXPECT_NEAR((v1)[0], (v2)[0], (error));                                                                              \
-  EXPECT_NEAR((v1)[1], (v2)[1], (error));                                                                              \
+using bodies::AABB;
+using bodies::AxisAlignedBoundingBox;
+using bodies::Body;
+using bodies::BodyPtr;
+using bodies::BoundingCylinder;
+using bodies::BoundingSphere;
+using bodies::Box;
+using bodies::ConvexMesh;
+using bodies::Cylinder;
+using bodies::OBB;
+using bodies::OrientedBoundingBox;
+using bodies::Sphere;
+
+#define EXPECT_VECTORS_EQUAL(v1, v2, error) \
+  EXPECT_NEAR((v1)[0], (v2)[0], (error)); \
+  EXPECT_NEAR((v1)[1], (v2)[1], (error)); \
   EXPECT_NEAR((v1)[2], (v2)[2], (error));
 
 class WrongBody : public ::bodies::Body {
 public:
-  explicit WrongBody(const ::shapes::ShapeType type)
-    : Body() {
+  explicit WrongBody(const ::shapes::ShapeType type) {
     this->type_ = type;
   }
 
@@ -32,8 +43,7 @@ public:
   }
 
   bool intersectsRay(
-    const Eigen::Vector3d&, const Eigen::Vector3d&, EigenSTL::vector_Vector3d*, unsigned int) const override {
-
+      const Eigen::Vector3d&, const Eigen::Vector3d&, EigenSTL::vector_Vector3d*, unsigned int) const override {
     throw std::runtime_error("Should not be called");
   }
 
@@ -287,28 +297,28 @@ TEST(Bodies, ComputeBoundingBoxConvexMesh) {
   delete shape;
 }
 
-#define EXPECT_VECTORS_EQUAL(v1, v2, error)                                                                            \
-  EXPECT_NEAR((v1)[0], (v2)[0], (error));                                                                              \
-  EXPECT_NEAR((v1)[1], (v2)[1], (error));                                                                              \
+#define EXPECT_VECTORS_EQUAL(v1, v2, error) \
+  EXPECT_NEAR((v1)[0], (v2)[0], (error)); \
+  EXPECT_NEAR((v1)[1], (v2)[1], (error)); \
   EXPECT_NEAR((v1)[2], (v2)[2], (error));
 
-#define CHECK_INTERSECTS_TWICE(body, origin, direction, intersc1, intersc2, error)                                     \
-  {                                                                                                                    \
-    EigenSTL::vector_Vector3d intersections;                                                                           \
-    Eigen::Vector3d o origin;                                                                                          \
-    Eigen::Vector3d d direction;                                                                                       \
-    Eigen::Vector3d i1 intersc1;                                                                                       \
-    Eigen::Vector3d i2 intersc2;                                                                                       \
-    const auto result = (body).intersectsRay(o, d, &intersections, 2);                                                \
-    EXPECT_TRUE(result);                                                                                               \
-    ASSERT_EQ(2, intersections.size());                                                                                \
-    if (fabs(static_cast<double>((intersections.at(0) - i1).norm())) < (error)) {                                      \
-      EXPECT_VECTORS_EQUAL(intersections.at(0), i1, (error));                                                          \
-      EXPECT_VECTORS_EQUAL(intersections.at(1), i2, (error));                                                          \
-    } else {                                                                                                           \
-      EXPECT_VECTORS_EQUAL(intersections.at(0), i2, (error));                                                          \
-      EXPECT_VECTORS_EQUAL(intersections.at(1), i1, (error));                                                          \
-    }                                                                                                                  \
+#define CHECK_INTERSECTS_TWICE(body, origin, direction, intersc1, intersc2, error) \
+  { \
+    EigenSTL::vector_Vector3d intersections; \
+    Eigen::Vector3d o origin; \
+    Eigen::Vector3d d direction; \
+    Eigen::Vector3d i1 intersc1; \
+    Eigen::Vector3d i2 intersc2; \
+    const auto result = (body).intersectsRay(o, d, &intersections, 2); \
+    EXPECT_TRUE(result); \
+    ASSERT_EQ(2, intersections.size()); \
+    if (fabs(static_cast<double>((intersections.at(0) - i1).norm())) < (error)) { \
+      EXPECT_VECTORS_EQUAL(intersections.at(0), i1, (error)); \
+      EXPECT_VECTORS_EQUAL(intersections.at(1), i2, (error)); \
+    } else { \
+      EXPECT_VECTORS_EQUAL(intersections.at(0), i2, (error)); \
+      EXPECT_VECTORS_EQUAL(intersections.at(1), i1, (error)); \
+    } \
   }
 
 // This tests if https://github.com/ros-planning/geometric_shapes/pull/109 is fixed

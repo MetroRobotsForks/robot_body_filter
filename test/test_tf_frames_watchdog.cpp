@@ -5,9 +5,7 @@
 
 #include <robot_body_filter/TfFramesWatchdog.h>
 
-using namespace robot_body_filter;
-
-class TestWatchdog : public TFFramesWatchdog {
+class TestWatchdog : public robot_body_filter::TFFramesWatchdog {
 public:
   TestWatchdog(
     rclcpp::Node::SharedPtr node, const std::string& robotFrame, const std::set<std::string>& monitoredFrames,

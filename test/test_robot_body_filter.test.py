@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # SPDX-FileCopyrightText: Czech Technical University in Prague
 
-import unittest
 from pathlib import Path
+import unittest
 
 import launch
 import launch_ros
@@ -15,26 +15,26 @@ def generate_test_description():
     filter_gtest = launch_ros.actions.Node(
         executable=launch.substitutions.PathJoinSubstitution(
             [
-                launch.substitutions.LaunchConfiguration("test_binary_dir"),
-                "test_robot_body_filter",
+                launch.substitutions.LaunchConfiguration('test_binary_dir'),
+                'test_robot_body_filter',
             ]
         ),
         parameters=[Path(__file__).parent / 'test_robot_body_filter.yaml'],
-        output="screen",
+        output='screen',
     )
 
     return launch.LaunchDescription(
         [
             launch.actions.DeclareLaunchArgument(
-                name="test_binary_dir",
-                description="Binary directory of package containing test executables",
+                name='test_binary_dir',
+                description='Binary directory of package containing test executables',
             ),
             filter_gtest,
             launch_testing.util.KeepAliveProc(),
             launch_testing.actions.ReadyToTest(),
         ]
     ), {
-        "filter_gtest": filter_gtest,
+        'filter_gtest': filter_gtest,
     }
 
 

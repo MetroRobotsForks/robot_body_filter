@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <set>
@@ -29,7 +30,7 @@ public:
     const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr& logging_interface,
     const rclcpp::Clock::SharedPtr& clock_ptr, std::string robot_frame, std::set<std::string> monitored_frames,
     std::shared_ptr<tf2_ros::Buffer> tf_buffer,
-    rclcpp::Duration unreachable_tf_lookup_timeout = rclcpp::Duration(0, 100000000), // 0.1 sec
+    rclcpp::Duration unreachable_tf_lookup_timeout = rclcpp::Duration(0, 100000000),  // 0.1 sec
     rclcpp::Rate::SharedPtr unreachable_frames_check_rate = std::make_shared<rclcpp::Rate>(1.0));
 
   virtual ~TFFramesWatchdog();

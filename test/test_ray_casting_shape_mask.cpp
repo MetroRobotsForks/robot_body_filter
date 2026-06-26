@@ -7,12 +7,14 @@
 #include <robot_body_filter/RayCastingShapeMask.h>
 #include <robot_body_filter/utils/shapes.h>
 #include <urdf_model/model.h>
-#include "utils.cpp"
 
-using namespace robot_body_filter;
-using namespace point_containment_filter;
+#include "utils.cpp"  // NOLINT
 
-class TestMask : public RayCastingShapeMask {
+using point_containment_filter::ShapeHandle;
+using robot_body_filter::constructShape;
+using robot_body_filter::RayCastingShapeMask;
+
+class TestMask : public robot_body_filter::RayCastingShapeMask {
 public:
   TestMask(
     rclcpp::Node& node, const ShapeMask::TransformCallback& transform_callback,

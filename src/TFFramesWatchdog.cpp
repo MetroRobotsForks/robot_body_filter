@@ -29,7 +29,7 @@ void TFFramesWatchdog::run() {
   this->started_ = true;
 
   while (!this->should_stop_ && rclcpp::ok()) {
-    if (!this->paused_) { // the thread is paused_ when we want to change the stuff protected by frames_mutex_.
+    if (!this->paused_) {  // the thread is paused_ when we want to change the stuff protected by frames_mutex_.
       this->searchForReachableFrames();
     }
     this->unreachable_frames_check_rate_->sleep();

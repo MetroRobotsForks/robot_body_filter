@@ -4,6 +4,9 @@
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
 #include <map>
+#include <set>
+#include <string>
+#include <vector>
 
 #include <cras_cpp_common/string_utils.hpp>
 #include <filters/filter_base.hpp>
@@ -48,7 +51,7 @@ protected:
    */
   template<typename T>
   T getParamVerbose(
-    const std::string &name, const T &default_value = T(), const std::string &unit = "", bool* default_used = nullptr,
+    const std::string &name, const T& default_value = T(), const std::string& unit = "", bool* default_used = nullptr,
     ToStringFn<T> value_to_string_fn = &cras::to_string) {
 
     T value;
@@ -204,7 +207,7 @@ protected:
    *                            Set to nullptr to disable logging.
    * \return The loaded param value.
    */
-  template<typename T, typename MapType=std::map<std::string, T>>
+  template<typename T, typename MapType = std::map<std::string, T>>
   MapType getParamVerboseMap(
     const std::string& name, const std::map<std::string, T>& default_value = std::map<std::string, T>(),
     const std::string& unit = "", bool* default_used = nullptr,
@@ -246,7 +249,8 @@ protected:
       if (value_to_string_fn != nullptr) {
         RCLCPP_INFO_STREAM(
           this->logging_interface_->get_logger(), this->getName() << ": Parameter " << name <<
-          " not defined, assigning default: " << value_to_string_fn(default_value) << cras::prependIfNonEmpty(unit, " "));
+          " not defined, assigning default: " << value_to_string_fn(default_value) <<
+          cras::prependIfNonEmpty(unit, " "));
       }
     } else {
       if (default_used != nullptr) {

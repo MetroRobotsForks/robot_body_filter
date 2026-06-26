@@ -165,9 +165,10 @@ void RayCastingShapeMask::updateBodyPosesNoLock() {
           RCLCPP_ERROR_STREAM_THROTTLE(
             logger_, *clock_ptr_, 3,
             "Missing transform for shape " << contains_body->getType() << " with handle " << contains_handle);
-        } else
+        } else {
           RCLCPP_ERROR_STREAM_THROTTLE(
             logger_, *clock_ptr_, 3, "Missing transform for shape " << name << " (" << contains_body->getType() << ")");
+        }
       }
     }
   }
@@ -188,7 +189,7 @@ void RayCastingShapeMask::updateBodyPosesNoLock() {
       body->computeBoundingSphere(this->bspheres_[valid_body_idx]);
 
       if (shape_handle == multi_shape.contains &&
-        this->ignore_in_contains_test_.find(multi_shape) == this->ignore_in_contains_test_.end()) {
+          this->ignore_in_contains_test_.find(multi_shape) == this->ignore_in_contains_test_.end()) {
         this->bspheres_for_contains_test_body_indices_[valid_contains_test_idx] = body_idx;
         this->bspheres_for_contains_test_[valid_contains_test_idx] = this->bspheres_[valid_body_idx];
         valid_contains_test_idx++;
@@ -209,8 +210,7 @@ void RayCastingShapeMask::updateBodyPosesNoLock() {
 }
 
 void RayCastingShapeMask::maskContainmentAndShadows(
-  const sensor_msgs::msg::PointCloud2& data, std::vector<MaskValue>& mask, const Eigen::Vector3d& sensor_pos) {
-
+    const sensor_msgs::msg::PointCloud2& data, std::vector<MaskValue>& mask, const Eigen::Vector3d& sensor_pos) {
   std::lock_guard _(this->shapes_lock_);
 
   const auto np = cras::numPoints(data);
@@ -225,7 +225,7 @@ void RayCastingShapeMask::maskContainmentAndShadows(
 
   // Cloud iterators are not incremented in the for loop, because of the pragma
   // Comment out below parallelization as it can result in very high CPU consumption
-  //#pragma omp parallel for schedule(dynamic)
+  // #pragma omp parallel for schedule(dynamic)
   for (size_t i = 0; i < np; ++i) {
     const Eigen::Vector3d pt(static_cast<double>(*(iter_x + i)),
                              static_cast<double>(*(iter_y + i)),
@@ -251,8 +251,7 @@ void RayCastingShapeMask::maskContainmentAndShadows(
 }
 
 void RayCastingShapeMask::classifyPointNoLock(
-  const Eigen::Vector3d& data, MaskValue& mask, const Eigen::Vector3d& sensor_pos) const {
-
+    const Eigen::Vector3d& data, MaskValue& mask, const Eigen::Vector3d& sensor_pos) const {
   mask = MaskValue::OUTSIDE;
 
   if (data.hasNaN()) {
@@ -274,7 +273,6 @@ void RayCastingShapeMask::classifyPointNoLock(
   const auto radius_squared = pow(this->data_->bounding_sphere_for_contains_test.radius, 2);
   if (this->do_contains_test_ &&
       (this->data_->bounding_sphere_for_contains_test.center - data).squaredNorm() < radius_squared) {
-
     for (const auto& see_shape : this->data_->bodies_for_contains_test) {
       if (see_shape.body->containsPoint(data)) {
         mask = MaskValue::INSIDE;
@@ -302,8 +300,7 @@ void RayCastingShapeMask::classifyPointNoLock(
 }
 
 void RayCastingShapeMask::setIgnoreInContainsTest(
-  std::unordered_set<MultiShapeHandle> ignore_in_contains_test, const bool update_internal_structures) {
-
+    std::unordered_set<MultiShapeHandle> ignore_in_contains_test, const bool update_internal_structures) {
   this->ignore_in_contains_test_ = std::move(ignore_in_contains_test);
   if (update_internal_structures) {
     this->updateInternalShapeLists();
@@ -311,8 +308,7 @@ void RayCastingShapeMask::setIgnoreInContainsTest(
 }
 
 void RayCastingShapeMask::setIgnoreInShadowTest(
-  std::unordered_set<MultiShapeHandle> ignore_in_shadow_test, const bool update_internal_structures) {
-
+    std::unordered_set<MultiShapeHandle> ignore_in_shadow_test, const bool update_internal_structures) {
   this->ignore_in_shadow_test_ = std::move(ignore_in_shadow_test);
   if (update_internal_structures) {
     this->updateInternalShapeLists();
@@ -320,18 +316,17 @@ void RayCastingShapeMask::setIgnoreInShadowTest(
 }
 
 MultiShapeHandle RayCastingShapeMask::addShape(
-  const shapes::ShapeConstPtr& shape, const double scale, const double padding, const bool update_internal_structures,
-  const std::string& name) {
-
+    const shapes::ShapeConstPtr& shape, const double scale, const double padding, const bool update_internal_structures,
+    const std::string& name) {
   return this->addShape(
     shape, scale, padding, scale, padding, scale, padding, scale, padding, update_internal_structures, name);
 }
 
 MultiShapeHandle RayCastingShapeMask::addShape(
-  const shapes::ShapeConstPtr& shape, const double contains_scale, const double contains_padding,
-  const double shadow_scale, const double shadow_padding, const double bsphere_scale, const double bsphere_padding,
-  const double bbox_scale, const double bbox_padding, const bool update_internal_structures, const std::string& name) {
-
+    const shapes::ShapeConstPtr& shape, const double contains_scale, const double contains_padding,
+    const double shadow_scale, const double shadow_padding, const double bsphere_scale, const double bsphere_padding,
+    const double bbox_scale, const double bbox_padding, const bool update_internal_structures,
+    const std::string& name) {
   MultiShapeHandle result;
 
   result.contains = ShapeMask::addShape(shape, contains_scale, contains_padding);

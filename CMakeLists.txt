@@ -113,7 +113,12 @@ pluginlib_export_plugin_description_file(filters laser_filters.xml)
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(cras_lint REQUIRED)
   find_package(ros_testing REQUIRED)
+
+  cras_lint_common()
+  cras_lint_cpp(SKIP_UNCRUSTIFY)
+  cras_lint_py()
 
   ament_add_gtest(test_shapes_rbf test/test_shapes.cpp)
   target_link_libraries(test_shapes_rbf ${PROJECT_NAME}_utils)
