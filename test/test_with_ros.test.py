@@ -7,6 +7,7 @@ import launch
 import launch_ros
 import launch_testing.actions
 import launch_testing.asserts
+import launch_testing.util
 
 
 def generate_test_description():
@@ -36,6 +37,7 @@ def generate_test_description():
                 description="The name of the node",
             ),
             gtest_node,
+            launch_testing.util.KeepAliveProc(),
             launch_testing.actions.ReadyToTest(),
         ]
     ), {

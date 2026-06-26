@@ -8,6 +8,7 @@ import launch
 import launch_ros
 import launch_testing.actions
 import launch_testing.asserts
+import launch_testing.util
 
 
 def generate_test_description():
@@ -30,6 +31,7 @@ def generate_test_description():
                 description="Binary directory of package containing test executables",
             ),
             filter_gtest,
+            launch_testing.util.KeepAliveProc(),
             launch_testing.actions.ReadyToTest(),
         ]
     ), {
