@@ -3,18 +3,19 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
-#include <urdf_model/types.h>
 #include <geometric_shapes/shapes.h>
+#include <urdf_model/types.h>
 
-namespace robot_body_filter
-{
+namespace robot_body_filter {
 
-/** \brief Construct a masking shape out of the given URDF geometry.
+/**
+ * \brief Construct a masking shape out of the given URDF geometry.
  *
- * Just a helper function to convert urdf::Geometry to the corresponding shapes::Shape.
+ * Just a helper function to convert `urdf::Geometry` to the corresponding `shapes::Shape`.
  *
- * \param geometry The URDF geometry object to convert.
+ * \param[in] geometry The URDF geometry object to convert.
+ * \return The constructed shape. Empty pointer for unsupported geometries.
  */
 shapes::ShapeConstPtr constructShape(const urdf::Geometry& geometry);
 
-}
+}  // namespace robot_body_filter

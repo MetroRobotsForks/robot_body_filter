@@ -2,23 +2,19 @@
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
 #include "gtest/gtest.h"
+
 #include <robot_body_filter/TfFramesWatchdog.h>
 
 using namespace robot_body_filter;
 
-class TestWatchdog : public TFFramesWatchdog
-{
-  public:
-  TestWatchdog(rclcpp::Node::SharedPtr node,
-               const std::string &robotFrame,
-               const std::set<std::string> &monitoredFrames,
-               const std::shared_ptr<tf2_ros::Buffer> &tfBuffer,
-               const rclcpp::Duration &unreachableTfLookupTimeout,
-               const rclcpp::Rate::SharedPtr &unreachableFramesCheckRate) :
-    TFFramesWatchdog(node->get_node_logging_interface(), node->get_clock(),
-      robotFrame, monitoredFrames, tfBuffer, unreachableTfLookupTimeout, unreachableFramesCheckRate)
-  {
-
+class TestWatchdog : public TFFramesWatchdog {
+public:
+  TestWatchdog(
+    rclcpp::Node::SharedPtr node, const std::string& robotFrame, const std::set<std::string>& monitoredFrames,
+    const std::shared_ptr<tf2_ros::Buffer>& tfBuffer, const rclcpp::Duration& unreachableTfLookupTimeout,
+    const rclcpp::Rate::SharedPtr& unreachableFramesCheckRate)
+    : TFFramesWatchdog(node->get_node_logging_interface(), node->get_clock(), robotFrame, monitoredFrames, tfBuffer,
+      unreachableTfLookupTimeout, unreachableFramesCheckRate) {
   }
 
   friend class TfFramesWatchdog_Basic_Test;
@@ -27,12 +23,12 @@ class TestWatchdog : public TFFramesWatchdog
   friend class TfFramesWatchdog_LookupTransform_Test;
 };
 
-TEST(TfFramesWatchdog, Basic)
-{
+TEST(TfFramesWatchdog, Basic) {
   const auto nh = std::make_shared<rclcpp::Node>("test_ray_casting_shape_mask");
   const auto tfBuffer = std::make_shared<tf2_ros::Buffer>(nh->get_clock(), tf2::BUFFER_CORE_DEFAULT_CACHE_TIME, nh);
-  TestWatchdog watchdog(nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
-      rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
+  TestWatchdog watchdog(
+    nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
+    rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
   EXPECT_TRUE(watchdog.isMonitored("left_track"));
   EXPECT_TRUE(watchdog.isMonitored("front_left_flipper"));
@@ -71,12 +67,12 @@ TEST(TfFramesWatchdog, Basic)
   EXPECT_FALSE(watchdog.isReachable("test"));
 }
 
-TEST(TfFramesWatchdog, ThreadControl)
-{
+TEST(TfFramesWatchdog, ThreadControl) {
   const auto nh = std::make_shared<rclcpp::Node>("test_ray_casting_shape_mask");
   const auto tfBuffer = std::make_shared<tf2_ros::Buffer>(nh->get_clock(), tf2::BUFFER_CORE_DEFAULT_CACHE_TIME, nh);
-  TestWatchdog watchdog(nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
-                        rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
+  TestWatchdog watchdog(
+    nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
+    rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
   EXPECT_FALSE(watchdog.started);
   EXPECT_TRUE(watchdog.paused);
@@ -98,10 +94,10 @@ TEST(TfFramesWatchdog, ThreadControl)
   EXPECT_TRUE(watchdog.shouldStop);
 
   watchdog.start();
-  for (size_t i = 0; i < 100; ++i)
-  {
-    if (watchdog.started)
+  for (size_t i = 0; i < 100; ++i) {
+    if (watchdog.started) {
       break;
+    }
     rclcpp::sleep_for(std::chrono::milliseconds(10));
   }
   EXPECT_TRUE(watchdog.started);
@@ -115,10 +111,10 @@ TEST(TfFramesWatchdog, ThreadControl)
 
   // test that the watchdog can be re-run
   watchdog.start();
-  for (size_t i = 0; i < 100; ++i)
-  {
-    if (watchdog.started)
+  for (size_t i = 0; i < 100; ++i) {
+    if (watchdog.started) {
       break;
+    }
     rclcpp::sleep_for(std::chrono::milliseconds(10));
   }
   EXPECT_TRUE(watchdog.started);
@@ -131,16 +127,16 @@ TEST(TfFramesWatchdog, ThreadControl)
   EXPECT_TRUE(watchdog.shouldStop);
 }
 
-TEST(TfFramesWatchdog, SearchForReachableFrames)
-{
+TEST(TfFramesWatchdog, SearchForReachableFrames) {
   const auto nh = std::make_shared<rclcpp::Node>("test_ray_casting_shape_mask");
   const auto clock_ptr = nh->get_clock();
   const auto tfBuffer = std::make_shared<tf2_ros::Buffer>(nh->get_clock(), tf2::BUFFER_CORE_DEFAULT_CACHE_TIME, nh);
   tfBuffer->setUsingDedicatedThread(true);
-  TestWatchdog watchdog(nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
-                        rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
+  TestWatchdog watchdog(
+    nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
+    rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
-  watchdog.unpause(); // searchForReachableFrames checks this->paused
+  watchdog.unpause();  // searchForReachableFrames checks this->paused
 
   rclcpp::Time start = clock_ptr->now();
   watchdog.searchForReachableFrames();
@@ -157,8 +153,7 @@ TEST(TfFramesWatchdog, SearchForReachableFrames)
   tf.header.frame_id = "base_link";
   tf.child_frame_id = "left_track";
   tf.transform.rotation.w = 1.0;
-  for (double d = -5.0; d < 5.0; d += 0.1)
-  {
+  for (double d = -5.0; d < 5.0; d += 0.1) {
     tf.header.stamp = clock_ptr->now() + rclcpp::Duration::from_seconds(d);
     tfBuffer->setTransform(tf, "test");
   }
@@ -177,8 +172,7 @@ TEST(TfFramesWatchdog, SearchForReachableFrames)
   tf.header.frame_id = "left_track";
   tf.child_frame_id = "front_left_flipper";
   tf.transform.rotation.w = 1.0;
-  for (double d = -5.0; d < 5.0; d += 0.1)
-  {
+  for (double d = -5.0; d < 5.0; d += 0.1) {
     tf.header.stamp = clock_ptr->now() + rclcpp::Duration::from_seconds(d);
     tfBuffer->setTransform(tf, "test");
   }
@@ -188,22 +182,24 @@ TEST(TfFramesWatchdog, SearchForReachableFrames)
   EXPECT_TRUE(watchdog.isReachable("front_left_flipper"));
 }
 
-TEST(TfFramesWatchdog, LookupTransform)
-{
+TEST(TfFramesWatchdog, LookupTransform) {
   const auto nh = std::make_shared<rclcpp::Node>("test_ray_casting_shape_mask");
   const auto clock_ptr = nh->get_clock();
   const auto tfBuffer = std::make_shared<tf2_ros::Buffer>(nh->get_clock(), tf2::BUFFER_CORE_DEFAULT_CACHE_TIME, nh);
   tfBuffer->setUsingDedicatedThread(true);
-  TestWatchdog watchdog(nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
-                        rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
+  TestWatchdog watchdog(
+    nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
+    rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
-  EXPECT_THROW(watchdog.lookupTransform("left_track", clock_ptr->now(), rclcpp::Duration::from_seconds(1)), std::runtime_error);
+  EXPECT_THROW(
+    watchdog.lookupTransform("left_track", clock_ptr->now(), rclcpp::Duration::from_seconds(1)),
+    std::runtime_error);
 
-  watchdog.started = true; // fake the running thread
+  watchdog.started = true;  // fake the running thread
 
   EXPECT_FALSE(watchdog.isReachable("left_track"));
   auto resTf = watchdog.lookupTransform("left_track", clock_ptr->now(), rclcpp::Duration::from_seconds(1));
-  EXPECT_FALSE((bool) resTf);
+  EXPECT_FALSE(resTf.has_value());
 
   // if the frame is marked reachable and canTransform fails, it is marked unreachable
   watchdog.markReachable("left_track");
@@ -211,7 +207,7 @@ TEST(TfFramesWatchdog, LookupTransform)
   resTf = watchdog.lookupTransform("left_track", clock_ptr->now(), rclcpp::Duration::from_seconds(1));
   rclcpp::Time end = clock_ptr->now();
   EXPECT_FALSE(watchdog.isReachable("left_track"));
-  EXPECT_FALSE((bool) resTf);
+  EXPECT_FALSE(resTf.has_value());
   // check that the lookup took at least the amount of time specified by timeout, but not much more
   EXPECT_LE(1.0, (end - start).seconds());
   EXPECT_GE(1.5, (end - start).seconds());
@@ -220,8 +216,7 @@ TEST(TfFramesWatchdog, LookupTransform)
   tf.header.frame_id = "base_link";
   tf.child_frame_id = "left_track";
   tf.transform.rotation.w = 1.0;
-  for (double d = -5.0; d < 5.0; d += 0.1)
-  {
+  for (double d = -5.0; d < 5.0; d += 0.1) {
     tf.header.stamp = clock_ptr->now() + rclcpp::Duration::from_seconds(d);
     tfBuffer->setTransform(tf, "test");
   }
@@ -230,7 +225,7 @@ TEST(TfFramesWatchdog, LookupTransform)
 
   resTf = watchdog.lookupTransform("left_track", clock_ptr->now(), rclcpp::Duration::from_seconds(1));
   EXPECT_FALSE(watchdog.isReachable("left_track"));
-  EXPECT_FALSE((bool) resTf);
+  EXPECT_FALSE(resTf.has_value());
 
   // if looking up an unmonitored frame, the first lookup fails, but sets the frame as monitored
   EXPECT_FALSE(watchdog.isMonitored("rear_left_flipper"));
@@ -238,7 +233,7 @@ TEST(TfFramesWatchdog, LookupTransform)
   resTf = watchdog.lookupTransform("rear_left_flipper", clock_ptr->now(), rclcpp::Duration::from_seconds(1));
   EXPECT_TRUE(watchdog.isMonitored("rear_left_flipper"));
   EXPECT_FALSE(watchdog.isReachable("rear_left_flipper"));
-  EXPECT_FALSE((bool) resTf);
+  EXPECT_FALSE(resTf.has_value());
 
   // look up a transform that is monitored, reachable and available in the buffer
 
@@ -247,8 +242,7 @@ TEST(TfFramesWatchdog, LookupTransform)
   tf.transform.translation.y = 2.0;
   tf.transform.translation.z = 3.0;
   tf.transform.rotation.w = 1.0;
-  for (double d = -5.0; d < 5.0; d += 0.1)
-  {
+  for (double d = -5.0; d < 5.0; d += 0.1) {
     tf.header.stamp = clock_ptr->now() + rclcpp::Duration::from_seconds(d);
     tfBuffer->setTransform(tf, "test");
   }
@@ -260,7 +254,7 @@ TEST(TfFramesWatchdog, LookupTransform)
   resTf = watchdog.lookupTransform("rear_left_flipper", time, rclcpp::Duration::from_seconds(1));
   EXPECT_TRUE(watchdog.isMonitored("rear_left_flipper"));
   EXPECT_TRUE(watchdog.isReachable("rear_left_flipper"));
-  ASSERT_TRUE((bool) resTf);
+  ASSERT_TRUE(resTf.has_value());
   EXPECT_EQ("base_link", resTf.value().header.frame_id);
   EXPECT_EQ("rear_left_flipper", resTf.value().child_frame_id);
   EXPECT_EQ(time, resTf.value().header.stamp);
@@ -273,11 +267,10 @@ TEST(TfFramesWatchdog, LookupTransform)
   EXPECT_DOUBLE_EQ(1.0, resTf.value().transform.rotation.w);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
-  int result = RUN_ALL_TESTS();
+  const int result = RUN_ALL_TESTS();
   rclcpp::shutdown();
   return result;
 }

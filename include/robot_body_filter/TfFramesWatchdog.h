@@ -25,13 +25,12 @@ namespace robot_body_filter {
  */
 class TFFramesWatchdog {
 public:
-  TFFramesWatchdog(const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr & logging_interface,
-                   const rclcpp::Clock::SharedPtr& clock_ptr,
-                   std::string robotFrame,
-                   std::set<std::string>  monitoredFrames,
-                   std::shared_ptr<tf2_ros::Buffer> tfBuffer,
-                   rclcpp::Duration unreachableTfLookupTimeout = rclcpp::Duration(0, 100000000),  // 0.1 sec
-                   rclcpp::Rate::SharedPtr unreachableFramesCheckRate = std::make_shared<rclcpp::Rate>(1.0));
+  TFFramesWatchdog(
+    const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr& logging_interface,
+    const rclcpp::Clock::SharedPtr& clock_ptr, std::string robotFrame, std::set<std::string> monitoredFrames,
+    std::shared_ptr<tf2_ros::Buffer> tfBuffer,
+    rclcpp::Duration unreachableTfLookupTimeout = rclcpp::Duration(0, 100000000), // 0.1 sec
+    rclcpp::Rate::SharedPtr unreachableFramesCheckRate = std::make_shared<rclcpp::Rate>(1.0));
 
   virtual ~TFFramesWatchdog();
 
@@ -71,27 +70,27 @@ public:
 
   /**
    * \brief TF frames to be monitored by this watchdog.
-   * \param monitored_frames Set of frames to be monitored.
+   * \param[in] monitoredFrames Set of frames to be monitored.
    */
   void setMonitoredFrames(std::set<std::string> monitoredFrames);
 
   /**
    * \brief Add the given frame to the set of monitored frames (if it is not
    * already there).
-   * \param monitoredFrame Name of the frame.
+   * \param[in] monitoredFrame Name of the frame.
    */
   void addMonitoredFrame(const std::string& monitoredFrame);
 
   /**
    * \brief Return whether the given frame is monitored by this watchdog.
-   * \param frame TF frame.
+   * \param[in] frame TF frame.
    * \return Whether the frame is monitored.
    */
   bool isMonitored(const std::string& frame) const;
 
   /**
    * \brief Return whether the given frame is reachable.
-   * \param frame TF frame.
+   * \param[in] frame TF frame.
    * \return Whether the frame is reachable.
    */
   bool isReachable(const std::string& frame) const;
@@ -105,10 +104,10 @@ public:
   /**
    * \brief Looks for a transform if it is marked reachable. Returns immediately
    *        for transforms marked unreachable.
-   * \param frame Source frame.
-   * \param time Time of transform.
-   * \param timeout Timeout for waiting for reachable transforms.
-   * \param errstr Optional error string.
+   * \param[in] frame Source frame.
+   * \param[in] time Time of transform.
+   * \param[in] timeout Timeout for waiting for reachable transforms.
+   * \param[out] errstr Optional error string.
    * \return If the lookup succeeded, returns the transform.
    * \throws tf2::TransformException If a normal canTransform or lookupTransform
    *         would throw except for transform not found exceptions, which just
@@ -117,15 +116,12 @@ public:
    *         start().
    */
   std::optional<geometry_msgs::msg::TransformStamped> lookupTransform(
-      const std::string& frame,
-      const rclcpp::Time& time,
-      const rclcpp::Duration& timeout,
-      std::string* errstr = nullptr);
+    const std::string& frame, const rclcpp::Time& time, const rclcpp::Duration& timeout, std::string* errstr = nullptr);
 
 protected:
   /**
    * \brief Return whether the given frame is reachable.
-   * \param frame TF frame.
+   * \param[in] frame TF frame.
    * \return Whether the frame is reachable.
    * \note The caller has to hold a lock to framesMutex.
    */
@@ -133,29 +129,28 @@ protected:
 
   /**
    * \brief Return whether the given frame is monitored by this watchdog.
-   * \param frame TF frame.
+   * \param[in] frame TF frame.
    * \return Whether the frame is monitored.
    * \note The caller has to hold a lock to framesMutex.
    */
   bool isMonitoredNoLock(const std::string& frame) const;
 
   /**
-   * \brief Add the given frame to the set of monitored frames (if it is not
-   * already there).
-   * \param monitoredFrame Name of the frame.
+   * \brief Add the given frame to the set of monitored frames (if it is not already there).
+   * \param[in] monitoredFrame Name of the frame.
    * \note The caller has to hold a lock to framesMutex.
    */
   void addMonitoredFrameNoLock(const std::string& monitoredFrame);
 
   /**
    * \brief Mark the given frame as reachable.
-   * \param frame The frame to mark as reachable.
+   * \param[in] frame The frame to mark as reachable.
    */
   void markReachable(const std::string& frame);
 
   /**
    * \brief Mark the given frame as unreachable.
-   * \param frame The frame to mark as unreachable.
+   * \param[in] frame The frame to mark as unreachable.
    */
   void markUnreachable(const std::string& frame);
 
@@ -197,4 +192,4 @@ private:
   rclcpp::Clock::SharedPtr clock_ptr;
 };
 
-}
+}  // namespace robot_body_filter

@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # SPDX-FileCopyrightText: Czech Technical University in Prague
 
-import os
 import unittest
 
 import launch
 import launch_ros
-import launch_testing
+import launch_testing.actions
+import launch_testing.asserts
 
 
 def generate_test_description():
@@ -45,8 +45,8 @@ def generate_test_description():
 
 class TestGTestWaitForCompletion(unittest.TestCase):
     # Waits for test to complete, then waits a bit to make sure result files are generated
-    def test_gtest_run_complete(self, gtest_node):
-        self.proc_info.assertWaitForShutdown(gtest_node, timeout=4000.0)
+    def test_gtest_run_complete(self, proc_info, gtest_node):
+        proc_info.assertWaitForShutdown(gtest_node, timeout=4000.0)
 
 
 @launch_testing.post_shutdown_test()

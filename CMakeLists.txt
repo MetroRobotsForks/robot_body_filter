@@ -8,27 +8,44 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-set(THIS_PACKAGE_DEPS cras_cpp_common fcl filters geometric_shapes laser_geometry moveit_core moveit_ros_perception pcl_conversions pluginlib
-    rclcpp sensor_msgs std_srvs tf2_ros tf2_sensor_msgs Eigen3 GLUT
+set(THIS_PACKAGE_DEPS
+  cras_cpp_common
+  fcl
+  filters
+  geometric_shapes
+  laser_geometry
+  moveit_core
+  moveit_ros_perception
+  pcl_conversions
+  pluginlib
+  rclcpp
+  sensor_msgs
+  std_srvs
+  tf2_ros
+  tf2_sensor_msgs
+  Eigen3
+  GLUT
 )
-set(MESSAGE_DEPS geometry_msgs std_msgs)
+set(MESSAGE_DEPS
+  geometry_msgs
+  std_msgs
+)
 
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_ros REQUIRED)
 
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_DEPS})
-    find_package(${Dependency} REQUIRED)
+  find_package(${Dependency} REQUIRED)
 endforeach()
 
 find_package(PCL REQUIRED COMPONENTS common filters)
 
 find_package(rosidl_default_generators REQUIRED)
-rosidl_generate_interfaces(
-  ${PROJECT_NAME}_msgs
-    "msg/OrientedBoundingBox.msg"
-    "msg/OrientedBoundingBoxStamped.msg"
-    "msg/SphereStamped.msg"
-    "msg/Sphere.msg"
+rosidl_generate_interfaces(${PROJECT_NAME}_msgs
+  "msg/OrientedBoundingBox.msg"
+  "msg/OrientedBoundingBoxStamped.msg"
+  "msg/SphereStamped.msg"
+  "msg/Sphere.msg"
   DEPENDENCIES ${MESSAGE_DEPS}
   LIBRARY_NAME ${PROJECT_NAME}
 )
@@ -41,7 +58,8 @@ link_directories(${PCL_LIBRARY_DIRS})
 set(UTILS_SRCS
   src/utils/bodies.cpp
   src/utils/shapes.cpp
-  src/utils/tf2_eigen.cpp)
+  src/utils/tf2_eigen.cpp
+)
 
 add_library(${PROJECT_NAME}_utils ${UTILS_SRCS})
 target_include_directories(${PROJECT_NAME}_utils PUBLIC
@@ -73,27 +91,27 @@ ament_target_dependencies(${PROJECT_NAME} ${THIS_PACKAGE_DEPS})
 ament_export_targets(export_${PROJECT_NAME})
 
 install(DIRECTORY include/
-        DESTINATION include
+  DESTINATION include
 )
 install(TARGETS ${PROJECT_NAME} TFFramesWatchdog RayCastingShapeMask ${PROJECT_NAME}_utils
-        EXPORT export_${PROJECT_NAME}
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
 install(FILES laser_filters.xml
-        DESTINATION share/${PROJECT_NAME}
+  DESTINATION share/${PROJECT_NAME}
 )
 install(DIRECTORY examples/
-        DESTINATION share/${PROJECT_NAME}/examples
+  DESTINATION share/${PROJECT_NAME}/examples
 )
 install(FILES rviz/debug.rviz
-        DESTINATION share/${PROJECT_NAME}/rviz
+  DESTINATION share/${PROJECT_NAME}/rviz
 )
 ament_export_include_directories(include)
 pluginlib_export_plugin_description_file(filters laser_filters.xml)
 
-if (BUILD_TESTING)
+if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(ros_testing REQUIRED)
 
@@ -113,8 +131,8 @@ if (BUILD_TESTING)
 
   ament_add_gtest_executable(test_filter_utils test/test_filter_utils.cpp)
   target_include_directories(test_filter_utils PUBLIC
-          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-          $<INSTALL_INTERFACE:include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
   )
   ament_target_dependencies(test_filter_utils ${THIS_PACKAGE_DEPS})
   add_ros_test(test/test_filter_utils.test.py TIMEOUT 30 ARGS "test_binary_dir:=${CMAKE_CURRENT_BINARY_DIR}")
@@ -128,7 +146,7 @@ if (BUILD_TESTING)
   ament_add_gtest_executable(test_ray_casting_shape_mask test/test_ray_casting_shape_mask.cpp)
   target_link_libraries(test_ray_casting_shape_mask RayCastingShapeMask)
   ament_target_dependencies(test_ray_casting_shape_mask ${THIS_PACKAGE_DEPS})
-  if ("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+  if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
     target_compile_definitions(test_ray_casting_shape_mask PRIVATE RELEASE_BUILD=1)
   else()
     target_compile_definitions(test_ray_casting_shape_mask PRIVATE RELEASE_BUILD=0)
@@ -143,7 +161,8 @@ if (BUILD_TESTING)
   target_compile_options(test_robot_body_filter PRIVATE -fno-var-tracking-assignments)  # speed up build
   add_ros_test(test/test_robot_body_filter.test.py TIMEOUT 30 ARGS "test_binary_dir:=${CMAKE_CURRENT_BINARY_DIR}")
 
-  install(FILES test/box.dae test/triangle.dae
+  install(
+    FILES test/box.dae test/triangle.dae
     DESTINATION share/robot_body_filter/test)
 endif()
 

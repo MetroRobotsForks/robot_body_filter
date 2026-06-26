@@ -12,19 +12,13 @@
 using namespace robot_body_filter;
 using namespace point_containment_filter;
 
-class TestMask : public RayCastingShapeMask
-{
-  public:
-  TestMask(rclcpp::Node& node, const point_containment_filter::ShapeMask::TransformCallback &transformCallback,
-                   double minSensorDist,
-                   double maxSensorDist,
-                   bool doClipping,
-                   bool doContainsTest,
-                   bool doShadowTest) :
-    RayCastingShapeMask(node.get_node_logging_interface(), node.get_clock(),
-      transformCallback, minSensorDist, maxSensorDist, doClipping, doContainsTest, doShadowTest)
-  {
-
+class TestMask : public RayCastingShapeMask {
+public:
+  TestMask(
+    rclcpp::Node& node, const ShapeMask::TransformCallback& transformCallback,
+    double minSensorDist, double maxSensorDist, bool doClipping, bool doContainsTest, bool doShadowTest)
+    : RayCastingShapeMask(node.get_node_logging_interface(), node.get_clock(), transformCallback,
+      minSensorDist, maxSensorDist, doClipping, doContainsTest, doShadowTest) {
   }
 
   friend class RayCastingShapeMask_Basic_Test;
@@ -34,36 +28,30 @@ class TestMask : public RayCastingShapeMask
 
 // Code for getting std::function address, from https://stackoverflow.com/q/18039723/1076564
 
-template <typename Function>
-struct function_traits
-    : public function_traits<decltype(&Function::operator())> {
-};
+template<typename Function>
+struct function_traits : function_traits<decltype(&Function::operator())> {};
 
-template <typename ClassType, typename ReturnType, typename... Args>
+template<typename ClassType, typename ReturnType, typename... Args>
 struct function_traits<ReturnType(ClassType::*)(Args...) const> {
   typedef ReturnType (*pointer)(Args...);
   typedef std::function<ReturnType(Args...)> function;
 };
 
-template <typename Function>
-typename function_traits<Function>::function
-to_function (Function & lambda) {
+template<typename Function>
+typename function_traits<Function>::function to_function(Function& lambda) {
   return static_cast<typename function_traits<Function>::function>(lambda);
 }
 
-template <typename Lambda>
+template<typename Lambda>
 size_t getAddress(Lambda lambda) {
   auto function = new decltype(to_function(lambda))(to_function(lambda));
-  void * func = static_cast<void *>(function);
-  return (size_t)func;
+  auto func = static_cast<void*>(function);
+  return reinterpret_cast<size_t>(func);
 }
 
-TEST(RayCastingShapeMask, Basic)
-{
-
+TEST(RayCastingShapeMask, Basic) {
   rclcpp::Node nh("test_ray_casting_shape_mask");
-  auto cb = [] (point_containment_filter::ShapeHandle, Eigen::Isometry3d& t) -> bool
-  {
+  auto cb = [](ShapeHandle, Eigen::Isometry3d& t) -> bool {
     t = Eigen::Isometry3d::Identity();
     return true;
   };
@@ -140,8 +128,7 @@ TEST(RayCastingShapeMask, Basic)
   EXPECT_EQ(1, mask.getBodiesForContainsTest().size());
   EXPECT_EQ(1, mask.getBodiesForShadowTest().size());
 
-  auto cb2 = [] (point_containment_filter::ShapeHandle, Eigen::Isometry3d& t) -> bool
-  {
+  auto cb2 = [](ShapeHandle, Eigen::Isometry3d& t) -> bool {
     t = Eigen::Isometry3d::Identity();
     return false;
   };
@@ -150,11 +137,9 @@ TEST(RayCastingShapeMask, Basic)
   EXPECT_NE(prevAddress, getAddress(mask.transform_callback_));
 }
 
-TEST(RayCastingShapeMask, Bspheres)
-{
+TEST(RayCastingShapeMask, Bspheres) {
   rclcpp::Node nh("test_ray_casting_shape_mask");
-  auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
-  {
+  auto cb = [](ShapeHandle, Eigen::Isometry3d& t) -> bool {
     t = Eigen::Isometry3d::Identity();
     return true;
   };
@@ -215,8 +200,7 @@ TEST(RayCastingShapeMask, Bspheres)
   EXPECT_DOUBLE_EQ(bsphere.center.y(), bsphereForContainsTest.center.y());
   EXPECT_DOUBLE_EQ(bsphere.center.z(), bsphereForContainsTest.center.z());
 
-  auto cb2 = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
-  {
+  auto cb2 = [](ShapeHandle, Eigen::Isometry3d& t) -> bool {
     t = Eigen::Isometry3d::Identity();
     t.translate(Eigen::Vector3d(1.0, 2.0, 3.0));
     return true;
@@ -261,8 +245,7 @@ TEST(RayCastingShapeMask, Bspheres)
   EXPECT_DOUBLE_EQ(bsphere.center.z(), bsphereForContainsTest.center.z());
 
   // make the sphere's position unresolvable
-  auto cb3 = [handle2](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
-  {
+  auto cb3 = [handle2](ShapeHandle h, Eigen::Isometry3d& t) -> bool {
     t = Eigen::Isometry3d::Identity();
     return h != handle2;
   };
@@ -309,8 +292,7 @@ TEST(RayCastingShapeMask, Bspheres)
   EXPECT_DOUBLE_EQ(0.0, bsphereForContainsTest.center.z());
 
   // test the case when all transforms are unavailable
-  auto cb4 = [handle2](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
-  {
+  auto cb4 = [](ShapeHandle, Eigen::Isometry3d& t) -> bool {
     t = Eigen::Isometry3d::Identity();
     return false;
   };
@@ -335,19 +317,17 @@ TEST(RayCastingShapeMask, Bspheres)
   EXPECT_DOUBLE_EQ(bsphere.center.z(), bsphereForContainsTest.center.z());
 }
 
-TEST(RayCastingShapeMask, UpdateBodyPoses)
-{
+TEST(RayCastingShapeMask, UpdateBodyPoses) {
   rclcpp::Node nh("test_ray_casting_shape_mask");
-  auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
-  {
+  auto fooCb = [](ShapeHandle, Eigen::Isometry3d&) -> bool {
     return true;
   };
   TestMask mask(nh, fooCb, 1.0, 10.0, true, true, true);
 
-  shapes::ShapeConstPtr shape1(new shapes::Box(1.0, 2.0, 3.0));
+  const shapes::ShapeConstPtr shape1(new shapes::Box(1.0, 2.0, 3.0));
   const auto multiHandle1 = mask.addShape(shape1, 1.0, 0.0, false, "box");
   const auto handle1 = multiHandle1.contains;
-  shapes::ShapeConstPtr shape2(new shapes::Sphere(2.0));
+  const shapes::ShapeConstPtr shape2(new shapes::Sphere(2.0));
   const auto multiHandle2 = mask.addShape(shape2, 2.0, 0.5, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, true, "doubleSphere");
   const auto handle2Contains = multiHandle2.contains;
   const auto handle2Shadow = multiHandle2.shadow;
@@ -355,14 +335,14 @@ TEST(RayCastingShapeMask, UpdateBodyPoses)
   size_t numCalled = 0;
   const Eigen::Isometry3d t1 = randomPose();
   const Eigen::Isometry3d t2 = randomPose();
-  auto cb = [&](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
-  {
-    if (h == handle1)
+  auto cb = [&](const ShapeHandle h, Eigen::Isometry3d& t) -> bool {
+    if (h == handle1) {
       t = t1;
-    else if (h == handle2Contains || h == handle2Shadow)
+    } else if (h == handle2Contains || h == handle2Shadow) {
       t = t2;
-    else
+    } else {
       ADD_FAILURE();
+    }
 
     numCalled++;
     return true;
@@ -378,14 +358,14 @@ TEST(RayCastingShapeMask, UpdateBodyPoses)
 
   const Eigen::Isometry3d t3 = randomPose();
   const Eigen::Isometry3d t4 = randomPose();
-  auto cb2 = [&](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
-  {
-    if (h == handle1)
+  auto cb2 = [&](const ShapeHandle h, Eigen::Isometry3d& t) -> bool {
+    if (h == handle1) {
       t = t3;
-    else if (h == handle2Contains || h == handle2Shadow)
+    } else if (h == handle2Contains || h == handle2Shadow) {
       t = t4;
-    else
+    } else {
       ADD_FAILURE();
+    }
 
     numCalled++;
     return true;
@@ -401,11 +381,9 @@ TEST(RayCastingShapeMask, UpdateBodyPoses)
   expectTransformsDoubleEq(t4, mask.getBodies()[handle2Shadow]->getPose());
 }
 
-TEST(RayCastingShapeMask, ClassifyPoint)
-{
+TEST(RayCastingShapeMask, ClassifyPoint) {
   rclcpp::Node nh("test_ray_casting_shape_mask");
-  auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
-  {
+  auto fooCb = [](ShapeHandle, Eigen::Isometry3d&) -> bool {
     return true;
   };
   TestMask mask(nh, fooCb, 0.1, 10.0, false, false, false);
@@ -422,8 +400,7 @@ TEST(RayCastingShapeMask, ClassifyPoint)
 
   const Eigen::Vector3d sensorPos(-1.5, 0.0, 0.0);
 
-  auto cb = [&](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
-  {
+  auto cb = [&](const ShapeHandle h, Eigen::Isometry3d& t) -> bool {
     t = Eigen::Isometry3d::Identity();
     if (h == handleSensor) {
       t.translate(sensorPos);
@@ -438,21 +415,21 @@ TEST(RayCastingShapeMask, ClassifyPoint)
 
   // This is a test set of points.
   // For an overview, open test_ray_casting_shape_mask.blend in Blender 2.80+.
-  Eigen::Vector3d pointSensor(sensorPos);
-  Eigen::Vector3d pointSensor2(-1.47, 0, 0);
-  Eigen::Vector3d pointClipMin(-1.42, 0, 0);
-  Eigen::Vector3d pointClipMax(10, 0, 0);
-  Eigen::Vector3d pointInBox(0.85, 0.85, 0.85);
-  Eigen::Vector3d pointInSphere(1.35, 0, 0);
-  Eigen::Vector3d pointInBoth(0, 0, 0);
-  Eigen::Vector3d pointShadowBox(-0.25, -2, 2);
-  Eigen::Vector3d pointShadowSphere(-0.560762, 0, 1.83871);
-  Eigen::Vector3d pointShadowBoth(-sensorPos);
-  Eigen::Vector3d pointOutside(-3, 0, 0);
-  Eigen::Vector3d pointOneNan(-3, 0, std::numeric_limits<double>::quiet_NaN());
-  Eigen::Vector3d pointAllNan(std::numeric_limits<double>::quiet_NaN(),
-                              std::numeric_limits<double>::quiet_NaN(),
-                              std::numeric_limits<double>::quiet_NaN());
+  const Eigen::Vector3d pointSensor(sensorPos);
+  const Eigen::Vector3d pointSensor2(-1.47, 0, 0);
+  const Eigen::Vector3d pointClipMin(-1.42, 0, 0);
+  const Eigen::Vector3d pointClipMax(10, 0, 0);
+  const Eigen::Vector3d pointInBox(0.85, 0.85, 0.85);
+  const Eigen::Vector3d pointInSphere(1.35, 0, 0);
+  const Eigen::Vector3d pointInBoth(0, 0, 0);
+  const Eigen::Vector3d pointShadowBox(-0.25, -2, 2);
+  const Eigen::Vector3d pointShadowSphere(-0.560762, 0, 1.83871);
+  const Eigen::Vector3d pointShadowBoth(-sensorPos);
+  const Eigen::Vector3d pointOutside(-3, 0, 0);
+  const Eigen::Vector3d pointOneNan(-3, 0, std::numeric_limits<double>::quiet_NaN());
+  const Eigen::Vector3d pointAllNan(std::numeric_limits<double>::quiet_NaN(),
+                                    std::numeric_limits<double>::quiet_NaN(),
+                                    std::numeric_limits<double>::quiet_NaN());
 
   // doClipping, doContainsTest and doShadowTest are all false, so only OUTSIDE is possible
   mask.classifyPointNoLock(pointSensor, val, sensorPos);
@@ -547,7 +524,7 @@ TEST(RayCastingShapeMask, ClassifyPoint)
   mask.doContainsTest = false;
   mask.doShadowTest = true;
   mask.classifyPointNoLock(pointSensor, val, sensorPos);
-  EXPECT_EQ(RayCastingShapeMask::MaskValue::OUTSIDE, val); // no ray, so no shadow
+  EXPECT_EQ(RayCastingShapeMask::MaskValue::OUTSIDE, val);  // no ray, so no shadow
   mask.classifyPointNoLock(pointSensor2, val, sensorPos);
   // the sensor is not considered to shadow points inside itself
   EXPECT_EQ(RayCastingShapeMask::MaskValue::OUTSIDE, val);
@@ -724,11 +701,10 @@ TEST(RayCastingShapeMask, ClassifyPoint)
   EXPECT_EQ(RayCastingShapeMask::MaskValue::OUTSIDE, val);
   mask.classifyPointNoLock(pointAllNan, val, sensorPos);
   EXPECT_EQ(RayCastingShapeMask::MaskValue::OUTSIDE, val);
-  
+
   random_numbers::RandomNumberGenerator rng;
   Eigen::Vector3d pointInside;
-  for (size_t i = 0; i < 100; ++i)
-  {
+  for (size_t i = 0; i < 100; ++i) {
     if (mask.getBodies().at(handle1)->samplePointInside(rng, 10, pointInside)) {
       mask.classifyPointNoLock(pointInside, val, sensorPos);
       EXPECT_EQ(RayCastingShapeMask::MaskValue::INSIDE, val);
@@ -740,11 +716,9 @@ TEST(RayCastingShapeMask, ClassifyPoint)
   }
 }
 
-TEST(RayCastingShapeMask, Mask)
-{
+TEST(RayCastingShapeMask, Mask) {
   rclcpp::Node nh("test_ray_casting_shape_mask");
-  auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
-  {
+  auto fooCb = [](ShapeHandle, Eigen::Isometry3d&) -> bool {
     return true;
   };
   TestMask mask(nh, fooCb, 0.1, 10.0, true, true, true);
@@ -763,11 +737,9 @@ TEST(RayCastingShapeMask, Mask)
 
   const Eigen::Vector3d sensorPos(-1.5, 0.0, 0.0);
 
-  auto cb = [&](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
-  {
+  auto cb = [&](ShapeHandle h, Eigen::Isometry3d& t) -> bool {
     t = Eigen::Isometry3d::Identity();
-    if (h == handleSensor)
-    {
+    if (h == handleSensor) {
       t.translate(sensorPos);
     }
     return true;
@@ -779,21 +751,21 @@ TEST(RayCastingShapeMask, Mask)
 
   // This is a test set of points.
   // For an overview, open test_ray_casting_shape_mask.blend in Blender 2.80+.
-  Eigen::Vector3f pointSensor(sensorPos.x(), sensorPos.y(), sensorPos.z());
-  Eigen::Vector3f pointSensor2(-1.47, 0, 0);
-  Eigen::Vector3f pointClipMin(-1.42, 0, 0);
-  Eigen::Vector3f pointClipMax(10, 0, 0);
-  Eigen::Vector3f pointInBox(0.85, 0.85, 0.85);
-  Eigen::Vector3f pointInSphere(1.35, 0, 0);
-  Eigen::Vector3f pointInBoth(0, 0, 0);
-  Eigen::Vector3f pointShadowBox(-0.25, -2, 2);
-  Eigen::Vector3f pointShadowSphere(-0.560762, 0, 1.83871);
-  Eigen::Vector3f pointShadowBoth(-sensorPos.x(), 0, 0);
-  Eigen::Vector3f pointOutside(-3, 0, 0);
-  Eigen::Vector3f pointOneNan(-3, 0, std::numeric_limits<float>::quiet_NaN());
-  Eigen::Vector3f pointAllNan(std::numeric_limits<float>::quiet_NaN(),
-                              std::numeric_limits<float>::quiet_NaN(),
-                              std::numeric_limits<float>::quiet_NaN());
+  const Eigen::Vector3f pointSensor(sensorPos.x(), sensorPos.y(), sensorPos.z());
+  const Eigen::Vector3f pointSensor2(-1.47, 0, 0);
+  const Eigen::Vector3f pointClipMin(-1.42, 0, 0);
+  const Eigen::Vector3f pointClipMax(10, 0, 0);
+  const Eigen::Vector3f pointInBox(0.85, 0.85, 0.85);
+  const Eigen::Vector3f pointInSphere(1.35, 0, 0);
+  const Eigen::Vector3f pointInBoth(0, 0, 0);
+  const Eigen::Vector3f pointShadowBox(-0.25, -2, 2);
+  const Eigen::Vector3f pointShadowSphere(-0.560762, 0, 1.83871);
+  const Eigen::Vector3f pointShadowBoth(-sensorPos.x(), 0, 0);
+  const Eigen::Vector3f pointOutside(-3, 0, 0);
+  const Eigen::Vector3f pointOneNan(-3, 0, std::numeric_limits<float>::quiet_NaN());
+  const Eigen::Vector3f pointAllNan(std::numeric_limits<float>::quiet_NaN(),
+                                    std::numeric_limits<float>::quiet_NaN(),
+                                    std::numeric_limits<float>::quiet_NaN());
 
   mask.maskContainmentAndShadows(pointSensor, val, sensorPos);
   EXPECT_EQ(RayCastingShapeMask::MaskValue::CLIP, val);
@@ -846,7 +818,7 @@ TEST(RayCastingShapeMask, Mask)
   p = pointAllNan; *it_x = p.x(); *it_y = p.y(); *it_z = p.z(); ++it_x; ++it_y; ++it_z;
 
   std::vector<RayCastingShapeMask::MaskValue> vals;
-  vals.push_back(RayCastingShapeMask::MaskValue::INSIDE); // be adverse and pass garbage
+  vals.push_back(RayCastingShapeMask::MaskValue::INSIDE);  // be adverse and pass garbage
   mask.maskContainmentAndShadows(cloud, vals, sensorPos);
 
   ASSERT_EQ(13, vals.size());
@@ -865,11 +837,9 @@ TEST(RayCastingShapeMask, Mask)
   EXPECT_EQ(RayCastingShapeMask::MaskValue::OUTSIDE, vals[12]);
 }
 
-TEST(RayCastingShapeMask, MaskPerformancePoints)
-{
+TEST(RayCastingShapeMask, MaskPerformancePoints) {
   rclcpp::Node nh("test_ray_casting_shape_mask");
-  auto fooCb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &) -> bool
-  {
+  auto fooCb = [](ShapeHandle, Eigen::Isometry3d&) -> bool {
     return true;
   };
   TestMask mask(nh, fooCb, 0.1, 10.0, true, true, true);
@@ -886,11 +856,9 @@ TEST(RayCastingShapeMask, MaskPerformancePoints)
 
   const Eigen::Vector3d sensorPos(-1.5, 0.0, 0.0);
 
-  auto cb = [&](point_containment_filter::ShapeHandle h, Eigen::Isometry3d &t) -> bool
-  {
+  auto cb = [&](const ShapeHandle h, Eigen::Isometry3d& t) -> bool {
     t = Eigen::Isometry3d::Identity();
-    if (h == handleSensor)
-    {
+    if (h == handleSensor) {
       t.translate(sensorPos);
     }
     return true;
@@ -899,9 +867,9 @@ TEST(RayCastingShapeMask, MaskPerformancePoints)
   mask.setIgnoreInShadowTest({multiHandleSensor});
 
 #if RELEASE_BUILD == 1
-  const size_t numPoints = 10000000;
+  constexpr size_t numPoints = 10000000;
 #else
-  const size_t numPoints = 100000;
+  constexpr size_t numPoints = 100000;
 #endif
 
   cras::Cloud cloud;
@@ -917,8 +885,7 @@ TEST(RayCastingShapeMask, MaskPerformancePoints)
   Eigen::Vector3d p;
   auto body1 = mask.getBodies()[handle1];
   auto body2 = mask.getBodies()[handle2];
-  for (size_t i = 0; i < numPoints / 2; ++i)
-  {
+  for (size_t i = 0; i < numPoints / 2; ++i) {
     while (!body1->samplePointInside(rng, 10, p)) {}
     p = 2 * p;
     *it_x = p.x(); *it_y = p.y(); *it_z = p.z();
@@ -945,26 +912,23 @@ TEST(RayCastingShapeMask, MaskPerformancePoints)
 #endif
 }
 
-TEST(RayCastingShapeMask, MaskPerformanceBodies)
-{
+TEST(RayCastingShapeMask, MaskPerformanceBodies) {
   rclcpp::Node nh("test_ray_casting_shape_mask");
-  auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
-  {
+  auto cb = [](ShapeHandle, Eigen::Isometry3d& t) -> bool {
     t = randomPose();
     t.translation().normalize();
-    t.translation() *= 10.0; // so that we don't get too far behind the clipping plane
+    t.translation() *= 10.0;  // so that we don't get too far behind the clipping plane
     return true;
   };
   TestMask mask(nh, cb, 0.1, 10.0, true, true, true);
 
 #if RELEASE_BUILD == 1
-  const size_t numBodies = 1000000;
+  constexpr size_t numBodies = 1000000;
 #else
-  const size_t numBodies = 20000;
+  constexpr size_t numBodies = 20000;
 #endif
 
-  for (size_t i = 0; i < numBodies / 2; ++i)
-  {
+  for (size_t i = 0; i < numBodies / 2; ++i) {
     shapes::ShapeConstPtr shape1(new shapes::Box(2.0, 2.0, 2.0));
     mask.addShape(shape1, 1.0, 0.0, false, "box");
     shapes::ShapeConstPtr shape2(new shapes::Sphere(1.375));
@@ -974,7 +938,7 @@ TEST(RayCastingShapeMask, MaskPerformanceBodies)
 
   const Eigen::Vector3d sensorPos(0.0, 0.0, 0.0);
 
-  const size_t numPoints = 10;
+  constexpr size_t numPoints = 10;
 
   cras::Cloud cloud;
   cras::CloudModifier mod(cloud);
@@ -986,8 +950,7 @@ TEST(RayCastingShapeMask, MaskPerformanceBodies)
 
   // generate a bunch of points close the the bodies so that all filtering parts get activated
   Eigen::Vector3d p;
-  for (size_t i = 0; i < numPoints; ++i)
-  {
+  for (size_t i = 0; i < numPoints; ++i) {
     p = Eigen::Vector3d::Random();
     p.normalize();
     p *= 10.0;
@@ -1010,30 +973,27 @@ TEST(RayCastingShapeMask, MaskPerformanceBodies)
 #endif
 }
 
-TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh)
-{
+TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh) {
   rclcpp::Node nh("test_ray_casting_shape_mask");
-  auto cb = [](point_containment_filter::ShapeHandle, Eigen::Isometry3d &t) -> bool
-  {
+  auto cb = [](ShapeHandle, Eigen::Isometry3d& t) -> bool {
     t = randomPose();
     t.translation().normalize();
-    t.translation() *= 10.0; // so that we don't get too far behind the clipping plane
+    t.translation() *= 10.0;  // so that we don't get too far behind the clipping plane
     return true;
   };
   TestMask mask(nh, cb, 0.1, 10.0, true, true, true);
 
 #if RELEASE_BUILD == 1
-  const size_t numBodies = 10000;
+  constexpr size_t numBodies = 10000;
 #else
-  const size_t numBodies = 5000;
+  constexpr size_t numBodies = 5000;
 #endif
 
   auto g = urdf::Mesh();
   g.scale = {1.0, 2.0, 3.0};
   g.filename = std::string("file://") + TEST_DATA_DIR + "/box.dae";
-  for (size_t i = 0; i < numBodies; ++i)
-  {
-    const auto shape = robot_body_filter::constructShape(g);
+  for (size_t i = 0; i < numBodies; ++i) {
+    const auto shape = constructShape(g);
     mask.addShape(shape, 1.0, 0.0, false, "mesh");
   }
   mask.updateInternalShapeLists();
@@ -1041,9 +1001,9 @@ TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh)
   const Eigen::Vector3d sensorPos(0.0, 0.0, 0.0);
 
 #if RELEASE_BUILD == 1
-  const size_t numPoints = 10000;
+  constexpr size_t numPoints = 10000;
 #else
-  const size_t numPoints = 10;
+  constexpr size_t numPoints = 10;
 #endif
 
   cras::Cloud cloud;
@@ -1056,8 +1016,7 @@ TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh)
 
   // generate a bunch of points close the the bodies so that all filtering parts get activated
   Eigen::Vector3d p;
-  for (size_t i = 0; i < numPoints; ++i)
-  {
+  for (size_t i = 0; i < numPoints; ++i) {
     p = Eigen::Vector3d::Random();
     p.normalize();
     p *= 10.0;
@@ -1080,11 +1039,10 @@ TEST(RayCastingShapeMask, MaskPerformanceBodiesMesh)
 #endif
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   rclcpp::init(argc, argv);
-  int result = RUN_ALL_TESTS();
+  const int result = RUN_ALL_TESTS();
   rclcpp::shutdown();
   return result;
 }

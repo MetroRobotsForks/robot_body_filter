@@ -1,20 +1,18 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
-#include <robot_body_filter/utils/bodies.h>
-
 #include <geometric_shapes/bodies.h>
 #include <geometric_shapes/mesh_operations.h>
+#include <robot_body_filter/utils/bodies.h>
 
-namespace bodies
-{
+namespace bodies {
 
-void computeBoundingBoxAt(const bodies::Body *body, AxisAlignedBoundingBox &bbox, const Eigen::Isometry3d &pose)
-{
+void computeBoundingBoxAt(const bodies::Body* body, AxisAlignedBoundingBox& bbox, const Eigen::Isometry3d& pose) {
   bbox.setEmpty();
 
-  if (body == nullptr)
+  if (body == nullptr) {
     return;
+  }
 
   switch (body->getType()) {
     case shapes::SPHERE:
@@ -23,21 +21,21 @@ void computeBoundingBoxAt(const bodies::Body *body, AxisAlignedBoundingBox &bbox
       copy.setPose(pose);
       copy.computeBoundingBox(bbox);
     }
-      break;
+    break;
     case shapes::CYLINDER:
     {
       bodies::Cylinder copy(*dynamic_cast<const bodies::Cylinder*>(body));
       copy.setPose(pose);
       copy.computeBoundingBox(bbox);
     }
-      break;
+    break;
     case shapes::BOX:
     {
       bodies::Box copy(*dynamic_cast<const bodies::Box*>(body));
       copy.setPose(pose);
       copy.computeBoundingBox(bbox);
     }
-      break;
+    break;
     case shapes::MESH:
     {
       // TODO this makes dynamic allocations for the ConvexMesh object, though mesh data are
@@ -47,7 +45,7 @@ void computeBoundingBoxAt(const bodies::Body *body, AxisAlignedBoundingBox &bbox
       const auto copy = body->cloneAt(pose);
       copy->computeBoundingBox(bbox);
     }
-      break;
+    break;
     case shapes::PLANE:
     case shapes::CONE:
     case shapes::UNKNOWN_SHAPE:
@@ -56,4 +54,4 @@ void computeBoundingBoxAt(const bodies::Body *body, AxisAlignedBoundingBox &bbox
   }
 }
 
-}
+}  // namespace bodies

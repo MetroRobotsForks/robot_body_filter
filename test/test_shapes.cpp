@@ -2,12 +2,13 @@
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
 #include "gtest/gtest.h"
+
 #include <set>
+
 #include <robot_body_filter/utils/shapes.h>
 #include <urdf_model/model.h>
 
-TEST(Shapes, Box)
-{
+TEST(Shapes, Box) {
   auto g = urdf::Box();
   g.dim = {1.0, 2.0, 3.0};
 
@@ -20,8 +21,7 @@ TEST(Shapes, Box)
   EXPECT_EQ(3.0, box->size[2]);
 }
 
-TEST(Shapes, Cylinder)
-{
+TEST(Shapes, Cylinder) {
   auto g = urdf::Cylinder();
   g.length = 1.0;
   g.radius = 2.0;
@@ -34,8 +34,7 @@ TEST(Shapes, Cylinder)
   EXPECT_EQ(2.0, cylinder->radius);
 }
 
-TEST(Shapes, Sphere)
-{
+TEST(Shapes, Sphere) {
   auto g = urdf::Sphere();
   g.radius = 1.0;
 
@@ -46,8 +45,7 @@ TEST(Shapes, Sphere)
   EXPECT_EQ(1.0, sphere->radius);
 }
 
-TEST(Shapes, MeshEmptyFilename)
-{
+TEST(Shapes, MeshEmptyFilename) {
   auto g = urdf::Mesh();
   g.scale = {1.0, 2.0, 3.0};
   g.filename = "";
@@ -57,8 +55,7 @@ TEST(Shapes, MeshEmptyFilename)
   ASSERT_TRUE(mesh == nullptr);  // empty filename
 }
 
-TEST(Shapes, Mesh)
-{
+TEST(Shapes, Mesh) {
   auto g = urdf::Mesh();
   g.scale = {1.0, 2.0, 3.0};
   g.filename = std::string("file://") + TEST_DATA_DIR + "/triangle.dae";
@@ -85,8 +82,7 @@ TEST(Shapes, Mesh)
   EXPECT_EQ(6.0, mesh->vertices[8]);
 }
 
-TEST(Shapes, Unknown)
-{
+TEST(Shapes, Unknown) {
   auto g = urdf::Geometry();
   // create a nonexistent enum item
   g.type = static_cast<decltype(urdf::Geometry::type)>(100u);
@@ -95,8 +91,7 @@ TEST(Shapes, Unknown)
   ASSERT_TRUE(shape == nullptr);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

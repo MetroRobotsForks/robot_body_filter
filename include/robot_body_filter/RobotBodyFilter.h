@@ -6,41 +6,35 @@
 #include <memory>
 #include <mutex>
 #include <set>
-#include <thread>
 #include <utility>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <pcl/filters/crop_box.h>
-
 #include <cras_cpp_common/tf2_sensor_msgs.hpp>
+#include <geometric_shapes/mesh_operations.h>
+#include <geometry_msgs/msg/polygon_stamped.hpp>
+#include <laser_geometry/laser_geometry.hpp>
+#include <moveit/occupancy_map_monitor/occupancy_map_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <robot_body_filter/RayCastingShapeMask.h>
+#include <robot_body_filter/TfFramesWatchdog.h>
+#include <robot_body_filter/msg/oriented_bounding_box_stamped.hpp>
+#include <robot_body_filter/msg/sphere_stamped.hpp>
 #include <robot_body_filter/utils/filter_utils.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
-#include <robot_body_filter/RayCastingShapeMask.h>
-#include <moveit/occupancy_map_monitor/occupancy_map_updater.hpp>
-#include <moveit/robot_model/aabb.hpp>
-#include <urdf/model.h>
-#include <laser_geometry/laser_geometry.hpp>
-#include <geometric_shapes/mesh_operations.h>
-#include <geometry_msgs/msg/point32.hpp>
-#include <geometry_msgs/msg/polygon_stamped.hpp>
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
-#include <robot_body_filter/msg/sphere_stamped.hpp>
-#include <robot_body_filter/msg/oriented_bounding_box_stamped.hpp>
-#include <geometry_msgs/msg/point_stamped.hpp>
-#include <visualization_msgs/msg/marker_array.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_srvs/srv/trigger.hpp>
-
-#include <robot_body_filter/TfFramesWatchdog.h>
+#include <tf2_ros/buffer.hpp>
+#include <tf2_ros/transform_listener.hpp>
+#include <urdf/model.h>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 namespace robot_body_filter {
+
 /**
 * \brief Just a helper structure holding together a link, one of its collision elements,
- * and the index of the collision element in the collision array of the link.
+ *       and the index of the collision element in the collision array of the link.
 */
 struct CollisionBodyWithLink {
   urdf::CollisionSharedPtr collision;
@@ -49,30 +43,27 @@ struct CollisionBodyWithLink {
   MultiShapeHandle multiHandle;
   std::string cacheKey;
 
-  CollisionBodyWithLink() :
-      indexInCollisionArray(0), cacheKey("__empty__") {
-  }
+  CollisionBodyWithLink() : indexInCollisionArray(0), multiHandle({}), cacheKey("__empty__") {}
 
-  CollisionBodyWithLink(urdf::CollisionSharedPtr collision,
-                        urdf::LinkSharedPtr link,
-                        const size_t indexInCollisionArray,
-                        const MultiShapeHandle& multiHandle):
-      collision(collision), link(link), indexInCollisionArray(indexInCollisionArray),
-      multiHandle(multiHandle)
-  {
+  CollisionBodyWithLink(
+    urdf::CollisionSharedPtr collision, urdf::LinkSharedPtr link,
+    const size_t indexInCollisionArray, const MultiShapeHandle& multiHandle)
+    : collision(collision), link(link), indexInCollisionArray(indexInCollisionArray), multiHandle(multiHandle) {
+
     std::ostringstream stream;
     stream << link->name << "-" << indexInCollisionArray;
     this->cacheKey = stream.str();
   }
 };
 
-struct ScaleAndPadding
-{
+struct ScaleAndPadding {
   double scale;
   double padding;
-  ScaleAndPadding(double scale = 1.0, double padding = 0.0);
+
+  explicit ScaleAndPadding(double scale = 1.0, double padding = 0.0);
 
   bool operator==(const ScaleAndPadding& other) const;
+
   bool operator!=(const ScaleAndPadding& other) const;
 };
 
@@ -98,6 +89,7 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   RobotBodyFilter();
+
   ~RobotBodyFilter() override;
 
   //! Read config parameters loaded by FilterBase::configure(string, NodeHandle)
@@ -112,24 +104,23 @@ public:
   virtual bool hasModel() const;
 
 protected:
-
-  //! Handle of the node this filter runs in.
-  rclcpp::Node::SharedPtr nodeHandle;
-  rclcpp::Clock::SharedPtr clock_ptr;
+  rclcpp::Node::SharedPtr nodeHandle;  //!< Handle of the node this filter runs in.
+  rclcpp::Clock::SharedPtr clock_ptr;  //!< The clock to use.
 
   rclcpp::Logger get_logger() const {
     return this->logging_interface_->get_logger();
   }
 
-  /** \brief If true, suppose that every point in the scan was captured at a
-   * different time instant. Otherwise, the scan is assumed to be taken at once.
+  /**
+   * \brief If true, suppose that every point in the scan was captured at a
+   *        different time instant. Otherwise, the scan is assumed to be taken at once.
    *
    * \note Always true for T = LaserScan.
    *
    * \note If this is true and T = PointCloud2, the processing pipeline expects
-   * the pointcloud to have fields int32 index, float32 stamps, and float32
-   * vp_x, vp_y and vp_z viewpoint positions. If one of these fields is missing,
-   * computeMask() throws runtime exception.
+   *       the pointcloud to have fields int32 index, float32 stamps, and float32
+   *       vp_x, vp_y and vp_z viewpoint positions. If one of these fields is missing,
+   *       computeMask() throws runtime exception.
    */
   bool pointByPointScan;
 
@@ -137,30 +128,36 @@ protected:
   //! removed).
   bool keepCloudsOrganized;
 
-  /** \brief The interval between two consecutive model pose updates when
-   * processing a pointByPointScan. If set to zero, the model will be updated
-   * for each point separately (might be computationally exhaustive). If
-   * non-zero, it will only update the model once in this interval, which makes
-   * the masking algorithm a little bit less precise but more computationally
-   * affordable.
+  /**
+   * \brief The interval between two consecutive model pose updates when
+   *        processing a pointByPointScan. If set to zero, the model will be updated
+   *        for each point separately (might be computationally exhaustive). If
+   *        non-zero, it will only update the model once in this interval, which makes
+   *        the masking algorithm a little bit less precise but more computationally
+   *        affordable.
    */
   rclcpp::Duration modelPoseUpdateInterval;
 
-  /** \brief Fixed frame wrt the sensor frame.
-   * Usually base_link for stationary robots (or sensor frame if both
-   * robot and sensor are stationary). For mobile robots, it can be e.g.
-   * odom or map. */
+  /**
+   * \brief Fixed frame wrt the sensor frame.
+   *        Usually base_link for stationary robots (or sensor frame if both
+   *        robot and sensor are stationary). For mobile robots, it can be e.g.
+   *        odom or map.
+   */
   std::string fixedFrame;
 
-  /** \brief Frame of the sensor. For LaserScan version, it is automatically
-   * read from the incoming data. For PointCloud2, you have to specify it
-   * explicitly because the pointcloud could have already been transformed e.g.
-   * to the fixed frame.
+  /**
+   * \brief Frame of the sensor. For LaserScan version, it is automatically
+   *        read from the incoming data. For PointCloud2, you have to specify it
+   *        explicitly because the pointcloud could have already been transformed e.g.
+   *        to the fixed frame.
    */
   std::string sensorFrame;
 
-  /** \brief Frame in which the filter is applied. For point-by-point scans, it
-   * has to be a fixed frame, otherwise, it can be the sensor frame. */
+  /**
+   * \brief Frame in which the filter is applied. For point-by-point scans, it
+   *        has to be a fixed frame, otherwise, it can be the sensor frame.
+   */
   std::string filteringFrame;
 
   //! The minimum distance of points from the sensor to keep them (in meters).
@@ -351,12 +348,19 @@ protected:
   std::set<point_containment_filter::ShapeHandle> shapesIgnoredInBoundingSphere;
   std::set<point_containment_filter::ShapeHandle> shapesIgnoredInBoundingBox;
 
-  //! Caches any link->fixedFrame transforms after a scan message is received. Is queried by robot_shape_mask. Keys are CollisionBodyWithLink#cacheKey.
-  std::map<std::string, std::shared_ptr<Eigen::Isometry3d> > transformCache;
-  //! Caches any link->fixedFrame transforms at the time of scan end. Only used for pointByPoint scans. Is queried by robot_shape_mask. Keys are CollisionBodyWithLink#cacheKey.
-  std::map<std::string, std::shared_ptr<Eigen::Isometry3d> > transformCacheAfterScan;
+  /**
+   * \brief Caches any link->fixedFrame transforms after a scan message is received. Is queried by robot_shape_mask.
+   *        Keys are `CollisionBodyWithLink::cacheKey`.
+   */
+  std::map<std::string, std::shared_ptr<Eigen::Isometry3d>> transformCache;
+  /**
+   * \brief Caches any link->fixedFrame transforms at the time of scan end. Only used for pointByPoint scans.
+   *        Is queried by robot_shape_mask. Keys are `CollisionBodyWithLink::cacheKey`.
+   */
+  std::map<std::string, std::shared_ptr<Eigen::Isometry3d>> transformCacheAfterScan;
 
-  //! If the scan is pointByPoint, set this variable to the ratio between scan start and end time you're looking for with getShapeTransform().
+  //! If the scan is pointByPoint, set this variable to the ratio between scan start and end time you're looking for
+  //! with getShapeTransform().
   mutable double cacheLookupBetweenScansRatio;
 
   //! Used in tests. If false, configure() waits until robot description becomes available. If true,
@@ -365,35 +369,35 @@ protected:
 
   /**
    * \brief Perform the actual computation of mask.
-   * \param projectedPointCloud The input pointcloud. For clouds with each
-   *                            point captured at different time, it needs
-   *                            a float32 "stamps" channel and viewpoint
-   *                            channels vp_x, vp_y and vp_z. The stamps channel
-   *                            contains timestamps relative to the time in
-   *                            header.
-   * \param mask Output mask of the points.
-   * \param sensorFrame Sensor frame id. Only needed for scans with all points
-   *                    captured at the same time. Point-by-point scans read
-   *                    sensor position from the viewpoint channels.
+   * \param[in] projectedPointCloud The input pointcloud. For clouds with each point captured at different time, it
+   *                                needs a float32 "stamps" channel and viewpoint channels vp_x, vp_y and vp_z.
+   *                                The stamps channel contains timestamps relative to the time in header.
+   * \param[out] mask Output mask of the points.
+   * \param[in] sensorFrame Sensor frame id. Only needed for scans with all points
+   *                        captured at the same time. Point-by-point scans read
+   *                        sensor position from the viewpoint channels.
    * \return Whether the computation succeeded.
    */
   bool computeMask(const sensor_msgs::msg::PointCloud2& projectedPointCloud,
                    std::vector<RayCastingShapeMask::MaskValue>& mask,
                    const std::string& sensorFrame = "");
 
-  /** \brief Return the latest cached transform for the link corresponding to the given shape handle.
+  /**
+   * \brief Return the latest cached transform for the link corresponding to the given shape handle.
    *
    * You should call updateTransformCache before calling this function.
    *
-   * \param shapeHandle The handle of the shape for which we want the transform. The handle is from robot_shape_mask.
+   * \param[in] shapeHandle The handle of the shape for which we want the transform.
+   *                        The handle is from robot_shape_mask.
    * \param[out] transform Transform of the corresponding link (wrt filtering frame).
    * \return If the transform was found.
    */
   bool getShapeTransform(point_containment_filter::ShapeHandle shapeHandle, Eigen::Isometry3d& transform) const;
 
-  /** \brief Update robot_shape_mask with the given URDF model.
+  /**
+   * \brief Update robot_shape_mask with the given URDF model.
    *
-   * \param urdfModel The robot's URDF loaded as a string.
+   * \param[in] urdfModel The robot's URDF loaded as a string.
    */
   void addRobotMaskFromUrdf(const std::string& urdfModel);
 
@@ -404,10 +408,12 @@ protected:
    */
   void clearRobotMask();
 
-  /** \brief Update the cache of link transforms relative to filtering frame.
+  /**
+   * \brief Update the cache of link transforms relative to filtering frame.
    *
-   * \param time The time to get transforms for.
-   * \param afterScantime The after scan time to get transforms for (if zero time is passed, after scan transforms are not computed).
+   * \param[in] time The time to get transforms for.
+   * \param[in] afterScanTime The after scan time to get transforms for
+   *                          (if zero time is passed, after scan transforms are not computed).
    */
   void updateTransformCache(const rclcpp::Time& time, const rclcpp::Time& afterScanTime = rclcpp::Time(0));
 
@@ -416,7 +422,7 @@ protected:
    *
    * \param parameters The updated config.
    */
-  rcl_interfaces::msg::SetParametersResult paramUpdateCallback(const std::vector<rclcpp::Parameter> & parameters);
+  rcl_interfaces::msg::SetParametersResult paramUpdateCallback(const std::vector<rclcpp::Parameter>& parameters);
 
   /**
    * \brief Callback for ~reload_model service. Reloads the URDF from parameter.
@@ -426,62 +432,74 @@ protected:
   /**
    * \brief Callback for ~reload_model service. Reloads the URDF from parameter.
    */
-  void triggerModelReload(const std::shared_ptr<rmw_request_id_t>,
-                          const std::shared_ptr<std_srvs::srv::Trigger::Request>,
+  void triggerModelReload(std::shared_ptr<rmw_request_id_t>,
+                          std::shared_ptr<std_srvs::srv::Trigger::Request>,
                           std::shared_ptr<std_srvs::srv::Trigger::Response>);
 
   void createBodyVisualizationMsg(
-      const std::map<point_containment_filter::ShapeHandle, const bodies::Body*>& bodies,
-      const rclcpp::Time& stamp, const std_msgs::msg::ColorRGBA& color,
-      visualization_msgs::msg::MarkerArray& markerArray) const;
+    const std::map<point_containment_filter::ShapeHandle, const bodies::Body*>& bodies,
+    const rclcpp::Time& stamp,
+    const std_msgs::msg::ColorRGBA& color,
+    visualization_msgs::msg::MarkerArray& markerArray) const;
 
   void publishDebugMarkers(const rclcpp::Time& scanTime) const;
+
   void publishDebugPointClouds(
-      const sensor_msgs::msg::PointCloud2& projectedPointCloud,
-      const std::vector<RayCastingShapeMask::MaskValue> &pointMask) const;
+    const sensor_msgs::msg::PointCloud2& projectedPointCloud,
+    const std::vector<RayCastingShapeMask::MaskValue>& pointMask) const;
+
   /**
    * \brief Computation of the bounding sphere, debug spheres, and publishing of
-   * pointcloud without bounding sphere.
+   *        pointcloud without bounding sphere.
    */
   void computeAndPublishBoundingSphere(const sensor_msgs::msg::PointCloud2& projectedPointCloud) const;
 
   /**
    * \brief Computation of the bounding box, debug boxes, and publishing of
-   * pointcloud without bounding box.
+   *        pointcloud without bounding box.
    */
   void computeAndPublishBoundingBox(const sensor_msgs::msg::PointCloud2& projectedPointCloud) const;
 
   /**
    * \brief Computation of the oriented bounding box, debug boxes, and publishing of
-   * pointcloud without bounding box.
+   *        pointcloud without bounding box.
    */
   void computeAndPublishOrientedBoundingBox(const sensor_msgs::msg::PointCloud2& projectedPointCloud) const;
 
   /**
    * \brief Computation of the local bounding box, debug boxes, and publishing of
-   * pointcloud without bounding box.
+   *        pointcloud without bounding box.
    */
   void computeAndPublishLocalBoundingBox(const sensor_msgs::msg::PointCloud2& projectedPointCloud) const;
 
   ScaleAndPadding getLinkInflationForContainsTest(const std::string& linkName) const;
+
   ScaleAndPadding getLinkInflationForContainsTest(const std::vector<std::string>& linkNames) const;
+
   ScaleAndPadding getLinkInflationForShadowTest(const std::string& linkName) const;
+
   ScaleAndPadding getLinkInflationForShadowTest(const std::vector<std::string>& linkNames) const;
+
   ScaleAndPadding getLinkInflationForBoundingSphere(const std::string& linkName) const;
+
   ScaleAndPadding getLinkInflationForBoundingSphere(const std::vector<std::string>& linkNames) const;
+
   ScaleAndPadding getLinkInflationForBoundingBox(const std::string& linkName) const;
+
   ScaleAndPadding getLinkInflationForBoundingBox(const std::vector<std::string>& linkNames) const;
 
 private:
-  ScaleAndPadding getLinkInflation(const std::vector<std::string>& linkNames, const ScaleAndPadding& defaultInflation, const std::map<std::string, ScaleAndPadding>& perLinkInflation) const;
+  ScaleAndPadding getLinkInflation(
+    const std::vector<std::string>& linkNames, const ScaleAndPadding& defaultInflation,
+    const std::map<std::string, ScaleAndPadding>& perLinkInflation) const;
+
   std::string getLinkTfPrefix() const;
 };
 
-class RobotBodyFilterLaserScan : public RobotBodyFilter<sensor_msgs::msg::LaserScan>
-{
+class RobotBodyFilterLaserScan : public RobotBodyFilter<sensor_msgs::msg::LaserScan> {
 public:
   //! Apply the filter.
-  bool update(const sensor_msgs::msg::LaserScan &inputScan, sensor_msgs::msg::LaserScan &filteredScan) override;
+  bool update(const sensor_msgs::msg::LaserScan& inputScan, sensor_msgs::msg::LaserScan& filteredScan) override;
 
   bool configure() override;
 
@@ -490,14 +508,14 @@ protected:
 
   // in RobotBodyFilterLaserScan::update we project the scan to a pointcloud with viewpoints
   const std::unordered_map<std::string, cras::CloudChannelType> channelsToTransform {
-    {"vp_", cras::CloudChannelType::POINT} };
+    {"vp_", cras::CloudChannelType::POINT}
+  };
 };
 
-class RobotBodyFilterPointCloud2 : public RobotBodyFilter<sensor_msgs::msg::PointCloud2>
-{
+class RobotBodyFilterPointCloud2 : public RobotBodyFilter<sensor_msgs::msg::PointCloud2> {
 public:
   //! Apply the filter.
-  bool update(const sensor_msgs::msg::PointCloud2 &inputCloud, sensor_msgs::msg::PointCloud2 &filteredCloud) override;
+  bool update(const sensor_msgs::msg::PointCloud2& inputCloud, sensor_msgs::msg::PointCloud2& filteredCloud) override;
 
   bool configure() override;
 
@@ -508,4 +526,4 @@ protected:
   std::unordered_map<std::string, cras::CloudChannelType> channelsToTransform;
 };
 
-}
+}  // namespace robot_body_filter
