@@ -8,6 +8,7 @@
 #include <geometry_msgs/msg/point32.hpp>
 
 namespace tf2 {
+
 /**
  * \brief Convert the given Eigen 3D vector to `Point32` message.
  *

@@ -14,7 +14,6 @@
 #include <geometric_shapes/bodies.h>
 #include <geometric_shapes/body_operations.h>
 #include <geometric_shapes/shape_operations.h>
-#include <geometric_shapes/shape_to_marker.h>
 #include <pcl/filters/crop_box.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pluginlib/class_list_macros.hpp>
@@ -23,7 +22,6 @@
 #include <robot_body_filter/utils/shapes.h>
 #include <robot_body_filter/utils/tf2_eigen.h>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
-#include <tf2/LinearMath/Transform.h>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
 
@@ -35,438 +33,438 @@ namespace robot_body_filter {
 
 template<typename T>
 RobotBodyFilter<T>::RobotBodyFilter()
-  : modelPoseUpdateInterval(0, 0), reachableTransformTimeout(0, 0), unreachableTransformTimeout(0, 0),
-    tfBufferLength(0, 0) {
+  : model_pose_update_interval_(0, 0), reachable_transform_timeout_(0, 0), unreachable_transform_timeout_(0, 0),
+    tf_buffer_length_(0, 0) {
 
-  this->modelMutex.reset(new std::mutex());
+  this->model_mutex_.reset(new std::mutex());
 }
 
 template<typename T>
 bool RobotBodyFilter<T>::configure() {
   // Need to create NodeHandle because FilterBase does not provide get_node_topics_interface
-  nodeHandle = std::make_shared<rclcpp::Node>(this->getName());
-  clock_ptr = this->nodeHandle->get_clock();
+  node_handle_ = std::make_shared<rclcpp::Node>(this->getName());
+  clock_ptr_ = this->node_handle_->get_clock();
 
-  this->tfBufferLength = this->getParamDuration("transforms.buffer_length", rclcpp::Duration::from_seconds(60.0), "s");
+  this->tf_buffer_length_ = this->getParamDuration("transforms.buffer_length", rclcpp::Duration::from_seconds(60.0), "s");
 
-  if (this->tfBuffer == nullptr) {
-    tf2::Duration tf2_duration = tf2_ros::fromRclcpp(this->tfBufferLength);
-    this->tfBuffer = std::make_shared<tf2_ros::Buffer>(clock_ptr, tf2_duration);
-    this->tfListener = std::make_unique<tf2_ros::TransformListener>(*this->tfBuffer);
+  if (this->tf_buffer_ == nullptr) {
+    tf2::Duration tf2_duration = tf2_ros::fromRclcpp(this->tf_buffer_length_);
+    this->tf_buffer_ = std::make_shared<tf2_ros::Buffer>(clock_ptr_, tf2_duration);
+    this->tf_listener_ = std::make_unique<tf2_ros::TransformListener>(*this->tf_buffer_);
   } else {
     // clear the TF buffer (useful if calling configure() after receiving old TF data)
-    this->tfBuffer->clear();
+    this->tf_buffer_->clear();
   }
 
-  this->fixedFrame = this->getParamVerbose("frames.fixed", "base_link");
-  cras::stripLeadingSlash(this->fixedFrame, true);
-  this->sensorFrame = this->getParamVerbose("frames.sensor", "");
-  cras::stripLeadingSlash(this->sensorFrame, true);
-  this->filteringFrame = this->getParamVerbose("frames.filtering", this->fixedFrame);
-  cras::stripLeadingSlash(this->filteringFrame, true);
-  this->minDistance = this->getParamVerbose("sensor.min_distance", 0.0, "m");
-  this->maxDistance = this->getParamVerbose("sensor.max_distance", 0.0, "m");
-  this->robotDescriptionTopic = this->getParamVerbose("body_model.robot_description_topic", "robot_description");
-  this->keepCloudsOrganized = this->getParamVerbose("filter.keep_clouds_organized", true);
-  this->modelPoseUpdateInterval = this->getParamDuration(
+  this->fixed_frame_ = this->getParamVerbose("frames.fixed", "base_link");
+  cras::stripLeadingSlash(this->fixed_frame_, true);
+  this->sensor_frame_ = this->getParamVerbose("frames.sensor", "");
+  cras::stripLeadingSlash(this->sensor_frame_, true);
+  this->filtering_frame_ = this->getParamVerbose("frames.filtering", this->fixed_frame_);
+  cras::stripLeadingSlash(this->filtering_frame_, true);
+  this->min_distance_ = this->getParamVerbose("sensor.min_distance", 0.0, "m");
+  this->max_distance_ = this->getParamVerbose("sensor.max_distance", 0.0, "m");
+  this->robot_description_topic_ = this->getParamVerbose("body_model.robot_description_topic", "robot_description");
+  this->keep_clouds_organized_ = this->getParamVerbose("filter.keep_clouds_organized", true);
+  this->model_pose_update_interval_ = this->getParamDuration(
     "filter.model_pose_update_interval", rclcpp::Duration(0, 0), "s");
-  const bool doClipping = this->getParamVerbose("filter.do_clipping", true);
-  const bool doContainsTest = this->getParamVerbose("filter.do_contains_test", true);
-  const bool doShadowTest = this->getParamVerbose("filter.do_shadow_test", true);
-  const double maxShadowDistance = this->getParamVerbose("filter.max_shadow_distance", this->maxDistance, "m");
-  this->reachableTransformTimeout = this->getParamDuration(
+  const bool do_clipping = this->getParamVerbose("filter.do_clipping", true);
+  const bool do_contains_test = this->getParamVerbose("filter.do_contains_test", true);
+  const bool do_shadow_test = this->getParamVerbose("filter.do_shadow_test", true);
+  const double max_shadow_distance = this->getParamVerbose("filter.max_shadow_distance", this->max_distance_, "m");
+  this->reachable_transform_timeout_ = this->getParamDuration(
     "transforms.timeout.reachable", rclcpp::Duration::from_seconds(0.1), "s");
-  this->unreachableTransformTimeout = this->getParamDuration(
+  this->unreachable_transform_timeout_ = this->getParamDuration(
     "transforms.timeout.unreachable", rclcpp::Duration::from_seconds(0.2), "s");
-  this->requireAllFramesReachable = this->getParamVerbose("transforms.require_all_reachable", false);
-  this->linkTfPrefix = this->getParamVerbose("transforms.link_tf_prefix", "");
-  this->publishNoBoundingSpherePointcloud = this->getParamVerbose("bounding_sphere.publish_cut_out_pointcloud", false);
-  this->publishNoBoundingBoxPointcloud = this->getParamVerbose("bounding_box.publish_cut_out_pointcloud", false);
-  this->publishNoOrientedBoundingBoxPointcloud = this->getParamVerbose(
+  this->require_all_frames_reachable_ = this->getParamVerbose("transforms.require_all_reachable", false);
+  this->link_tf_prefix_ = this->getParamVerbose("transforms.link_tf_prefix", "");
+  this->publish_no_bounding_sphere_pointcloud_ = this->getParamVerbose("bounding_sphere.publish_cut_out_pointcloud", false);
+  this->publish_no_bounding_box_pointcloud_ = this->getParamVerbose("bounding_box.publish_cut_out_pointcloud", false);
+  this->publish_no_oriented_bounding_box_pointcloud_ = this->getParamVerbose(
     "oriented_bounding_box.publish_cut_out_pointcloud", false);
-  this->publishNoLocalBoundingBoxPointcloud = this->getParamVerbose(
+  this->publish_no_local_bounding_box_pointcloud_ = this->getParamVerbose(
     "local_bounding_box.publish_cut_out_pointcloud", false);
-  this->computeBoundingSphere = this->getParamVerbose("bounding_sphere.compute", false) ||
-    this->publishNoBoundingSpherePointcloud;
-  this->computeBoundingBox = this->getParamVerbose("bounding_box.compute", false) ||
-    this->publishNoBoundingBoxPointcloud;
-  this->computeOrientedBoundingBox = this->getParamVerbose("oriented_bounding_box.compute", false) ||
-    this->publishNoOrientedBoundingBoxPointcloud;
-  this->computeLocalBoundingBox = this->getParamVerbose("local_bounding_box.compute", false) ||
-    this->publishNoLocalBoundingBoxPointcloud;
-  this->computeDebugBoundingSphere = this->getParamVerbose("bounding_sphere.debug", false);
-  this->computeDebugBoundingBox = this->getParamVerbose("bounding_box.debug", false);
-  this->computeDebugOrientedBoundingBox = this->getParamVerbose("oriented_bounding_box.debug", false);
-  this->computeDebugLocalBoundingBox = this->getParamVerbose("local_bounding_box.debug", false);
-  this->publishBoundingSphereMarker = this->getParamVerbose("bounding_sphere.marker", false);
-  this->publishBoundingBoxMarker = this->getParamVerbose("bounding_box.marker", false);
-  this->publishOrientedBoundingBoxMarker = this->getParamVerbose("oriented_bounding_box.marker", false);
-  this->publishLocalBoundingBoxMarker = this->getParamVerbose("local_bounding_box.marker", false);
-  this->localBoundingBoxFrame = this->getParamVerbose("local_bounding_box.frame_id", this->fixedFrame);
-  this->publishDebugPclInside = this->getParamVerbose("debug.pcl.inside", false);
-  this->publishDebugPclClip = this->getParamVerbose("debug.pcl.clip", false);
-  this->publishDebugPclShadow = this->getParamVerbose("debug.pcl.shadow", false);
-  this->publishDebugContainsMarker = this->getParamVerbose("debug.marker.contains", false);
-  this->publishDebugShadowMarker = this->getParamVerbose("debug.marker.shadow", false);
-  this->publishDebugBsphereMarker = this->getParamVerbose("debug.marker.bounding_sphere", false);
-  this->publishDebugBboxMarker = this->getParamVerbose("debug.marker.bounding_box", false);
+  this->compute_bounding_sphere_ = this->getParamVerbose("bounding_sphere.compute", false) ||
+    this->publish_no_bounding_sphere_pointcloud_;
+  this->compute_bounding_box_ = this->getParamVerbose("bounding_box.compute", false) ||
+    this->publish_no_bounding_box_pointcloud_;
+  this->compute_oriented_bounding_box_ = this->getParamVerbose("oriented_bounding_box.compute", false) ||
+    this->publish_no_oriented_bounding_box_pointcloud_;
+  this->compute_local_bounding_box_ = this->getParamVerbose("local_bounding_box.compute", false) ||
+    this->publish_no_local_bounding_box_pointcloud_;
+  this->compute_debug_bounding_sphere_ = this->getParamVerbose("bounding_sphere.debug", false);
+  this->compute_debug_bounding_box_ = this->getParamVerbose("bounding_box.debug", false);
+  this->compute_debug_oriented_bounding_box_ = this->getParamVerbose("oriented_bounding_box.debug", false);
+  this->compute_debug_local_bounding_box_ = this->getParamVerbose("local_bounding_box.debug", false);
+  this->publish_bounding_sphere_marker_ = this->getParamVerbose("bounding_sphere.marker", false);
+  this->publish_bounding_box_marker_ = this->getParamVerbose("bounding_box.marker", false);
+  this->publish_oriented_bounding_box_marker_ = this->getParamVerbose("oriented_bounding_box.marker", false);
+  this->publish_local_bounding_box_marker_ = this->getParamVerbose("local_bounding_box.marker", false);
+  this->local_bounding_box_frame_ = this->getParamVerbose("local_bounding_box.frame_id", this->fixed_frame_);
+  this->publish_debug_pcl_inside_ = this->getParamVerbose("debug.pcl.inside", false);
+  this->publish_debug_pcl_clip_ = this->getParamVerbose("debug.pcl.clip", false);
+  this->publish_debug_pcl_shadow_ = this->getParamVerbose("debug.pcl.shadow", false);
+  this->publish_debug_contains_marker_ = this->getParamVerbose("debug.marker.contains", false);
+  this->publish_debug_shadow_marker_ = this->getParamVerbose("debug.marker.shadow", false);
+  this->publish_debug_bsphere_marker_ = this->getParamVerbose("debug.marker.bounding_sphere", false);
+  this->publish_debug_bbox_marker_ = this->getParamVerbose("debug.marker.bounding_box", false);
 
-  const auto inflationPadding = this->getParamVerbose("body_model.inflation.padding", 0.0, "m");
-  const auto inflationScale = this->getParamVerbose("body_model.inflation.scale", 1.0);
-  this->defaultContainsInflation.padding = this->getParamVerbose(
-    "body_model.inflation.contains_test.padding", inflationPadding, "m");
-  this->defaultContainsInflation.scale = this->getParamVerbose(
-    "body_model.inflation.contains_test.scale", inflationScale);
-  this->defaultShadowInflation.padding = this->getParamVerbose(
-    "body_model.inflation.shadow_test.padding", inflationPadding, "m");
-  this->defaultShadowInflation.scale = this->getParamVerbose("body_model.inflation.shadow_test.scale", inflationScale);
-  this->defaultBsphereInflation.padding = this->getParamVerbose(
-    "body_model.inflation.bounding_sphere.padding", inflationPadding, "m");
-  this->defaultBsphereInflation.scale = this->getParamVerbose(
-    "body_model.inflation.bounding_sphere.scale", inflationScale);
-  this->defaultBboxInflation.padding = this->getParamVerbose(
-    "body_model.inflation.bounding_box.padding", inflationPadding, "m");
-  this->defaultBboxInflation.scale = this->getParamVerbose("body_model.inflation.bounding_box.scale", inflationScale);
+  const auto inflation_padding = this->getParamVerbose("body_model.inflation.padding", 0.0, "m");
+  const auto inflation_scale = this->getParamVerbose("body_model.inflation.scale", 1.0);
+  this->default_contains_inflation_.padding = this->getParamVerbose(
+    "body_model.inflation.contains_test.padding", inflation_padding, "m");
+  this->default_contains_inflation_.scale = this->getParamVerbose(
+    "body_model.inflation.contains_test.scale", inflation_scale);
+  this->default_shadow_inflation_.padding = this->getParamVerbose(
+    "body_model.inflation.shadow_test.padding", inflation_padding, "m");
+  this->default_shadow_inflation_.scale = this->getParamVerbose(
+    "body_model.inflation.shadow_test.scale", inflation_scale);
+  this->default_bsphere_inflation_.padding = this->getParamVerbose(
+    "body_model.inflation.bounding_sphere.padding", inflation_padding, "m");
+  this->default_bsphere_inflation_.scale = this->getParamVerbose(
+    "body_model.inflation.bounding_sphere.scale", inflation_scale);
+  this->default_bbox_inflation_.padding = this->getParamVerbose(
+    "body_model.inflation.bounding_box.padding", inflation_padding, "m");
+  this->default_bbox_inflation_.scale = this->getParamVerbose(
+    "body_model.inflation.bounding_box.scale", inflation_scale);
 
   // read per-link padding
-  const auto perLinkInflationPadding = this->getParamVerboseMap(
+  const auto per_link_inflation_padding = this->getParamVerboseMap(
     "body_model.inflation.per_link.padding", std::map<std::string, double>(), "m");
 
-  for (const auto& inflationPair : perLinkInflationPadding) {
-    bool containsOnly;
-    bool shadowOnly;
-    bool bsphereOnly;
-    bool bboxOnly;
+  for (const auto& [linkNameConst, padding] : per_link_inflation_padding) {
+    bool contains_only;
+    bool shadow_only;
+    bool bsphere_only;
+    bool bbox_only;
 
-    auto linkName = inflationPair.first;
-    linkName = cras::removeSuffix(linkName, CONTAINS_SUFFIX, &containsOnly);
-    linkName = cras::removeSuffix(linkName, SHADOW_SUFFIX, &shadowOnly);
-    linkName = cras::removeSuffix(linkName, BSPHERE_SUFFIX, &bsphereOnly);
-    linkName = cras::removeSuffix(linkName, BBOX_SUFFIX, &bboxOnly);
+    auto linkName = linkNameConst;
+    linkName = cras::removeSuffix(linkName, kContainsSuffix, &contains_only);
+    linkName = cras::removeSuffix(linkName, kShadowSuffix, &shadow_only);
+    linkName = cras::removeSuffix(linkName, kBsphereSuffix, &bsphere_only);
+    linkName = cras::removeSuffix(linkName, kBboxSuffix, &bbox_only);
 
-    if (!shadowOnly && !bsphereOnly && !bboxOnly) {
-      this->perLinkContainsInflation[linkName] =
-        ScaleAndPadding(this->defaultContainsInflation.scale, inflationPair.second);
+    if (!shadow_only && !bsphere_only && !bbox_only) {
+      this->per_link_contains_inflation_[linkName] = ScaleAndPadding(this->default_contains_inflation_.scale, padding);
     }
-    if (!containsOnly && !bsphereOnly && !bboxOnly) {
-      this->perLinkShadowInflation[linkName] =
-        ScaleAndPadding(this->defaultShadowInflation.scale, inflationPair.second);
+    if (!contains_only && !bsphere_only && !bbox_only) {
+      this->per_link_shadow_inflation_[linkName] = ScaleAndPadding(this->default_shadow_inflation_.scale, padding);
     }
-    if (!containsOnly && !shadowOnly && !bboxOnly) {
-      this->perLinkBsphereInflation[linkName] =
-        ScaleAndPadding(this->defaultBsphereInflation.scale, inflationPair.second);
+    if (!contains_only && !shadow_only && !bbox_only) {
+      this->per_link_bsphere_inflation_[linkName] = ScaleAndPadding(this->default_bsphere_inflation_.scale, padding);
     }
-    if (!containsOnly && !shadowOnly && !bsphereOnly) {
-      this->perLinkBboxInflation[linkName] = ScaleAndPadding(this->defaultBboxInflation.scale, inflationPair.second);
+    if (!contains_only && !shadow_only && !bsphere_only) {
+      this->per_link_bbox_inflation_[linkName] = ScaleAndPadding(this->default_bbox_inflation_.scale, padding);
     }
   }
 
   // read per-link scale
-  const auto perLinkInflationScale = this->getParamVerboseMap(
+  const auto per_link_inflation_scale = this->getParamVerboseMap(
     "body_model.inflation.per_link.scale", std::map<std::string, double>());
-  for (const auto& inflationPair : perLinkInflationScale) {
-    bool containsOnly;
-    bool shadowOnly;
-    bool bsphereOnly;
-    bool bboxOnly;
+  for (const auto& [linkNameConst, inflation] : per_link_inflation_scale) {
+    bool contains_only;
+    bool shadow_only;
+    bool bsphere_only;
+    bool bbox_only;
 
-    auto linkName = inflationPair.first;
-    linkName = cras::removeSuffix(linkName, CONTAINS_SUFFIX, &containsOnly);
-    linkName = cras::removeSuffix(linkName, SHADOW_SUFFIX, &shadowOnly);
-    linkName = cras::removeSuffix(linkName, BSPHERE_SUFFIX, &bsphereOnly);
-    linkName = cras::removeSuffix(linkName, BBOX_SUFFIX, &bboxOnly);
+    auto linkName = linkNameConst;
+    linkName = cras::removeSuffix(linkName, kContainsSuffix, &contains_only);
+    linkName = cras::removeSuffix(linkName, kShadowSuffix, &shadow_only);
+    linkName = cras::removeSuffix(linkName, kBsphereSuffix, &bsphere_only);
+    linkName = cras::removeSuffix(linkName, kBboxSuffix, &bbox_only);
 
-    if (!shadowOnly && !bsphereOnly && !bboxOnly) {
-      if (this->perLinkContainsInflation.find(linkName) == this->perLinkContainsInflation.end()) {
-        this->perLinkContainsInflation[linkName] =
-          ScaleAndPadding(inflationPair.second, this->defaultContainsInflation.padding);
+    if (!shadow_only && !bsphere_only && !bbox_only) {
+      if (this->per_link_contains_inflation_.find(linkName) == this->per_link_contains_inflation_.end()) {
+        this->per_link_contains_inflation_[linkName] =
+          ScaleAndPadding(inflation, this->default_contains_inflation_.padding);
       } else {
-        this->perLinkContainsInflation[linkName].scale = inflationPair.second;
+        this->per_link_contains_inflation_[linkName].scale = inflation;
       }
     }
 
-    if (!containsOnly && !bsphereOnly && !bboxOnly) {
-      if (this->perLinkShadowInflation.find(linkName) == this->perLinkShadowInflation.end()) {
-        this->perLinkShadowInflation[linkName] =
-          ScaleAndPadding(inflationPair.second, this->defaultShadowInflation.padding);
+    if (!contains_only && !bsphere_only && !bbox_only) {
+      if (this->per_link_shadow_inflation_.find(linkName) == this->per_link_shadow_inflation_.end()) {
+        this->per_link_shadow_inflation_[linkName] =
+          ScaleAndPadding(inflation, this->default_shadow_inflation_.padding);
       } else {
-        this->perLinkShadowInflation[linkName].scale = inflationPair.second;
+        this->per_link_shadow_inflation_[linkName].scale = inflation;
       }
     }
 
-    if (!containsOnly && !shadowOnly && !bboxOnly) {
-      if (this->perLinkBsphereInflation.find(linkName) == this->perLinkBsphereInflation.end()) {
-        this->perLinkBsphereInflation[linkName] =
-          ScaleAndPadding(inflationPair.second, this->defaultBsphereInflation.padding);
+    if (!contains_only && !shadow_only && !bbox_only) {
+      if (this->per_link_bsphere_inflation_.find(linkName) == this->per_link_bsphere_inflation_.end()) {
+        this->per_link_bsphere_inflation_[linkName] =
+          ScaleAndPadding(inflation, this->default_bsphere_inflation_.padding);
       } else {
-        this->perLinkBsphereInflation[linkName].scale = inflationPair.second;
+        this->per_link_bsphere_inflation_[linkName].scale = inflation;
       }
     }
 
-    if (!containsOnly && !shadowOnly && !bsphereOnly) {
-      if (this->perLinkBboxInflation.find(linkName) == this->perLinkBboxInflation.end()) {
-        this->perLinkBboxInflation[linkName] =
-          ScaleAndPadding(inflationPair.second, this->defaultBboxInflation.padding);
+    if (!contains_only && !shadow_only && !bsphere_only) {
+      if (this->per_link_bbox_inflation_.find(linkName) == this->per_link_bbox_inflation_.end()) {
+        this->per_link_bbox_inflation_[linkName] =
+          ScaleAndPadding(inflation, this->default_bbox_inflation_.padding);
       } else {
-        this->perLinkBboxInflation[linkName].scale = inflationPair.second;
+        this->per_link_bbox_inflation_[linkName].scale = inflation;
       }
     }
   }
 
   // can contain either whole link names, or scoped names of their collisions
   // (i.e. "link::collision_1" or "link::my_collision")
-  this->linksIgnoredInBoundingSphere = this->template getParamVerboseSet<string>("ignored_links.bounding_sphere");
-  this->linksIgnoredInBoundingBox = this->template getParamVerboseSet<string>("ignored_links.bounding_box");
-  this->linksIgnoredInContainsTest = this->template getParamVerboseSet<string>("ignored_links.contains_test");
-  this->linksIgnoredInShadowTest = this->template getParamVerboseSet<string>("ignored_links.shadow_test", {"laser"});
-  this->linksIgnoredEverywhere = this->template getParamVerboseSet<string>("ignored_links.everywhere");
-  this->onlyLinks = this->template getParamVerboseSet<string>("only_links");
+  this->links_ignored_in_bounding_sphere_ = this->template getParamVerboseSet<string>("ignored_links.bounding_sphere");
+  this->links_ignored_in_bounding_box_ = this->template getParamVerboseSet<string>("ignored_links.bounding_box");
+  this->links_ignored_in_contains_test_ = this->template getParamVerboseSet<string>("ignored_links.contains_test");
+  this->links_ignored_in_shadow_test_ =
+    this->template getParamVerboseSet<string>("ignored_links.shadow_test", {"laser"});
+  this->links_ignored_everywhere_ = this->template getParamVerboseSet<string>("ignored_links.everywhere");
+  this->only_links_ = this->template getParamVerboseSet<string>("only_links");
 
   // subscribe for robot_description
-  this->reloadRobotModelSubscriber = this->nodeHandle->template create_subscription<std_msgs::msg::String>(
-    this->robotDescriptionTopic, rclcpp::QoS(1).transient_local(),
+  this->reload_robot_model_subscriber_ = this->node_handle_->template create_subscription<std_msgs::msg::String>(
+    this->robot_description_topic_, rclcpp::QoS(1).transient_local(),
     std::bind(&RobotBodyFilter<T>::onRobotModelMsg, this, std::placeholders::_1));
 
   // TODO enabling this callback breaks params queried later during configure(), like frames.output
   // this->param_cb_ = this->params_interface_->add_on_set_parameters_callback(
   //   std::bind(&RobotBodyFilter<T>::paramUpdateCallback, this, std::placeholders::_1));
 
-  this->reloadRobotModelServiceServer = this->nodeHandle->create_service<std_srvs::srv::Trigger>(
+  this->reload_robot_model_service_server_ = this->node_handle_->template create_service<std_srvs::srv::Trigger>(
     this->getName() + "/reload_model",
     std::bind(&RobotBodyFilter<T>::triggerModelReload, this,
       std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
-  if (this->computeBoundingSphere) {
-    this->boundingSpherePublisher = nodeHandle->create_publisher<robot_body_filter::msg::SphereStamped>(
+  if (this->compute_bounding_sphere_) {
+    this->bounding_sphere_publisher_ = node_handle_->create_publisher<robot_body_filter::msg::SphereStamped>(
       "robot_bounding_sphere", 100);
   }
 
-  if (this->computeBoundingBox) {
-    this->boundingBoxPublisher = nodeHandle->create_publisher<geometry_msgs::msg::PolygonStamped>(
+  if (this->compute_bounding_box_) {
+    this->bounding_box_publisher_ = node_handle_->create_publisher<geometry_msgs::msg::PolygonStamped>(
       "robot_bounding_box", 100);
   }
 
-  if (this->computeOrientedBoundingBox) {
-    this->orientedBoundingBoxPublisher = nodeHandle->create_publisher<msg::OrientedBoundingBoxStamped>(
+  if (this->compute_oriented_bounding_box_) {
+    this->oriented_bounding_box_publisher_ = node_handle_->create_publisher<msg::OrientedBoundingBoxStamped>(
       "robot_oriented_bounding_box", 100);
   }
 
-  if (this->computeLocalBoundingBox) {
-    this->localBoundingBoxPublisher = nodeHandle->create_publisher<geometry_msgs::msg::PolygonStamped>(
+  if (this->compute_local_bounding_box_) {
+    this->local_bounding_box_publisher_ = node_handle_->create_publisher<geometry_msgs::msg::PolygonStamped>(
       "robot_local_bounding_box", 100);
   }
 
-  if (this->publishBoundingSphereMarker && this->computeBoundingSphere) {
-    this->boundingSphereMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::Marker>(
+  if (this->publish_bounding_sphere_marker_ && this->compute_bounding_sphere_) {
+    this->bounding_sphere_marker_publisher_ = node_handle_->create_publisher<visualization_msgs::msg::Marker>(
       "robot_bounding_sphere_marker", 100);
   }
 
-  if (this->publishBoundingBoxMarker && this->computeBoundingBox) {
-    this->boundingBoxMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::Marker>(
+  if (this->publish_bounding_box_marker_ && this->compute_bounding_box_) {
+    this->bounding_box_marker_publisher_ = node_handle_->create_publisher<visualization_msgs::msg::Marker>(
       "robot_bounding_box_marker", 100);
   }
 
-  if (this->publishOrientedBoundingBoxMarker && this->computeOrientedBoundingBox) {
-    this->orientedBoundingBoxMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::Marker>(
+  if (this->publish_oriented_bounding_box_marker_ && this->compute_oriented_bounding_box_) {
+    this->oriented_bounding_box_marker_publisher_ = node_handle_->create_publisher<visualization_msgs::msg::Marker>(
       "robot_oriented_bounding_box_marker", 100);
   }
 
-  if (this->publishLocalBoundingBoxMarker && this->computeLocalBoundingBox) {
-    this->localBoundingBoxMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::Marker>(
+  if (this->publish_local_bounding_box_marker_ && this->compute_local_bounding_box_) {
+    this->local_bounding_box_marker_publisher_ = node_handle_->create_publisher<visualization_msgs::msg::Marker>(
       "robot_local_bounding_box_marker", 100);
   }
 
-  if (this->publishNoBoundingBoxPointcloud) {
-    this->scanPointCloudNoBoundingBoxPublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>(
+  if (this->publish_no_bounding_box_pointcloud_) {
+    this->scan_point_cloud_no_bounding_box_publisher_ = node_handle_->create_publisher<sensor_msgs::msg::PointCloud2>(
       "scan_point_cloud_no_bbox", 100);
   }
 
-  if (this->publishNoOrientedBoundingBoxPointcloud) {
-    this->scanPointCloudNoOrientedBoundingBoxPublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>(
+  if (this->publish_no_oriented_bounding_box_pointcloud_) {
+    this->scan_point_cloud_no_oriented_bounding_box_publisher_ = node_handle_->create_publisher<sensor_msgs::msg::PointCloud2>(
       "scan_point_cloud_no_oriented_bbox", 100);
   }
 
-  if (this->publishNoLocalBoundingBoxPointcloud) {
-    this->scanPointCloudNoLocalBoundingBoxPublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>(
+  if (this->publish_no_local_bounding_box_pointcloud_) {
+    this->scan_point_cloud_no_local_bounding_box_publisher_ = node_handle_->create_publisher<sensor_msgs::msg::PointCloud2>(
       "scan_point_cloud_no_local_bbox", 100);
   }
 
-  if (this->publishNoBoundingSpherePointcloud) {
-    this->scanPointCloudNoBoundingSpherePublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>(
+  if (this->publish_no_bounding_sphere_pointcloud_) {
+    this->scan_point_cloud_no_bounding_sphere_publisher_ = node_handle_->create_publisher<sensor_msgs::msg::PointCloud2>(
       "scan_point_cloud_no_bsphere", 100);
   }
 
-  if (this->publishDebugPclInside) {
-    this->debugPointCloudInsidePublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>(
+  if (this->publish_debug_pcl_inside_) {
+    this->debug_point_cloud_inside_publisher_ = node_handle_->create_publisher<sensor_msgs::msg::PointCloud2>(
       "scan_point_cloud_inside", 100);
   }
 
-  if (this->publishDebugPclClip) {
-    this->debugPointCloudClipPublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>(
+  if (this->publish_debug_pcl_clip_) {
+    this->debug_point_cloud_clip_publisher_ = node_handle_->create_publisher<sensor_msgs::msg::PointCloud2>(
       "scan_point_cloud_clip", 100);
   }
 
-  if (this->publishDebugPclShadow) {
-    this->debugPointCloudShadowPublisher = nodeHandle->create_publisher<sensor_msgs::msg::PointCloud2>(
+  if (this->publish_debug_pcl_shadow_) {
+    this->debug_point_cloud_shadow_publisher_ = node_handle_->create_publisher<sensor_msgs::msg::PointCloud2>(
       "scan_point_cloud_shadow", 100);
   }
 
-  if (this->publishDebugContainsMarker) {
-    this->debugContainsMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>(
+  if (this->publish_debug_contains_marker_) {
+    this->debug_contains_marker_publisher_ = node_handle_->create_publisher<visualization_msgs::msg::MarkerArray>(
       "robot_model_for_contains_test", 100);
   }
 
-  if (this->publishDebugShadowMarker) {
-    this->debugShadowMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>(
+  if (this->publish_debug_shadow_marker_) {
+    this->debug_shadow_marker_publisher_ = node_handle_->create_publisher<visualization_msgs::msg::MarkerArray>(
       "robot_model_for_shadow_test", 100);
   }
 
-  if (this->publishDebugBsphereMarker) {
-    this->debugBsphereMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>(
+  if (this->publish_debug_bsphere_marker_) {
+    this->debug_bsphere_marker_publisher_ = node_handle_->create_publisher<visualization_msgs::msg::MarkerArray>(
       "robot_model_for_bounding_sphere", 100);
   }
 
-  if (this->publishDebugBboxMarker) {
-    this->debugBboxMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>(
+  if (this->publish_debug_bbox_marker_) {
+    this->debug_bbox_marker_publisher_ = node_handle_->create_publisher<visualization_msgs::msg::MarkerArray>(
       "robot_model_for_bounding_box", 100);
   }
 
-  if (this->computeDebugBoundingBox) {
-    this->boundingBoxDebugMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>(
+  if (this->compute_debug_bounding_box_) {
+    this->bounding_box_debug_marker_publisher_ = node_handle_->create_publisher<visualization_msgs::msg::MarkerArray>(
       "robot_bounding_box_debug", 100);
   }
 
-  if (this->computeDebugOrientedBoundingBox) {
-    this->orientedBoundingBoxDebugMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>(
+  if (this->compute_debug_oriented_bounding_box_) {
+    this->oriented_bounding_box_debug_marker_publisher_ = node_handle_->create_publisher<visualization_msgs::msg::MarkerArray>(
       "robot_oriented_bounding_box_debug", 100);
   }
 
-  if (this->computeDebugLocalBoundingBox) {
-    this->localBoundingBoxDebugMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>(
+  if (this->compute_debug_local_bounding_box_) {
+    this->local_bounding_box_debug_marker_publisher_ = node_handle_->create_publisher<visualization_msgs::msg::MarkerArray>(
       "robot_local_bounding_box_debug", 100);
   }
 
-  if (this->computeDebugBoundingSphere) {
-    this->boundingSphereDebugMarkerPublisher = nodeHandle->create_publisher<visualization_msgs::msg::MarkerArray>(
+  if (this->compute_debug_bounding_sphere_) {
+    this->bounding_sphere_debug_marker_publisher_ = node_handle_->create_publisher<visualization_msgs::msg::MarkerArray>(
       "robot_bounding_sphere_debug", 100);
   }
 
   // initialize the 3D body masking tool
-  auto getShapeTransformCallback = std::bind(
+  auto get_shape_transform_callback = std::bind(
     &RobotBodyFilter::getShapeTransform, this, std::placeholders::_1, std::placeholders::_2);
-  shapeMask = std::make_unique<RayCastingShapeMask>(
-    this->logging_interface_, clock_ptr, getShapeTransformCallback, this->minDistance, this->maxDistance,
-    doClipping, doContainsTest, doShadowTest, maxShadowDistance);
+  shape_mask_ = std::make_unique<RayCastingShapeMask>(
+    this->logging_interface_, clock_ptr_, get_shape_transform_callback, this->min_distance_, this->max_distance_,
+    do_clipping, do_contains_test, do_shadow_test, max_shadow_distance);
 
   // the other case happens when configure() is called again from update() (e.g. when a new bag file
   // started playing)
-  if (this->tfFramesWatchdog == nullptr) {
-    std::set<std::string> initialMonitoredFrames;
-    if (!this->sensorFrame.empty()) {
-      initialMonitoredFrames.insert(this->sensorFrame);
+  if (this->tf_frames_watchdog_ == nullptr) {
+    std::set<std::string> initial_monitored_frames;
+    if (!this->sensor_frame_.empty()) {
+      initial_monitored_frames.insert(this->sensor_frame_);
     }
 
-    this->tfFramesWatchdog = std::make_shared<TFFramesWatchdog>(
-      this->logging_interface_, clock_ptr, this->filteringFrame, initialMonitoredFrames, this->tfBuffer,
-      this->unreachableTransformTimeout, std::make_shared<rclcpp::Rate>(1.0));
-    this->tfFramesWatchdog->start();
+    this->tf_frames_watchdog_ = std::make_shared<TFFramesWatchdog>(
+      this->logging_interface_, clock_ptr_, this->filtering_frame_, initial_monitored_frames, this->tf_buffer_,
+      this->unreachable_transform_timeout_, std::make_shared<rclcpp::Rate>(1.0));
+    this->tf_frames_watchdog_->start();
   }
 
   // happens when configure() is called again from update() (e.g. when a new bag file started playing)
-  if (!this->shapesToLinks.empty() && this->hasModel()) {
+  if (!this->shapes_to_links_.empty() && this->hasModel()) {
     this->clearRobotMask();
-    this->addRobotMaskFromUrdf(this->robotDescriptionString);
+    this->addRobotMaskFromUrdf(this->robot_description_string_);
   }
 
   RCLCPP_INFO(get_logger(), "RobotBodyFilter: Successfully configured.");
-  RCLCPP_INFO(get_logger(), "Filtering data in frame %s", this->filteringFrame.c_str());
+  RCLCPP_INFO(get_logger(), "Filtering data in frame %s", this->filtering_frame_.c_str());
   RCLCPP_INFO(get_logger(), "RobotBodyFilter: Filtering into the following categories:");
   RCLCPP_INFO(get_logger(), "RobotBodyFilter: \tOUTSIDE");
-  if (doClipping) {
+  if (do_clipping) {
     RCLCPP_INFO(get_logger(), "RobotBodyFilter: \tCLIP");
   }
-  if (doContainsTest) {
+  if (do_contains_test) {
     RCLCPP_INFO(get_logger(), "RobotBodyFilter: \tINSIDE");
   }
-  if (doShadowTest) {
+  if (do_shadow_test) {
     RCLCPP_INFO(get_logger(), "RobotBodyFilter: \tSHADOW");
   }
 
-  if (this->onlyLinks.empty()) {
-    if (this->linksIgnoredEverywhere.empty()) {
+  if (this->only_links_.empty()) {
+    if (this->links_ignored_everywhere_.empty()) {
       RCLCPP_INFO(get_logger(), "RobotBodyFilter: Filtering applied to all links.");
     } else {
       RCLCPP_INFO(
         get_logger(), "RobotBodyFilter: Filtering applied to all links except %s.",
-        cras::to_string(this->linksIgnoredEverywhere).c_str());
+        cras::to_string(this->links_ignored_everywhere_).c_str());
     }
   } else {
-    if (this->linksIgnoredEverywhere.empty()) {
+    if (this->links_ignored_everywhere_.empty()) {
       RCLCPP_INFO(
-        get_logger(), "RobotBodyFilter: Filtering applied to links %s.", cras::to_string(this->onlyLinks).c_str());
+        get_logger(), "RobotBodyFilter: Filtering applied to links %s.", cras::to_string(this->only_links_).c_str());
     } else {
       RCLCPP_INFO(
         get_logger(), "RobotBodyFilter: Filtering applied to links %s with these links excluded: %s.",
-        cras::to_string(this->onlyLinks).c_str(), cras::to_string(this->linksIgnoredEverywhere).c_str());
+        cras::to_string(this->only_links_).c_str(), cras::to_string(this->links_ignored_everywhere_).c_str());
     }
   }
 
-  this->timeConfigured = this->nodeHandle->now();
+  this->time_configured_ = this->node_handle_->now();
 
   return true;
 }
 
 bool RobotBodyFilterLaserScan::configure() {
-  this->pointByPointScan = this->getParamVerbose("sensor.point_by_point", true);
+  this->point_by_point_scan_ = this->getParamVerbose("sensor.point_by_point", true);
 
   return RobotBodyFilter::configure();
 }
 
 bool RobotBodyFilterPointCloud2::configure() {
-  this->pointByPointScan = this->getParamVerbose("sensor.point_by_point", false);
+  this->point_by_point_scan_ = this->getParamVerbose("sensor.point_by_point", false);
 
   if (!RobotBodyFilter::configure()) {
     return false;
   }
 
-  this->outputFrame = this->getParamVerbose("frames.output", this->filteringFrame);
+  this->output_frame_ = this->getParamVerbose("frames.output", this->filtering_frame_);
 
-  const auto pointChannels = this->getParamVerbose("cloud.point_channels", std::vector<std::string> {"", "vp_"});
-  const auto directionChannels = this->getParamVerbose(
+  const auto point_channels = this->getParamVerbose("cloud.point_channels", std::vector<std::string> {"", "vp_"});
+  const auto direction_channels = this->getParamVerbose(
     "cloud.direction_channels", std::vector<std::string> {"normal_"});
 
-  for (const auto& channel : pointChannels) {
-    this->channelsToTransform[channel] = cras::CloudChannelType::POINT;
+  for (const auto& channel : point_channels) {
+    this->channels_to_transform_[channel] = cras::CloudChannelType::POINT;
   }
-  for (const auto& channel : directionChannels) {
-    this->channelsToTransform[channel] = cras::CloudChannelType::DIRECTION;
+  for (const auto& channel : direction_channels) {
+    this->channels_to_transform_[channel] = cras::CloudChannelType::DIRECTION;
   }
 
-  cras::stripLeadingSlash(this->outputFrame, true);
+  cras::stripLeadingSlash(this->output_frame_, true);
 
   return true;
 }
 
 template<typename T>
 bool RobotBodyFilter<T>::computeMask(
-  const sensor_msgs::msg::PointCloud2& projectedPointCloud, std::vector<RayCastingShapeMask::MaskValue>& pointMask,
-  const std::string& sensorFrame) {
+  const sensor_msgs::msg::PointCloud2& projected_point_cloud, std::vector<RayCastingShapeMask::MaskValue>& point_mask,
+  const std::string& sensor_frame) {
 
-  // this->modelMutex has to be already locked!
+  // this->model_mutex_ has to be already locked!
 
-  const clock_t stopwatchOverall = clock();
-  const auto& scanTime = projectedPointCloud.header.stamp;
+  const clock_t stopwatch_overall = clock();
+  const auto& scan_time = projected_point_cloud.header.stamp;
 
-  // compute a mask of point indices for points from projectedPointCloud
+  // compute a mask of point indices for points from projected_point_cloud
   // that tells if they are inside or outside robot, or shadow points
 
-  if (!this->pointByPointScan) {
-    Eigen::Vector3d sensorPosition;
+  if (!this->point_by_point_scan_) {
+    Eigen::Vector3d sensor_pos;
     try {
-      const auto sensorTf = this->tfBuffer->lookupTransform(
-        this->filteringFrame, sensorFrame, scanTime,
-        cras::remainingTime(scanTime, this->reachableTransformTimeout, clock_ptr));
-      tf2::fromMsg(sensorTf.transform.translation, sensorPosition);
+      const auto sensor_tf = this->tf_buffer_->lookupTransform(
+        this->filtering_frame_, sensor_frame, scan_time,
+        cras::remainingTime(scan_time, this->reachable_transform_timeout_, clock_ptr_));
+      tf2::fromMsg(sensor_tf.transform.translation, sensor_pos);
     } catch (tf2::TransformException& e) {
       RCLCPP_ERROR(
         get_logger(), "RobotBodyFilter: Could not compute filtering mask due to this TF exception: %s", e.what());
@@ -474,62 +472,62 @@ bool RobotBodyFilter<T>::computeMask(
     }
 
     // update transforms cache, which is then used in body masking
-    this->updateTransformCache(scanTime);
+    this->updateTransformCache(scan_time);
 
     // updates shapes according to tf cache (by calling getShapeTransform
     // for each shape) and masks contained points
-    this->shapeMask->maskContainmentAndShadows(projectedPointCloud, pointMask, sensorPosition);
+    this->shape_mask_->maskContainmentAndShadows(projected_point_cloud, point_mask, sensor_pos);
   } else {
-    cras::CloudConstIter x_it(projectedPointCloud, "x");
-    cras::CloudConstIter y_it(projectedPointCloud, "y");
-    cras::CloudConstIter z_it(projectedPointCloud, "z");
-    cras::CloudConstIter vp_x_it(projectedPointCloud, "vp_x");
-    cras::CloudConstIter vp_y_it(projectedPointCloud, "vp_y");
-    cras::CloudConstIter vp_z_it(projectedPointCloud, "vp_z");
-    cras::CloudConstIter stamps_it(projectedPointCloud, "stamps");
+    cras::CloudConstIter x_it(projected_point_cloud, "x");
+    cras::CloudConstIter y_it(projected_point_cloud, "y");
+    cras::CloudConstIter z_it(projected_point_cloud, "z");
+    cras::CloudConstIter vp_x_it(projected_point_cloud, "vp_x");
+    cras::CloudConstIter vp_y_it(projected_point_cloud, "vp_y");
+    cras::CloudConstIter vp_z_it(projected_point_cloud, "vp_z");
+    cras::CloudConstIter stamps_it(projected_point_cloud, "stamps");
 
-    pointMask.resize(cras::numPoints(projectedPointCloud));
+    point_mask.resize(cras::numPoints(projected_point_cloud));
 
-    double scanDuration = 0.0;
-    for (cras::CloudConstIter stamps_end_it(projectedPointCloud, "stamps"); stamps_end_it != stamps_end_it.end();
+    double scan_duration = 0.0;
+    for (cras::CloudConstIter stamps_end_it(projected_point_cloud, "stamps"); stamps_end_it != stamps_end_it.end();
       ++stamps_end_it) {
 
-      if (*stamps_end_it > static_cast<float>(scanDuration)) {
-        scanDuration = static_cast<double>(*stamps_end_it);
+      if (*stamps_end_it > static_cast<float>(scan_duration)) {
+        scan_duration = static_cast<double>(*stamps_end_it);
       }
     }
-    const rclcpp::Time afterScanTime(rclcpp::Time(scanTime) + rclcpp::Duration::from_seconds(scanDuration));
+    const rclcpp::Time after_scan_time(rclcpp::Time(scan_time) + rclcpp::Duration::from_seconds(scan_duration));
 
-    size_t updateBodyPosesEvery;
-    if (this->modelPoseUpdateInterval.seconds() == 0 && this->modelPoseUpdateInterval.nanoseconds() == 0) {
-      updateBodyPosesEvery = 1;
+    size_t update_body_poses_every;
+    if (this->model_pose_update_interval_.seconds() == 0 && this->model_pose_update_interval_.nanoseconds() == 0) {
+      update_body_poses_every = 1;
     } else {
-      updateBodyPosesEvery = static_cast<size_t>(
-        ceil(this->modelPoseUpdateInterval.seconds() / scanDuration * cras::numPoints(projectedPointCloud)));
+      update_body_poses_every = static_cast<size_t>(
+        ceil(this->model_pose_update_interval_.seconds() / scan_duration * cras::numPoints(projected_point_cloud)));
       // prevent division by zero
-      if (updateBodyPosesEvery == 0) {
-        updateBodyPosesEvery = 1;
+      if (update_body_poses_every == 0) {
+        update_body_poses_every = 1;
       }
     }
 
     // prevent division by zero in ratio computation in case the pointcloud
     // isn't really taken point by point with different timestamps
-    if (scanDuration == 0.0) {
-      updateBodyPosesEvery = cras::numPoints(projectedPointCloud) + 1;
+    if (scan_duration == 0.0) {
+      update_body_poses_every = cras::numPoints(projected_point_cloud) + 1;
       RCLCPP_WARN_ONCE(
         get_logger(), "RobotBodyFilter: sensor/point_by_point is set to true but all points in the cloud have the same "
         "timestamp. You should change the parameter to false to gain performance.");
     }
 
     // update transforms cache, which is then used in body masking
-    this->updateTransformCache(scanTime, afterScanTime);
+    this->updateTransformCache(scan_time, after_scan_time);
 
     Eigen::Vector3f point;
-    Eigen::Vector3d viewPoint;
+    Eigen::Vector3d view_point;
     RayCastingShapeMask::MaskValue mask;
 
-    this->cacheLookupBetweenScansRatio = 0.0;
-    for (size_t i = 0; i < cras::numPoints(projectedPointCloud);
+    this->cache_lookup_between_scans_ratio_ = 0.0;
+    for (size_t i = 0; i < cras::numPoints(projected_point_cloud);
       ++i, ++x_it, ++y_it, ++z_it, ++vp_x_it, ++vp_y_it, ++vp_z_it, ++stamps_it) {
 
       point.x() = *x_it;
@@ -537,61 +535,62 @@ bool RobotBodyFilter<T>::computeMask(
       point.z() = *z_it;
 
       // TODO viewpoint can be autocomputed from stamps
-      viewPoint.x() = static_cast<double>(*vp_x_it);
-      viewPoint.y() = static_cast<double>(*vp_y_it);
-      viewPoint.z() = static_cast<double>(*vp_z_it);
+      view_point.x() = static_cast<double>(*vp_x_it);
+      view_point.y() = static_cast<double>(*vp_y_it);
+      view_point.z() = static_cast<double>(*vp_z_it);
 
-      const auto updateBodyPoses = i % updateBodyPosesEvery == 0;
+      const auto update_body_poses = i % update_body_poses_every == 0;
 
-      if (updateBodyPoses && scanDuration > 0.0) {
-        this->cacheLookupBetweenScansRatio = static_cast<double>(*stamps_it) / scanDuration;
+      if (update_body_poses && scan_duration > 0.0) {
+        this->cache_lookup_between_scans_ratio_ = static_cast<double>(*stamps_it) / scan_duration;
       }
 
       // updates shapes according to tf cache (by calling getShapeTransform
       // for each shape) and masks contained points
-      this->shapeMask->maskContainmentAndShadows(point, mask, viewPoint, updateBodyPoses);
-      pointMask[i] = mask;
+      this->shape_mask_->maskContainmentAndShadows(point, mask, view_point, update_body_poses);
+      point_mask[i] = mask;
     }
   }
 
   RCLCPP_DEBUG(
     get_logger(), "RobotBodyFilter: Mask computed in %.5f secs.",
-    static_cast<double>(clock() - stopwatchOverall) / CLOCKS_PER_SEC);
+    static_cast<double>(clock() - stopwatch_overall) / CLOCKS_PER_SEC);
 
-  this->publishDebugPointClouds(projectedPointCloud, pointMask);
-  this->publishDebugMarkers(scanTime);
-  this->computeAndPublishBoundingSphere(projectedPointCloud);
-  this->computeAndPublishBoundingBox(projectedPointCloud);
-  this->computeAndPublishOrientedBoundingBox(projectedPointCloud);
-  this->computeAndPublishLocalBoundingBox(projectedPointCloud);
+  this->publishDebugPointClouds(projected_point_cloud, point_mask);
+  this->publishDebugMarkers(scan_time);
+  this->computeAndPublishBoundingSphere(projected_point_cloud);
+  this->computeAndPublishBoundingBox(projected_point_cloud);
+  this->computeAndPublishOrientedBoundingBox(projected_point_cloud);
+  this->computeAndPublishLocalBoundingBox(projected_point_cloud);
 
   RCLCPP_DEBUG(
     get_logger(), "RobotBodyFilter: Filtering run time is %.5f secs.",
-    static_cast<double>(clock() - stopwatchOverall) / CLOCKS_PER_SEC);
+    static_cast<double>(clock() - stopwatch_overall) / CLOCKS_PER_SEC);
   return true;
 }
 
-bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan& inputScan,
-                                      sensor_msgs::msg::LaserScan& filteredScan) {
-  rclcpp::spin_some(nodeHandle);
+bool RobotBodyFilterLaserScan::update(
+  const sensor_msgs::msg::LaserScan& input_scan, sensor_msgs::msg::LaserScan& filtered_scan) {
 
-  const auto& scanTime = rclcpp::Time(inputScan.header.stamp);
+  rclcpp::spin_some(node_handle_);
+
+  const auto& scan_time = rclcpp::Time(input_scan.header.stamp);
 
   if (!this->configured_) {
     RCLCPP_DEBUG(
       get_logger(), "RobotBodyFilter: Ignore scan from time %f.%ld - filter not yet initialized.",
-      scanTime.seconds(), scanTime.nanoseconds());
+      scan_time.seconds(), scan_time.nanoseconds());
     return false;
   }
 
-  if (scanTime < timeConfigured && (scanTime + tfBufferLength) >= timeConfigured) {
+  if (scan_time < time_configured_ && (scan_time + tf_buffer_length_) >= time_configured_) {
     RCLCPP_DEBUG(
       get_logger(), "RobotBodyFilter: Ignore scan from time %f.%ld - filter not yet initialized.",
-      scanTime.seconds(), scanTime.nanoseconds());
+      scan_time.seconds(), scan_time.nanoseconds());
     return false;
   }
 
-  if (scanTime < timeConfigured && (scanTime + tfBufferLength) < timeConfigured) {
+  if (scan_time < time_configured_ && (scan_time + tf_buffer_length_) < time_configured_) {
     RCLCPP_WARN(
       get_logger(), "RobotBodyFilter: Old TF data received. Clearing TF buffer and reconfiguring laser filter. If "
       "you're replaying a bag file, make sure rosparam /use_sim_time is set to true");
@@ -600,68 +599,68 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan& inputSc
   }
 
   // tf2 doesn't like frames starting with slash
-  const auto scanFrame = cras::stripLeadingSlash(inputScan.header.frame_id, true);
+  const auto scan_frame = cras::stripLeadingSlash(input_scan.header.frame_id, true);
 
-  // Passing a sensorFrame does not make sense. Scan messages can't be transformed to other frames.
-  if (!this->sensorFrame.empty() && this->sensorFrame != scanFrame) {
+  // Passing a sensor_frame_ does not make sense. Scan messages can't be transformed to other frames.
+  if (!this->sensor_frame_.empty() && this->sensor_frame_ != scan_frame) {
     RCLCPP_WARN_ONCE(
       get_logger(), "RobotBodyFilter: frames/sensor is set to frame_id '%s' different than the frame_id of the "
       "incoming message '%s'. This is an invalid configuration: the frames/sensor parameter will be neglected.",
-      this->sensorFrame.c_str(), scanFrame.c_str());
+      this->sensor_frame_.c_str(), scan_frame.c_str());
   }
 
-  if (!this->tfFramesWatchdog->isReachable(scanFrame)) {
+  if (!this->tf_frames_watchdog_->isReachable(scan_frame)) {
     RCLCPP_DEBUG(get_logger(), "RobotBodyFilter: Throwing away scan since sensor frame is unreachable.");
-    // if this->sensorFrame is empty, it can happen that we're not actually monitoring the sensor
+    // if this->sensor_frame_ is empty, it can happen that we're not actually monitoring the sensor
     // frame, so start monitoring it
-    if (!this->tfFramesWatchdog->isMonitored(scanFrame)) {
-      this->tfFramesWatchdog->addMonitoredFrame(scanFrame);
+    if (!this->tf_frames_watchdog_->isMonitored(scan_frame)) {
+      this->tf_frames_watchdog_->addMonitoredFrame(scan_frame);
     }
     return false;
   }
 
-  if (this->requireAllFramesReachable && !this->tfFramesWatchdog->areAllFramesReachable()) {
+  if (this->require_all_frames_reachable_ && !this->tf_frames_watchdog_->areAllFramesReachable()) {
     RCLCPP_DEBUG(get_logger(), "RobotBodyFilter: Throwing away scan since not all frames are reachable.");
     return false;
   }
 
-  const clock_t stopwatchOverall = clock();
+  const clock_t stopwatch_overall = clock();
 
   // create the output copy of the input scan
-  filteredScan = inputScan;
-  filteredScan.header.frame_id = scanFrame;
-  filteredScan.range_min = max(inputScan.range_min, static_cast<float>(this->minDistance));
-  if (this->maxDistance > 0.0) {
-    filteredScan.range_max = min(inputScan.range_max, static_cast<float>(this->maxDistance));
+  filtered_scan = input_scan;
+  filtered_scan.header.frame_id = scan_frame;
+  filtered_scan.range_min = max(input_scan.range_min, static_cast<float>(this->min_distance_));
+  if (this->max_distance_ > 0.0) {
+    filtered_scan.range_max = min(input_scan.range_max, static_cast<float>(this->max_distance_));
   }
 
-  { // acquire the lock here, because we work with the tfBuffer all the time
-    std::lock_guard<std::mutex> guard(*this->modelMutex);
+  { // acquire the lock here, because we work with the tf_buffer_ all the time
+    std::lock_guard<std::mutex> guard(*this->model_mutex_);
 
-    if (this->pointByPointScan) {
-      // make sure we have all the tfs between sensor frame and fixedFrame during the time of scan acquisition
-      const auto scanDuration = inputScan.ranges.size() * inputScan.time_increment;
-      const auto afterScanTime = scanTime + rclcpp::Duration::from_seconds(scanDuration);
+    if (this->point_by_point_scan_) {
+      // make sure we have all the tfs between sensor frame and fixed_frame_ during the time of scan acquisition
+      const auto scan_duration = input_scan.ranges.size() * input_scan.time_increment;
+      const auto after_scan_time = scan_time + rclcpp::Duration::from_seconds(scan_duration);
 
       string err;
       if (
-        !this->tfBuffer->canTransform(
-          this->fixedFrame, scanFrame, scanTime,
-          cras::remainingTime(scanTime, this->reachableTransformTimeout, clock_ptr), &err) ||
-        !this->tfBuffer->canTransform(
-          this->fixedFrame, scanFrame, afterScanTime,
-          cras::remainingTime(afterScanTime, this->reachableTransformTimeout, clock_ptr), &err)) {
+        !this->tf_buffer_->canTransform(
+          this->fixed_frame_, scan_frame, scan_time,
+          cras::remainingTime(scan_time, this->reachable_transform_timeout_, clock_ptr_), &err) ||
+        !this->tf_buffer_->canTransform(
+          this->fixed_frame_, scan_frame, after_scan_time,
+          cras::remainingTime(after_scan_time, this->reachable_transform_timeout_, clock_ptr_), &err)) {
 
         if (err.find("future") != string::npos) {
-          const auto delay = nodeHandle->now() - scanTime;
+          const auto delay = node_handle_->now() - scan_time;
           RCLCPP_ERROR_THROTTLE(
-            get_logger(), *clock_ptr, 3,
+            get_logger(), *clock_ptr_, 3,
             "RobotBodyFilter: Cannot transform laser scan to fixed frame. The scan is too much delayed (%s s). "
             "TF error: %s", cras::to_string(delay).c_str(), err.c_str());
         } else {
           // TODO: Originally was delayed-throttle
           RCLCPP_ERROR_THROTTLE(
-            get_logger(), *clock_ptr, 3,
+            get_logger(), *clock_ptr_, 3,
             "RobotBodyFilter: Cannot transform laser scan to fixed frame. Something's wrong with TFs: %s", err.c_str());
         }
         return false;
@@ -670,63 +669,64 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan& inputSc
 
     // The point cloud will have fields x, y, z, intensity (float32) and index (int32)
     // and for point-by-point scans also timestamp and viewpoint
-    sensor_msgs::msg::PointCloud2 projectedPointCloud;
-    { // project the scan measurements to a point cloud in the filteringFrame
+    sensor_msgs::msg::PointCloud2 projected_point_cloud;
+    { // project the scan measurements to a point cloud in the filtering_frame_
 
-      sensor_msgs::msg::PointCloud2 tmpPointCloud;
+      sensor_msgs::msg::PointCloud2 tmp_point_cloud;
 
       // the projected point cloud can omit some measurements if they are out of the defined scan's range;
       // for this case, the second channel ("index") contains indices of the point cloud's points into the scan
-      auto channelOptions =
+      auto channel_options =
         laser_geometry::channel_option::Intensity |
         laser_geometry::channel_option::Index;
 
-      if (this->pointByPointScan) {
+      if (this->point_by_point_scan_) {
         RCLCPP_INFO_ONCE(get_logger(), "RobotBodyFilter: Applying complex laser scan projection.");
         // perform the complex laser scan projection
-        channelOptions |=
+        channel_options |=
           laser_geometry::channel_option::Timestamp |
           laser_geometry::channel_option::Viewpoint;
 
-        laserProjector.transformLaserScanToPointCloud(
-          this->fixedFrame, inputScan, tmpPointCloud, *this->tfBuffer, -1, channelOptions);
+        laser_projector_.transformLaserScanToPointCloud(
+          this->fixed_frame_, input_scan, tmp_point_cloud, *this->tf_buffer_, -1, channel_options);
       } else {
         RCLCPP_INFO_ONCE(get_logger(), "RobotBodyFilter: Applying simple laser scan projection.");
         // perform simple laser scan projection
-        laserProjector.projectLaser(inputScan, tmpPointCloud, -1.0, channelOptions);
+        laser_projector_.projectLaser(input_scan, tmp_point_cloud, -1.0, channel_options);
       }
 
       // convert to filtering frame
-      if (tmpPointCloud.header.frame_id == this->filteringFrame) {
-        projectedPointCloud = std::move(tmpPointCloud);
+      if (tmp_point_cloud.header.frame_id == this->filtering_frame_) {
+        projected_point_cloud = std::move(tmp_point_cloud);
       } else {
         RCLCPP_INFO_ONCE(
           get_logger(), "RobotBodyFilter: Transforming scan from frame %s to %s",
-          tmpPointCloud.header.frame_id.c_str(), this->filteringFrame.c_str());
+          tmp_point_cloud.header.frame_id.c_str(), this->filtering_frame_.c_str());
         std::string err;
-        if (!this->tfBuffer->canTransform(
-          this->filteringFrame, tmpPointCloud.header.frame_id, scanTime,
-          cras::remainingTime(scanTime, this->reachableTransformTimeout, clock_ptr), &err)) {
+        if (!this->tf_buffer_->canTransform(
+          this->filtering_frame_, tmp_point_cloud.header.frame_id, scan_time,
+          cras::remainingTime(scan_time, this->reachable_transform_timeout_, clock_ptr_), &err)) {
 
           // TODO: originally was delayed-throttle
           RCLCPP_ERROR_THROTTLE(
-            get_logger(), *clock_ptr, 3,
+            get_logger(), *clock_ptr_, 3,
             "RobotBodyFilter: Cannot transform laser scan to filtering frame. Something's wrong with TFs: %s",
             err.c_str());
           return false;
         }
 
         cras::transformWithChannels(
-          tmpPointCloud, projectedPointCloud, *this->tfBuffer, this->filteringFrame, this->channelsToTransform);
+          tmp_point_cloud, projected_point_cloud, *this->tf_buffer_, this->filtering_frame_,
+          this->channels_to_transform_);
       }
     }
 
     RCLCPP_DEBUG(
       get_logger(), "RobotBodyFilter: Scan transformation run time is %.5f secs.",
-      static_cast<double>(clock() - stopwatchOverall) / CLOCKS_PER_SEC);
+      static_cast<double>(clock() - stopwatch_overall) / CLOCKS_PER_SEC);
 
-    vector<RayCastingShapeMask::MaskValue> pointMask;
-    const auto success = this->computeMask(projectedPointCloud, pointMask, scanFrame);
+    vector<RayCastingShapeMask::MaskValue> point_mask;
+    const auto success = this->computeMask(projected_point_cloud, point_mask, scan_frame);
 
     if (!success) {
       return false;
@@ -735,21 +735,21 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan& inputSc
     { // remove invalid points
       constexpr float INVALID_POINT_VALUE = std::numeric_limits<float>::quiet_NaN();
       try {
-        sensor_msgs::PointCloud2Iterator<int> indexIt(projectedPointCloud, "index");
+        sensor_msgs::PointCloud2Iterator<int> index_it(projected_point_cloud, "index");
 
-        size_t indexInScan;
-        for (const auto maskValue : pointMask) {
-          switch (maskValue) {
+        size_t index_in_scan;
+        for (const auto mask_value : point_mask) {
+          switch (mask_value) {
             case RayCastingShapeMask::MaskValue::INSIDE:
             case RayCastingShapeMask::MaskValue::SHADOW:
             case RayCastingShapeMask::MaskValue::CLIP:
-              indexInScan = static_cast<size_t>(*indexIt);
-              filteredScan.ranges[indexInScan] = INVALID_POINT_VALUE;
+              index_in_scan = static_cast<size_t>(*index_it);
+              filtered_scan.ranges[index_in_scan] = INVALID_POINT_VALUE;
               break;
             case RayCastingShapeMask::MaskValue::OUTSIDE:
               break;
           }
-          ++indexIt;
+          ++index_it;
         }
       } catch (std::runtime_error&) {
         RCLCPP_ERROR(
@@ -764,25 +764,25 @@ bool RobotBodyFilterLaserScan::update(const sensor_msgs::msg::LaserScan& inputSc
 }
 
 bool RobotBodyFilterPointCloud2::update(
-  const sensor_msgs::msg::PointCloud2& inputCloud, sensor_msgs::msg::PointCloud2& filteredCloud) {
+  const sensor_msgs::msg::PointCloud2& input_cloud, sensor_msgs::msg::PointCloud2& filtered_cloud) {
 
-  const auto& scanTime = rclcpp::Time(inputCloud.header.stamp);
+  const auto& scan_time = rclcpp::Time(input_cloud.header.stamp);
 
   if (!this->configured_) {
     RCLCPP_DEBUG(
       get_logger(), "RobotBodyFilter: Ignore cloud from time %f.%ld - filter not yet initialized.",
-      scanTime.seconds(), scanTime.nanoseconds());
+      scan_time.seconds(), scan_time.nanoseconds());
     return false;
   }
 
-  if (scanTime < this->timeConfigured && (scanTime + this->tfBufferLength >= this->timeConfigured)) {
+  if (scan_time < this->time_configured_ && (scan_time + this->tf_buffer_length_ >= this->time_configured_)) {
     RCLCPP_DEBUG(
       get_logger(), "RobotBodyFilter: Ignore cloud from time %f.%ld - filter not yet initialized.",
-      scanTime.seconds(), scanTime.nanoseconds());
+      scan_time.seconds(), scan_time.nanoseconds());
     return false;
   }
 
-    if (scanTime < this->timeConfigured && (scanTime + this->tfBufferLength) < this->timeConfigured) {
+    if (scan_time < this->time_configured_ && (scan_time + this->tf_buffer_length_) < this->time_configured_) {
     RCLCPP_WARN(
       get_logger(), "RobotBodyFilter: Old TF data received. Clearing TF buffer and reconfiguring laser filter. "
       "If you're replaying a bag file, make sure rosparam /use_sim_time is set to true");
@@ -790,56 +790,56 @@ bool RobotBodyFilterPointCloud2::update(
     return false;
   }
 
-  const auto inputCloudFrame =
-    this->sensorFrame.empty() ? cras::stripLeadingSlash(inputCloud.header.frame_id, true) : this->sensorFrame;
+  const auto input_cloud_frame =
+    this->sensor_frame_.empty() ? cras::stripLeadingSlash(input_cloud.header.frame_id, true) : this->sensor_frame_;
 
-  if (!this->tfFramesWatchdog->isReachable(inputCloudFrame)) {
+  if (!this->tf_frames_watchdog_->isReachable(input_cloud_frame)) {
     RCLCPP_DEBUG(get_logger(), "RobotBodyFilter: Throwing away scan since sensor frame is unreachable.");
-    // if this->sensorFrame is empty, it can happen that we're not actually monitoring the cloud
+    // if this->sensor_frame_ is empty, it can happen that we're not actually monitoring the cloud
     // frame, so start monitoring it
-    if (!this->tfFramesWatchdog->isMonitored(inputCloudFrame)) {
-      this->tfFramesWatchdog->addMonitoredFrame(inputCloudFrame);
+    if (!this->tf_frames_watchdog_->isMonitored(input_cloud_frame)) {
+      this->tf_frames_watchdog_->addMonitoredFrame(input_cloud_frame);
     }
     return false;
   }
 
-  if (this->requireAllFramesReachable && !this->tfFramesWatchdog->areAllFramesReachable()) {
+  if (this->require_all_frames_reachable_ && !this->tf_frames_watchdog_->areAllFramesReachable()) {
     RCLCPP_DEBUG(get_logger(), "RobotBodyFilter: Throwing away scan since not all frames are reachable.");
     return false;
   }
 
-  bool hasStampsField = false;
-  bool hasVpXField = false, hasVpYField = false, hasVpZField = false;
-  for (const auto& field : inputCloud.fields) {
+  bool has_stamps_field = false;
+  bool has_vp_x_field = false, has_vp_y_field = false, has_vp_z_field = false;
+  for (const auto& field : input_cloud.fields) {
     if (field.name == "stamps" && field.datatype == sensor_msgs::msg::PointField::FLOAT32) {
-      hasStampsField = true;
+      has_stamps_field = true;
     } else if (field.name == "vp_x" && field.datatype == sensor_msgs::msg::PointField::FLOAT32)
-      hasVpXField = true;
+      has_vp_x_field = true;
     else if (field.name == "vp_y" && field.datatype == sensor_msgs::msg::PointField::FLOAT32) {
-      hasVpYField = true;
+      has_vp_y_field = true;
     } else if (field.name == "vp_z" && field.datatype == sensor_msgs::msg::PointField::FLOAT32) {
-      hasVpZField = true;
+      has_vp_z_field = true;
     }
   }
 
   // Verify the pointcloud and its fields
 
-  if (this->pointByPointScan) {
-    if (inputCloud.height != 1 && inputCloud.is_dense == 0) {
+  if (this->point_by_point_scan_) {
+    if (input_cloud.height != 1 && input_cloud.is_dense == 0) {
       RCLCPP_WARN_ONCE(
         get_logger(), "RobotBodyFilter: The pointcloud seems to be an organized pointcloud, which usually means it was "
         "captured all at once. Consider setting 'point_by_point_scan' to false to get a more efficient computation.");
     }
-    if (!hasStampsField || !hasVpXField || !hasVpYField || !hasVpZField) {
+    if (!has_stamps_field || !has_vp_x_field || !has_vp_y_field || !has_vp_z_field) {
       throw std::runtime_error(
         "A point-by-point scan has to contain float32 fields 'stamps', 'vp_x', 'vp_y' and 'vp_z'.");
     }
-  } else if (hasStampsField) {
+  } else if (has_stamps_field) {
     RCLCPP_WARN_ONCE(
       get_logger(), "RobotBodyFilter: The pointcloud has a 'stamps' field, which indicates each point was probably "
       "captured at a different time instant. Consider setting parameter 'point_by_point_scan' to true to get correct "
       "results.");
-  } else if (inputCloud.height == 1 && inputCloud.is_dense == 1) {
+  } else if (input_cloud.height == 1 && input_cloud.is_dense == 1) {
     RCLCPP_WARN_ONCE(
       get_logger(), "RobotBodyFilter: The pointcloud is dense, which usually means it was captured each point at a "
       "different time instant. Consider setting 'point_by_point_scan' to true to get a more accurate version.");
@@ -847,37 +847,37 @@ bool RobotBodyFilterPointCloud2::update(
 
   // Transform to filtering frame
 
-  sensor_msgs::msg::PointCloud2 transformedCloud;
-  if (inputCloud.header.frame_id == this->filteringFrame) {
-    transformedCloud = inputCloud;
+  sensor_msgs::msg::PointCloud2 transformed_cloud;
+  if (input_cloud.header.frame_id == this->filtering_frame_) {
+    transformed_cloud = input_cloud;
   } else {
     RCLCPP_INFO_ONCE(
       get_logger(), "RobotBodyFilter: Transforming cloud from frame %s to %s",
-      inputCloud.header.frame_id.c_str(), this->filteringFrame.c_str());
-    std::lock_guard<std::mutex> guard(*this->modelMutex);
+      input_cloud.header.frame_id.c_str(), this->filtering_frame_.c_str());
+    std::lock_guard<std::mutex> guard(*this->model_mutex_);
     std::string err;
-    if (!this->tfBuffer->canTransform(
-      this->filteringFrame, inputCloud.header.frame_id, scanTime,
-      cras::remainingTime(scanTime, this->reachableTransformTimeout, clock_ptr), &err)) {
+    if (!this->tf_buffer_->canTransform(
+      this->filtering_frame_, input_cloud.header.frame_id, scan_time,
+      cras::remainingTime(scan_time, this->reachable_transform_timeout_, clock_ptr_), &err)) {
 
       // TODO: Originally was delayed-throttle
       RCLCPP_ERROR_THROTTLE(
-        get_logger(), *clock_ptr, 3,
+        get_logger(), *clock_ptr_, 3,
         "RobotBodyFilter: Cannot transform point cloud to filtering frame. Something's wrong with TFs: %s",
         err.c_str());
       return false;
     }
 
     cras::transformWithChannels(
-      inputCloud, transformedCloud, *this->tfBuffer, this->filteringFrame, this->channelsToTransform);
+      input_cloud, transformed_cloud, *this->tf_buffer_, this->filtering_frame_, this->channels_to_transform_);
   }
 
-  // Compute the mask and use it (transform message only if sensorFrame is specified)
-  vector<RayCastingShapeMask::MaskValue> pointMask;
+  // Compute the mask and use it (transform message only if sensor_frame_ is specified)
+  vector<RayCastingShapeMask::MaskValue> point_mask;
   {
-    std::lock_guard<std::mutex> guard(*this->modelMutex);
+    std::lock_guard<std::mutex> guard(*this->model_mutex_);
 
-    const auto success = this->computeMask(transformedCloud, pointMask, inputCloudFrame);
+    const auto success = this->computeMask(transformed_cloud, point_mask, input_cloud_frame);
     if (!success) {
       return false;
     }
@@ -885,32 +885,34 @@ bool RobotBodyFilterPointCloud2::update(
 
   // Filter the cloud
 
-  sensor_msgs::msg::PointCloud2 tmpCloud;
+  sensor_msgs::msg::PointCloud2 tmp_cloud;
   CREATE_FILTERED_CLOUD(
-    transformedCloud, tmpCloud, this->keepCloudsOrganized, (pointMask[i] == RayCastingShapeMask::MaskValue::OUTSIDE))
+    transformed_cloud, tmp_cloud, this->keep_clouds_organized_,
+    (point_mask[i] == RayCastingShapeMask::MaskValue::OUTSIDE))
 
   // Transform to output frame
 
-  if (tmpCloud.header.frame_id == this->outputFrame) {
-    filteredCloud = std::move(tmpCloud);
+  if (tmp_cloud.header.frame_id == this->output_frame_) {
+    filtered_cloud = std::move(tmp_cloud);
   } else {
     RCLCPP_INFO_ONCE(
       get_logger(), "RobotBodyFilter: Transforming cloud from frame %s to %s",
-      tmpCloud.header.frame_id.c_str(), this->outputFrame.c_str());
-    std::lock_guard<std::mutex> guard(*this->modelMutex);
+      tmp_cloud.header.frame_id.c_str(), this->output_frame_.c_str());
+    std::lock_guard<std::mutex> guard(*this->model_mutex_);
     std::string err;
-    if (!this->tfBuffer->canTransform(
-      this->outputFrame, tmpCloud.header.frame_id, scanTime,
-      cras::remainingTime(scanTime, this->reachableTransformTimeout, clock_ptr), &err)) {
+    if (!this->tf_buffer_->canTransform(
+      this->output_frame_, tmp_cloud.header.frame_id, scan_time,
+      cras::remainingTime(scan_time, this->reachable_transform_timeout_, clock_ptr_), &err)) {
 
       // TODO: Originally was delayed-throttle
       RCLCPP_ERROR_THROTTLE(
-        get_logger(), *clock_ptr, 3,
+        get_logger(), *clock_ptr_, 3,
         "RobotBodyFilter: Cannot transform point cloud to output frame. Something's wrong with TFs: %s", err.c_str());
       return false;
     }
 
-    cras::transformWithChannels(tmpCloud, filteredCloud, *this->tfBuffer, this->outputFrame, this->channelsToTransform);
+    cras::transformWithChannels(
+      tmp_cloud, filtered_cloud, *this->tf_buffer_, this->output_frame_, this->channels_to_transform_);
   }
 
   return true;
@@ -918,36 +920,36 @@ bool RobotBodyFilterPointCloud2::update(
 
 template<typename T>
 bool RobotBodyFilter<T>::getShapeTransform(
-  const point_containment_filter::ShapeHandle shapeHandle, Eigen::Isometry3d& transform) const {
-  // make sure you locked this->modelMutex
+  const point_containment_filter::ShapeHandle shape_handle, Eigen::Isometry3d& transform) const {
+  // make sure you locked this->model_mutex_
 
-  // check if the given shapeHandle has been registered to a link during addRobotMaskFromUrdf call.
-  if (this->shapesToLinks.find(shapeHandle) == this->shapesToLinks.end()) {
+  // check if the given shape_handle has been registered to a link during addRobotMaskFromUrdf call.
+  if (this->shapes_to_links_.find(shape_handle) == this->shapes_to_links_.end()) {
     RCLCPP_ERROR_STREAM_THROTTLE(
-      get_logger(), *clock_ptr, 3, "RobotBodyFilter: Invalid shape handle: " << to_string(shapeHandle));
+      get_logger(), *clock_ptr_, 3, "RobotBodyFilter: Invalid shape handle: " << to_string(shape_handle));
     return false;
   }
 
-  const auto& collision = this->shapesToLinks.at(shapeHandle);
+  const auto& collision = this->shapes_to_links_.at(shape_handle);
 
-  if (this->transformCache.find(collision.cacheKey) == this->transformCache.end()) {
+  if (this->transform_cache_.find(collision.cache_key) == this->transform_cache_.end()) {
     // do not log the error because shape mask would do it for us
     return false;
   }
 
-  if (!this->pointByPointScan) {
-    transform = *this->transformCache.at(collision.cacheKey);
+  if (!this->point_by_point_scan_) {
+    transform = *this->transform_cache_.at(collision.cache_key);
   } else {
-    if (this->transformCacheAfterScan.find(collision.cacheKey) == this->transformCacheAfterScan.end()) {
+    if (this->transform_cache_after_scan_.find(collision.cache_key) == this->transform_cache_after_scan_.end()) {
       // do not log the error because shape mask would do it for us
       return false;
     }
 
-    const auto& tf1 = *this->transformCache.at(collision.cacheKey);
-    const auto& tf2 = *this->transformCacheAfterScan.at(collision.cacheKey);
+    const auto& tf1 = *this->transform_cache_.at(collision.cache_key);
+    const auto& tf2 = *this->transform_cache_after_scan_.at(collision.cache_key);
     const Eigen::Quaterniond quat1(tf1.rotation().matrix());
     const Eigen::Quaterniond quat2(tf1.rotation().matrix());
-    const auto r = this->cacheLookupBetweenScansRatio;
+    const auto r = this->cache_lookup_between_scans_ratio_;
 
     transform.translation() = tf1.translation() * (1 - r) + tf2.translation() * r;
     const Eigen::Quaterniond quat3 = quat1.slerp(r, quat2);
@@ -958,67 +960,66 @@ bool RobotBodyFilter<T>::getShapeTransform(
 }
 
 template<typename T>
-void RobotBodyFilter<T>::updateTransformCache(const rclcpp::Time& time, const rclcpp::Time& afterScanTime) {
-  // make sure you locked this->modelMutex
+void RobotBodyFilter<T>::updateTransformCache(const rclcpp::Time& time, const rclcpp::Time& after_scan_time) {
+  // make sure you locked this->model_mutex_
 
   // clear the cache so that maskContainment always uses only these tf data and not some older
-  this->transformCache.clear();
-  if (afterScanTime.seconds() != 0) {
-    this->transformCacheAfterScan.clear();
+  this->transform_cache_.clear();
+  if (after_scan_time.seconds() != 0) {
+    this->transform_cache_after_scan_.clear();
   }
 
   // iterate over all links corresponding to some masking shape and update their cached transforms relative
   // to fixed_frame
-  for (auto& shapeToLink : this->shapesToLinks) {
-    const auto& collisionBody = shapeToLink.second;
-    const auto& collision = collisionBody.collision;
-    const auto& link = collisionBody.link;
+  for (const auto& [shape, collision_body] : this->shapes_to_links_) {
+    const auto& collision = collision_body.collision;
+    const auto& link = collision_body.link;
 
     // here we assume the tf frames' names correspond to the link names
-    const auto linkFrame = this->getLinkTfPrefix() + link->name;
+    const auto link_frame = this->getLinkTfPrefix() + link->name;
 
     // the collision object may have a different origin than the visual, we need to account for that
-    const auto& collisionOffsetTransform = cras::toEigen(collision->origin);
+    const auto& collision_offset_transform = cras::toEigen(collision->origin);
 
     {
-      auto linkTransformTfOptional = this->tfFramesWatchdog->lookupTransform(
-        linkFrame, time, cras::remainingTime(time, this->reachableTransformTimeout, clock_ptr));
+      auto link_transform_tf_optional = this->tf_frames_watchdog_->lookupTransform(
+        link_frame, time, cras::remainingTime(time, this->reachable_transform_timeout_, clock_ptr_));
 
-      if (!linkTransformTfOptional) // has no value
+      if (!link_transform_tf_optional) // has no value
       {
         continue;
       }
 
-      const auto& linkTransformTf = linkTransformTfOptional.value();
-      const auto& linkTransformEigen = tf2::transformToEigen(linkTransformTf);
+      const auto& link_transform_tf = link_transform_tf_optional.value();
+      const auto& link_transform_eigen = tf2::transformToEigen(link_transform_tf);
 
-      const auto& transform = linkTransformEigen * collisionOffsetTransform;
+      const auto& transform = link_transform_eigen * collision_offset_transform;
 
-      this->transformCache[collisionBody.cacheKey] =
+      this->transform_cache_[collision_body.cache_key] =
         std::allocate_shared<Eigen::Isometry3d>(Eigen::aligned_allocator<Eigen::Isometry3d>(), transform);
     }
 
-    if (afterScanTime.seconds() != 0) {
-      auto maybeLinkTransformTf = this->tfFramesWatchdog->lookupTransform(
-        linkFrame, afterScanTime, cras::remainingTime(time, this->reachableTransformTimeout, clock_ptr));
+    if (after_scan_time.seconds() != 0) {
+      auto maybe_link_transform_tf = this->tf_frames_watchdog_->lookupTransform(
+        link_frame, after_scan_time, cras::remainingTime(time, this->reachable_transform_timeout_, clock_ptr_));
 
-      if (!maybeLinkTransformTf) // has no value
+      if (!maybe_link_transform_tf) // has no value
         continue;
 
-      const auto& linkTransformTf = maybeLinkTransformTf.value();
-      const auto& linkTransformEigen = tf2::transformToEigen(linkTransformTf);
+      const auto& link_transform_tf = maybe_link_transform_tf.value();
+      const auto& link_transform_eigen = tf2::transformToEigen(link_transform_tf);
 
-      const auto& transform = linkTransformEigen * collisionOffsetTransform;
+      const auto& transform = link_transform_eigen * collision_offset_transform;
 
-      this->transformCacheAfterScan[collisionBody.cacheKey] =
+      this->transform_cache_after_scan_[collision_body.cache_key] =
         std::allocate_shared<Eigen::Isometry3d>(Eigen::aligned_allocator<Eigen::Isometry3d>(), transform);
     }
   }
 }
 
 template<typename T>
-void RobotBodyFilter<T>::addRobotMaskFromUrdf(const string& urdfModel) {
-  if (urdfModel.empty()) {
+void RobotBodyFilter<T>::addRobotMaskFromUrdf(const string& urdf_model) {
+  if (urdf_model.empty()) {
     RCLCPP_ERROR(
       get_logger(), "RobotBodyFilter: Empty string passed as robot model to addRobotMaskFromUrdf. Robot body filtering "
       "is not going to work.");
@@ -1026,281 +1027,279 @@ void RobotBodyFilter<T>::addRobotMaskFromUrdf(const string& urdfModel) {
   }
 
   // parse the URDF model
-  urdf::Model parsedUrdfModel;
-  bool urdfParseSucceeded = parsedUrdfModel.initString(urdfModel);
-  if (!urdfParseSucceeded) {
+  urdf::Model parsed_urdf_model;
+  bool urdf_parse_succeeded = parsed_urdf_model.initString(urdf_model);
+  if (!urdf_parse_succeeded) {
     RCLCPP_ERROR_STREAM(
       get_logger(), "RobotBodyFilter: The given URDF model cannot be parsed. See urdf::Model::initString for "
       "debugging, or try running 'gz sdf -p my_robot.urdf'");
     // Issue #6: Monitor sensor frame even if it is not a part of the model
-    if (!this->sensorFrame.empty()) {
-      this->tfFramesWatchdog->setMonitoredFrames(std::set<std::string> {this->sensorFrame});
+    if (!this->sensor_frame_.empty()) {
+      this->tf_frames_watchdog_->setMonitoredFrames(std::set<std::string> {this->sensor_frame_});
     }
 
     return;
   }
 
   {
-    std::lock_guard<std::mutex> guard(*this->modelMutex);
+    std::lock_guard<std::mutex> guard(*this->model_mutex_);
 
-    this->shapesIgnoredInBoundingSphere.clear();
-    this->shapesIgnoredInBoundingBox.clear();
-    std::unordered_set<MultiShapeHandle> ignoreInContainsTest;
-    std::unordered_set<MultiShapeHandle> ignoreInShadowTest;
+    this->shapes_ignored_in_bounding_sphere_.clear();
+    this->shapes_ignored_in_bounding_box_.clear();
+    std::unordered_set<MultiShapeHandle> ignore_in_contains_test;
+    std::unordered_set<MultiShapeHandle> ignore_in_shadow_test;
 
     // add all model's collision links as masking shapes
-    for (const auto& [linkName, link] : parsedUrdfModel.links_) {
+    for (const auto& [linkName, link] : parsed_urdf_model.links_) {
       // every link can have multiple collision elements
-      size_t collisionIndex = 0;
+      size_t collision_index = 0;
       for (const auto& collision : link->collision_array) {
         if (collision->geometry == nullptr) {
           RCLCPP_WARN(
             get_logger(), "RobotBodyFilter: Collision element without geometry found in link %s of robot %s. "
-            "This collision element will not be filtered out.", link->name.c_str(), parsedUrdfModel.getName().c_str());
+            "This collision element will not be filtered out.", link->name.c_str(), parsed_urdf_model.getName().c_str());
           continue;  // collisionIndex is intentionally not increased
         }
 
         const auto NAME_LINK = link->name;
         const auto NAME_COLLISION_NAME = "*::" + collision->name;
-        const auto NAME_LINK_COLLISION_NR = link->name + "::" + std::to_string(collisionIndex);
+        const auto NAME_LINK_COLLISION_NR = link->name + "::" + std::to_string(collision_index);
         const auto NAME_LINK_COLLISON_NAME = link->name + "::" + collision->name;
 
-        const std::vector<std::string> collisionNames = {
+        const std::vector<std::string> collision_names = {
           NAME_LINK,
           NAME_COLLISION_NAME,
           NAME_LINK_COLLISION_NR,
           NAME_LINK_COLLISON_NAME,
         };
 
-        std::set<std::string> collisionNamesSet;
-        std::set<std::string> collisionNamesContains;
-        std::set<std::string> collisionNamesShadow;
-        for (const auto& name : collisionNames) {
-          collisionNamesSet.insert(name);
-          collisionNamesContains.insert(name + CONTAINS_SUFFIX);
-          collisionNamesShadow.insert(name + SHADOW_SUFFIX);
+        std::set<std::string> collision_names_set;
+        std::set<std::string> collision_names_contains;
+        std::set<std::string> collision_names_shadow;
+        for (const auto& name : collision_names) {
+          collision_names_set.insert(name);
+          collision_names_contains.insert(name + kContainsSuffix);
+          collision_names_shadow.insert(name + kShadowSuffix);
         }
 
-        // if onlyLinks is nonempty, make sure this collision belongs to a specified link
-        if (!this->onlyLinks.empty()) {
-          if (cras::isSetIntersectionEmpty(collisionNamesSet, this->onlyLinks)) {
-            ++collisionIndex;
+        // if only_links_ is nonempty, make sure this collision belongs to a specified link
+        if (!this->only_links_.empty()) {
+          if (cras::isSetIntersectionEmpty(collision_names_set, this->only_links_)) {
+            ++collision_index;
             continue;
           }
         }
 
         // if the link is ignored, go on
-        if (!cras::isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredEverywhere)) {
-          ++collisionIndex;
+        if (!cras::isSetIntersectionEmpty(collision_names_set, this->links_ignored_everywhere_)) {
+          ++collision_index;
           continue;
         }
 
-        const auto collisionShape = constructShape(*collision->geometry);
-        const auto shapeName = collision->name.empty() ? NAME_LINK_COLLISION_NR : NAME_LINK_COLLISON_NAME;
+        const auto collision_shape = constructShape(*collision->geometry);
+        const auto shape_name = collision->name.empty() ? NAME_LINK_COLLISION_NR : NAME_LINK_COLLISON_NAME;
 
         // if the shape could not be constructed, ignore it (e.g. mesh was not found)
-        if (collisionShape == nullptr) {
-          RCLCPP_WARN(get_logger(), "Could not construct shape for collision %s, ignoring it.", shapeName.c_str());
-          ++collisionIndex;
+        if (collision_shape == nullptr) {
+          RCLCPP_WARN(get_logger(), "Could not construct shape for collision %s, ignoring it.", shape_name.c_str());
+          ++collision_index;
           continue;
         }
 
-        // add the collision shape to shapeMask; the inflation parameters come into play here
-        const auto containsTestInflation = this->getLinkInflationForContainsTest(collisionNames);
-        const auto shadowTestInflation = this->getLinkInflationForShadowTest(collisionNames);
-        const auto bsphereInflation = this->getLinkInflationForBoundingSphere(collisionNames);
-        const auto bboxInflation = this->getLinkInflationForBoundingBox(collisionNames);
-        const auto shapeHandle = this->shapeMask->addShape(
-          collisionShape,
-          containsTestInflation.scale, containsTestInflation.padding,
-          shadowTestInflation.scale, shadowTestInflation.padding,
-          bsphereInflation.scale, bsphereInflation.padding,
-          bboxInflation.scale, bboxInflation.padding,
-          false, shapeName);
-        this->shapesToLinks[shapeHandle.contains] = this->shapesToLinks[shapeHandle.shadow] =
-          this->shapesToLinks[shapeHandle.bsphere] = this->shapesToLinks[shapeHandle.bbox] =
-          CollisionBodyWithLink(collision, link, collisionIndex, shapeHandle);
+        // add the collision shape to shape_mask_; the inflation parameters come into play here
+        const auto contains_test_inflation = this->getLinkInflationForContainsTest(collision_names);
+        const auto shadow_test_inflation = this->getLinkInflationForShadowTest(collision_names);
+        const auto bsphere_inflation = this->getLinkInflationForBoundingSphere(collision_names);
+        const auto bbox_inflation = this->getLinkInflationForBoundingBox(collision_names);
+        const auto shape_handle = this->shape_mask_->addShape(
+          collision_shape,
+          contains_test_inflation.scale, contains_test_inflation.padding,
+          shadow_test_inflation.scale, shadow_test_inflation.padding,
+          bsphere_inflation.scale, bsphere_inflation.padding,
+          bbox_inflation.scale, bbox_inflation.padding,
+          false, shape_name);
+        this->shapes_to_links_[shape_handle.contains] = this->shapes_to_links_[shape_handle.shadow] =
+          this->shapes_to_links_[shape_handle.bsphere] = this->shapes_to_links_[shape_handle.bbox] =
+          CollisionBodyWithLink(collision, link, collision_index, shape_handle);
 
-        if (!cras::isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredInBoundingSphere)) {
-          this->shapesIgnoredInBoundingSphere.insert(shapeHandle.bsphere);
+        if (!cras::isSetIntersectionEmpty(collision_names_set, this->links_ignored_in_bounding_sphere_)) {
+          this->shapes_ignored_in_bounding_sphere_.insert(shape_handle.bsphere);
         }
 
-        if (!cras::isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredInBoundingBox)) {
-          this->shapesIgnoredInBoundingBox.insert(shapeHandle.bbox);
+        if (!cras::isSetIntersectionEmpty(collision_names_set, this->links_ignored_in_bounding_box_)) {
+          this->shapes_ignored_in_bounding_box_.insert(shape_handle.bbox);
         }
 
-        if (!cras::isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredInContainsTest)) {
-          ignoreInContainsTest.insert(shapeHandle);
+        if (!cras::isSetIntersectionEmpty(collision_names_set, this->links_ignored_in_contains_test_)) {
+          ignore_in_contains_test.insert(shape_handle);
         }
 
-        if (!cras::isSetIntersectionEmpty(collisionNamesSet, this->linksIgnoredInShadowTest)) {
-          ignoreInShadowTest.insert(shapeHandle);
+        if (!cras::isSetIntersectionEmpty(collision_names_set, this->links_ignored_in_shadow_test_)) {
+          ignore_in_shadow_test.insert(shape_handle);
         }
 
-        ++collisionIndex;
+        ++collision_index;
       }
 
       // no collision element found; only warn for links that are not ignored and have at least one visual
-      if (collisionIndex == 0 && !link->visual_array.empty()) {
-        if ((this->onlyLinks.empty() || (this->onlyLinks.find(link->name) != this->onlyLinks.end())) &&
-          this->linksIgnoredEverywhere.find(link->name) == this->linksIgnoredEverywhere.end()) {
+      if (collision_index == 0 && !link->visual_array.empty()) {
+        if ((this->only_links_.empty() || (this->only_links_.find(link->name) != this->only_links_.end())) &&
+          this->links_ignored_everywhere_.find(link->name) == this->links_ignored_everywhere_.end()) {
           RCLCPP_WARN(
             get_logger(), "RobotBodyFilter: No collision element found for link %s of robot %s. This link will not be "
-            "filtered out from laser scans.", link->name.c_str(), parsedUrdfModel.getName().c_str());
+            "filtered out from laser scans.", link->name.c_str(), parsed_urdf_model.getName().c_str());
         }
       }
     }
 
-    this->shapeMask->setIgnoreInContainsTest(ignoreInContainsTest);
-    this->shapeMask->setIgnoreInShadowTest(ignoreInShadowTest);
+    this->shape_mask_->setIgnoreInContainsTest(ignore_in_contains_test);
+    this->shape_mask_->setIgnoreInShadowTest(ignore_in_shadow_test);
 
-    this->shapeMask->updateInternalShapeLists();
+    this->shape_mask_->updateInternalShapeLists();
 
-    std::set<std::string> monitoredFrames;
-    for (const auto& shapeToLink : this->shapesToLinks) {
-      monitoredFrames.insert(shapeToLink.second.link->name);
+    std::set<std::string> monitored_frames;
+    for (const auto& shape_to_link : this->shapes_to_links_) {
+      monitored_frames.insert(shape_to_link.second.link->name);
     }
     // Issue #6: Monitor sensor frame even if it is not a part of the model
-    if (!this->sensorFrame.empty()) {
-      monitoredFrames.insert(this->sensorFrame);
+    if (!this->sensor_frame_.empty()) {
+      monitored_frames.insert(this->sensor_frame_);
     }
 
-    this->tfFramesWatchdog->setMonitoredFrames(monitoredFrames);
+    this->tf_frames_watchdog_->setMonitoredFrames(monitored_frames);
   }
 }
 
 template<typename T>
 void RobotBodyFilter<T>::clearRobotMask() {
   {
-    std::lock_guard<std::mutex> guard(*this->modelMutex);
+    std::lock_guard<std::mutex> guard(*this->model_mutex_);
 
-    std::unordered_set<MultiShapeHandle> removedMultiShapes;
-    for (const auto& shapeToLink : this->shapesToLinks) {
-      const auto& multiShape = shapeToLink.second.multiHandle;
-      if (removedMultiShapes.find(multiShape) == removedMultiShapes.end()) {
-        this->shapeMask->removeShape(multiShape, false);
-        removedMultiShapes.insert(multiShape);
+    std::unordered_set<MultiShapeHandle> removed_multi_shapes;
+    for (const auto& shape_to_link : this->shapes_to_links_) {
+      const auto& multiShape = shape_to_link.second.multi_handle;
+      if (removed_multi_shapes.find(multiShape) == removed_multi_shapes.end()) {
+        this->shape_mask_->removeShape(multiShape, false);
+        removed_multi_shapes.insert(multiShape);
       }
     }
-    this->shapeMask->updateInternalShapeLists();
+    this->shape_mask_->updateInternalShapeLists();
 
-    this->shapesToLinks.clear();
-    this->shapesIgnoredInBoundingSphere.clear();
-    this->shapesIgnoredInBoundingBox.clear();
-    this->transformCache.clear();
-    this->transformCacheAfterScan.clear();
+    this->shapes_to_links_.clear();
+    this->shapes_ignored_in_bounding_sphere_.clear();
+    this->shapes_ignored_in_bounding_box_.clear();
+    this->transform_cache_.clear();
+    this->transform_cache_after_scan_.clear();
   }
 
-  this->tfFramesWatchdog->clear();
+  this->tf_frames_watchdog_->clear();
 }
 
 template<typename T>
 bool RobotBodyFilter<T>::hasModel() const {
-  return !this->robotDescriptionString.empty();
+  return !this->robot_description_string_.empty();
 }
 
 template<typename T>
-void RobotBodyFilter<T>::publishDebugMarkers(const rclcpp::Time& scanTime) const {
-  // assume this->modelMutex is locked
+void RobotBodyFilter<T>::publishDebugMarkers(const rclcpp::Time& scan_time) const {
+  // assume this->model_mutex_ is locked
 
-  if (this->publishDebugContainsMarker) {
-    visualization_msgs::msg::MarkerArray markerArray;
+  if (this->publish_debug_contains_marker_) {
+    visualization_msgs::msg::MarkerArray marker_array;
     std_msgs::msg::ColorRGBA color;
     color.g = 1.0;
     color.a = 0.5;
     createBodyVisualizationMsg(
-      this->shapeMask->getBodiesForContainsTest(), scanTime, color, markerArray);
-    this->debugContainsMarkerPublisher->publish(markerArray);
+      this->shape_mask_->getBodiesForContainsTest(), scan_time, color, marker_array);
+    this->debug_contains_marker_publisher_->publish(marker_array);
   }
 
-  if (this->publishDebugShadowMarker) {
-    visualization_msgs::msg::MarkerArray markerArray;
+  if (this->publish_debug_shadow_marker_) {
+    visualization_msgs::msg::MarkerArray marker_array;
     std_msgs::msg::ColorRGBA color;
     color.b = 1.0;
     color.a = 0.5;
     createBodyVisualizationMsg(
-      this->shapeMask->getBodiesForShadowTest(), scanTime, color, markerArray);
-    this->debugShadowMarkerPublisher->publish(markerArray);
+      this->shape_mask_->getBodiesForShadowTest(), scan_time, color, marker_array);
+    this->debug_shadow_marker_publisher_->publish(marker_array);
   }
 
-  if (this->publishDebugBsphereMarker) {
-    visualization_msgs::msg::MarkerArray markerArray;
+  if (this->publish_debug_bsphere_marker_) {
+    visualization_msgs::msg::MarkerArray marker_array;
     std_msgs::msg::ColorRGBA color;
     color.g = 1.0;
     color.b = 1.0;
     color.a = 0.5;
     createBodyVisualizationMsg(
-      this->shapeMask->getBodiesForBoundingSphere(), scanTime, color, markerArray);
-    this->debugBsphereMarkerPublisher->publish(markerArray);
+      this->shape_mask_->getBodiesForBoundingSphere(), scan_time, color, marker_array);
+    this->debug_bsphere_marker_publisher_->publish(marker_array);
   }
 
-  if (this->publishDebugBboxMarker) {
-    visualization_msgs::msg::MarkerArray markerArray;
+  if (this->publish_debug_bbox_marker_) {
+    visualization_msgs::msg::MarkerArray marker_array;
     std_msgs::msg::ColorRGBA color;
     color.r = 1.0;
     color.b = 1.0;
     color.a = 0.5;
     createBodyVisualizationMsg(
-      this->shapeMask->getBodiesForBoundingBox(), scanTime, color, markerArray);
-    this->debugBboxMarkerPublisher->publish(markerArray);
+      this->shape_mask_->getBodiesForBoundingBox(), scan_time, color, marker_array);
+    this->debug_bbox_marker_publisher_->publish(marker_array);
   }
 }
 
 template<typename T>
 void RobotBodyFilter<T>::publishDebugPointClouds(
-  const sensor_msgs::msg::PointCloud2& projectedPointCloud,
-  const std::vector<RayCastingShapeMask::MaskValue>& pointMask) const {
+  const sensor_msgs::msg::PointCloud2& projected_point_cloud,
+  const std::vector<RayCastingShapeMask::MaskValue>& point_mask) const {
 
-  if (this->publishDebugPclInside) {
-    sensor_msgs::msg::PointCloud2 insideCloud;
+  if (this->publish_debug_pcl_inside_) {
+    sensor_msgs::msg::PointCloud2 inside_cloud;
     CREATE_FILTERED_CLOUD(
-      projectedPointCloud, insideCloud, this->keepCloudsOrganized,
-      (pointMask[i] == RayCastingShapeMask::MaskValue::INSIDE));
-    this->debugPointCloudInsidePublisher->publish(insideCloud);
+      projected_point_cloud, inside_cloud, this->keep_clouds_organized_,
+      (point_mask[i] == RayCastingShapeMask::MaskValue::INSIDE));
+    this->debug_point_cloud_inside_publisher_->publish(inside_cloud);
   }
 
-  if (this->publishDebugPclClip) {
-    sensor_msgs::msg::PointCloud2 clipCloud;
+  if (this->publish_debug_pcl_clip_) {
+    sensor_msgs::msg::PointCloud2 clip_cloud;
     CREATE_FILTERED_CLOUD(
-      projectedPointCloud, clipCloud, this->keepCloudsOrganized,
-      (pointMask[i] == RayCastingShapeMask::MaskValue::CLIP));
-    this->debugPointCloudClipPublisher->publish(clipCloud);
+      projected_point_cloud, clip_cloud, this->keep_clouds_organized_,
+      (point_mask[i] == RayCastingShapeMask::MaskValue::CLIP));
+    this->debug_point_cloud_clip_publisher_->publish(clip_cloud);
   }
 
-  if (this->publishDebugPclShadow) {
-    sensor_msgs::msg::PointCloud2 shadowCloud;
+  if (this->publish_debug_pcl_shadow_) {
+    sensor_msgs::msg::PointCloud2 shadow_cloud;
     CREATE_FILTERED_CLOUD(
-      projectedPointCloud, shadowCloud, this->keepCloudsOrganized,
-      (pointMask[i] == RayCastingShapeMask::MaskValue::SHADOW));
-    this->debugPointCloudShadowPublisher->publish(shadowCloud);
+      projected_point_cloud, shadow_cloud, this->keep_clouds_organized_,
+      (point_mask[i] == RayCastingShapeMask::MaskValue::SHADOW));
+    this->debug_point_cloud_shadow_publisher_->publish(shadow_cloud);
   }
 }
 
 template<typename T>
 void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
-  const sensor_msgs::msg::PointCloud2& projectedPointCloud) const {
-  if (!this->computeBoundingSphere && !this->computeDebugBoundingSphere) {
+  const sensor_msgs::msg::PointCloud2& projected_point_cloud) const {
+  if (!this->compute_bounding_sphere_ && !this->compute_debug_bounding_sphere_) {
     return;
   }
 
-  // assume this->modelMutex is locked
+  // assume this->model_mutex_ is locked
 
   // when computing bounding spheres for publication, we want to publish them to the time of the
-  // scan, so we need to set cacheLookupBetweenScansRatio again to zero
-  if (this->cacheLookupBetweenScansRatio != 0.0) {
-    this->cacheLookupBetweenScansRatio = 0.0;
-    this->shapeMask->updateBodyPoses();
+  // scan, so we need to set cache_lookup_between_scans_ratio_ again to zero
+  if (this->cache_lookup_between_scans_ratio_ != 0.0) {
+    this->cache_lookup_between_scans_ratio_ = 0.0;
+    this->shape_mask_->updateBodyPoses();
   }
 
-  const auto& scanTime = projectedPointCloud.header.stamp;
+  const auto& scan_time = projected_point_cloud.header.stamp;
   std::vector<bodies::BoundingSphere> spheres;
   {
-    visualization_msgs::msg::MarkerArray boundingSphereDebugMsg;
-    for (const auto& shapeHandleAndBody : this->shapeMask->getBodiesForBoundingSphere()) {
-      const auto& shapeHandle = shapeHandleAndBody.first;
-      const auto& body = shapeHandleAndBody.second;
-
-      if (this->shapesIgnoredInBoundingSphere.find(shapeHandle) != this->shapesIgnoredInBoundingSphere.end()) {
+    visualization_msgs::msg::MarkerArray bounding_sphere_debug_msg;
+    for (const auto& [shapeHandle, body] : this->shape_mask_->getBodiesForBoundingSphere()) {
+      if (this->shapes_ignored_in_bounding_sphere_.find(shapeHandle) !=
+          this->shapes_ignored_in_bounding_sphere_.end()) {
         continue;
       }
 
@@ -1309,10 +1308,10 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
 
       spheres.push_back(sphere);
 
-      if (this->computeDebugBoundingSphere) {
+      if (this->compute_debug_bounding_sphere_) {
         visualization_msgs::msg::Marker msg;
-        msg.header.stamp = scanTime;
-        msg.header.frame_id = this->filteringFrame;
+        msg.header.stamp = scan_time;
+        msg.header.frame_id = this->filtering_frame_;
 
         msg.scale.x = msg.scale.y = msg.scale.z = sphere.radius * 2;
 
@@ -1325,40 +1324,40 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
         msg.color.a = 0.5;
         msg.type = visualization_msgs::msg::Marker::SPHERE;
         msg.action = visualization_msgs::msg::Marker::ADD;
-        msg.ns = "bsphere/" + this->shapesToLinks.at(shapeHandle).cacheKey;
+        msg.ns = "bsphere/" + this->shapes_to_links_.at(shapeHandle).cache_key;
         msg.frame_locked = true;
 
-        boundingSphereDebugMsg.markers.push_back(msg);
+        bounding_sphere_debug_msg.markers.push_back(msg);
       }
     }
 
-    if (this->computeDebugBoundingSphere) {
-      this->boundingSphereDebugMarkerPublisher->publish(boundingSphereDebugMsg);
+    if (this->compute_debug_bounding_sphere_) {
+      this->bounding_sphere_debug_marker_publisher_->publish(bounding_sphere_debug_msg);
     }
   }
 
-  if (this->computeBoundingSphere) {
-    bodies::BoundingSphere boundingSphere;
-    bodies::mergeBoundingSpheres(spheres, boundingSphere);
+  if (this->compute_bounding_sphere_) {
+    bodies::BoundingSphere bounding_sphere;
+    bodies::mergeBoundingSpheres(spheres, bounding_sphere);
 
-    robot_body_filter::msg::SphereStamped boundingSphereMsg;
-    boundingSphereMsg.header.stamp = scanTime;
-    boundingSphereMsg.header.frame_id = this->filteringFrame;
-    boundingSphereMsg.sphere.radius = static_cast<float>(boundingSphere.radius);
-    boundingSphereMsg.sphere.center = tf2::toMsg(boundingSphere.center);
+    robot_body_filter::msg::SphereStamped bounding_sphere_msg;
+    bounding_sphere_msg.header.stamp = scan_time;
+    bounding_sphere_msg.header.frame_id = this->filtering_frame_;
+    bounding_sphere_msg.sphere.radius = static_cast<float>(bounding_sphere.radius);
+    bounding_sphere_msg.sphere.center = tf2::toMsg(bounding_sphere.center);
 
-    this->boundingSpherePublisher->publish(boundingSphereMsg);
+    this->bounding_sphere_publisher_->publish(bounding_sphere_msg);
 
-    if (this->publishBoundingSphereMarker) {
+    if (this->publish_bounding_sphere_marker_) {
       visualization_msgs::msg::Marker msg;
-      msg.header.stamp = scanTime;
-      msg.header.frame_id = this->filteringFrame;
+      msg.header.stamp = scan_time;
+      msg.header.frame_id = this->filtering_frame_;
 
-      msg.scale.x = msg.scale.y = msg.scale.z = boundingSphere.radius * 2;
+      msg.scale.x = msg.scale.y = msg.scale.z = bounding_sphere.radius * 2;
 
-      msg.pose.position.x = boundingSphere.center[0];
-      msg.pose.position.y = boundingSphere.center[1];
-      msg.pose.position.z = boundingSphere.center[2];
+      msg.pose.position.x = bounding_sphere.center[0];
+      msg.pose.position.y = bounding_sphere.center[1];
+      msg.pose.position.z = bounding_sphere.center[2];
       msg.pose.orientation.w = 1;
 
       msg.color.g = 1.0;
@@ -1368,42 +1367,42 @@ void RobotBodyFilter<T>::computeAndPublishBoundingSphere(
       msg.ns = "bounding_sphere";
       msg.frame_locked = true;
 
-      this->boundingSphereMarkerPublisher->publish(msg);
+      this->bounding_sphere_marker_publisher_->publish(msg);
     }
 
-    if (this->publishNoBoundingSpherePointcloud) {
-      sensor_msgs::msg::PointCloud2 noSphereCloud;
+    if (this->publish_no_bounding_sphere_pointcloud_) {
+      sensor_msgs::msg::PointCloud2 no_sphere_cloud;
       CREATE_FILTERED_CLOUD(
-        projectedPointCloud, noSphereCloud, this->keepCloudsOrganized,
-        ((Eigen::Vector3d(*x_it, *y_it, *z_it)- boundingSphere.center).norm() > boundingSphere.radius));
-      this->scanPointCloudNoBoundingSpherePublisher->publish(noSphereCloud);
+        projected_point_cloud, no_sphere_cloud, this->keep_clouds_organized_,
+        ((Eigen::Vector3d(*x_it, *y_it, *z_it)- bounding_sphere.center).norm() > bounding_sphere.radius));
+      this->scan_point_cloud_no_bounding_sphere_publisher_->publish(no_sphere_cloud);
     }
   }
 }
 
 template<typename T>
 void RobotBodyFilter<T>::computeAndPublishBoundingBox(
-  const sensor_msgs::msg::PointCloud2& projectedPointCloud) const {
-  if (!this->computeBoundingBox && !this->computeDebugBoundingBox) {
+  const sensor_msgs::msg::PointCloud2& projected_point_cloud) const {
+  if (!this->compute_bounding_box_ && !this->compute_debug_bounding_box_) {
     return;
   }
 
-  // assume this->modelMutex is locked
+  // assume this->model_mutex_ is locked
 
   // when computing bounding boxes for publication, we want to publish them to the time of the
-  // scan, so we need to set cacheLookupBetweenScansRatio again to zero
-  if (this->cacheLookupBetweenScansRatio != 0.0) {
-    this->cacheLookupBetweenScansRatio = 0.0;
-    this->shapeMask->updateBodyPoses();
+  // scan, so we need to set cache_lookup_between_scans_ratio_ again to zero
+  if (this->cache_lookup_between_scans_ratio_ != 0.0) {
+    this->cache_lookup_between_scans_ratio_ = 0.0;
+    this->shape_mask_->updateBodyPoses();
   }
 
-  const auto& scanTime = projectedPointCloud.header.stamp;
+  const auto& scan_time = projected_point_cloud.header.stamp;
   std::vector<bodies::AxisAlignedBoundingBox> boxes;
 
   {
-    visualization_msgs::msg::MarkerArray boundingBoxDebugMsg;
-    for (const auto& [shapeHandle, body] : this->shapeMask->getBodiesForBoundingBox()) {
-      if (this->shapesIgnoredInBoundingBox.find(shapeHandle) != this->shapesIgnoredInBoundingBox.end()) {
+    visualization_msgs::msg::MarkerArray bounding_box_debug_msg;
+    for (const auto& [shapeHandle, body] : this->shape_mask_->getBodiesForBoundingBox()) {
+      if (this->shapes_ignored_in_bounding_box_.find(shapeHandle) != this->shapes_ignored_in_bounding_box_.end()) {
         continue;
       }
 
@@ -1412,10 +1411,10 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
 
       boxes.push_back(box);
 
-      if (this->computeDebugBoundingBox) {
+      if (this->compute_debug_bounding_box_) {
         visualization_msgs::msg::Marker msg;
-        msg.header.stamp = scanTime;
-        msg.header.frame_id = this->filteringFrame;
+        msg.header.stamp = scan_time;
+        msg.header.frame_id = this->filtering_frame_;
 
         // it is aligned to fixed frame, not necessarily robot frame
         tf2::toMsg(box.sizes(), msg.scale);
@@ -1426,38 +1425,38 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
         msg.color.a = 0.5;
         msg.type = visualization_msgs::msg::Marker::CUBE;
         msg.action = visualization_msgs::msg::Marker::ADD;
-        msg.ns = "bbox/" + this->shapesToLinks.at(shapeHandle).cacheKey;
+        msg.ns = "bbox/" + this->shapes_to_links_.at(shapeHandle).cache_key;
         msg.frame_locked = true;
 
-        boundingBoxDebugMsg.markers.push_back(msg);
+        bounding_box_debug_msg.markers.push_back(msg);
       }
     }
 
-    if (this->computeDebugBoundingBox) {
-      this->boundingBoxDebugMarkerPublisher->publish(boundingBoxDebugMsg);
+    if (this->compute_debug_bounding_box_) {
+      this->bounding_box_debug_marker_publisher_->publish(bounding_box_debug_msg);
     }
   }
 
-  if (this->computeBoundingBox) {
+  if (this->compute_bounding_box_) {
     bodies::AxisAlignedBoundingBox box;
     bodies::mergeBoundingBoxes(boxes, box);
-    const auto boxFloat = box.cast<float>();
+    const auto box_float = box.cast<float>();
 
-    geometry_msgs::msg::PolygonStamped boundingBoxMsg;
+    geometry_msgs::msg::PolygonStamped bounding_box_msg;
 
-    boundingBoxMsg.header.stamp = scanTime;
-    boundingBoxMsg.header.frame_id = this->filteringFrame;
+    bounding_box_msg.header.stamp = scan_time;
+    bounding_box_msg.header.frame_id = this->filtering_frame_;
 
-    boundingBoxMsg.polygon.points.resize(2);
-    tf2::toMsg(box.min(), boundingBoxMsg.polygon.points[0]);
-    tf2::toMsg(box.max(), boundingBoxMsg.polygon.points[1]);
+    bounding_box_msg.polygon.points.resize(2);
+    tf2::toMsg(box.min(), bounding_box_msg.polygon.points[0]);
+    tf2::toMsg(box.max(), bounding_box_msg.polygon.points[1]);
 
-    this->boundingBoxPublisher->publish(boundingBoxMsg);
+    this->bounding_box_publisher_->publish(bounding_box_msg);
 
-    if (this->publishBoundingBoxMarker) {
+    if (this->publish_bounding_box_marker_) {
       visualization_msgs::msg::Marker msg;
-      msg.header.stamp = scanTime;
-      msg.header.frame_id = this->filteringFrame;
+      msg.header.stamp = scan_time;
+      msg.header.frame_id = this->filtering_frame_;
 
       // it is aligned to fixed frame and not necessarily to robot frame
       tf2::toMsg(box.sizes(), msg.scale);
@@ -1471,57 +1470,57 @@ void RobotBodyFilter<T>::computeAndPublishBoundingBox(
       msg.ns = "bounding_box";
       msg.frame_locked = true;
 
-      this->boundingBoxMarkerPublisher->publish(msg);
+      this->bounding_box_marker_publisher_->publish(msg);
     }
 
     // compute and publish the scan_point_cloud with robot bounding box removed
-    if (this->publishNoBoundingBoxPointcloud) {
-      pcl::PCLPointCloud2::Ptr bboxCropInput(new pcl::PCLPointCloud2());
-      pcl_conversions::toPCL(projectedPointCloud, *bboxCropInput);
+    if (this->publish_no_bounding_box_pointcloud_) {
+      pcl::PCLPointCloud2::Ptr bbox_crop_input(new pcl::PCLPointCloud2());
+      pcl_conversions::toPCL(projected_point_cloud, *bbox_crop_input);
 
-      pcl::CropBox<pcl::PCLPointCloud2> cropBox;
-      cropBox.setNegative(true);
-      cropBox.setInputCloud(bboxCropInput);
-      cropBox.setKeepOrganized(this->keepCloudsOrganized);
+      pcl::CropBox<pcl::PCLPointCloud2> crop_box;
+      crop_box.setNegative(true);
+      crop_box.setInputCloud(bbox_crop_input);
+      crop_box.setKeepOrganized(this->keep_clouds_organized_);
 
-      cropBox.setMin(Eigen::Vector4f(boxFloat.min()[0], boxFloat.min()[1], boxFloat.min()[2], 0.0));
-      cropBox.setMax(Eigen::Vector4f(boxFloat.max()[0], boxFloat.max()[1], boxFloat.max()[2], 0.0));
+      crop_box.setMin(Eigen::Vector4f(box_float.min()[0], box_float.min()[1], box_float.min()[2], 0.0));
+      crop_box.setMax(Eigen::Vector4f(box_float.max()[0], box_float.max()[1], box_float.max()[2], 0.0));
 
-      pcl::PCLPointCloud2 pclOutput;
-      cropBox.filter(pclOutput);
+      pcl::PCLPointCloud2 pcl_output;
+      crop_box.filter(pcl_output);
 
-      sensor_msgs::msg::PointCloud2::SharedPtr boxFilteredCloud(new sensor_msgs::msg::PointCloud2());
-      pcl_conversions::moveFromPCL(pclOutput, *boxFilteredCloud);
-      boxFilteredCloud->header.stamp = scanTime;  // PCL strips precision of timestamp
+      sensor_msgs::msg::PointCloud2::SharedPtr box_filtered_cloud(new sensor_msgs::msg::PointCloud2());
+      pcl_conversions::moveFromPCL(pcl_output, *box_filtered_cloud);
+      box_filtered_cloud->header.stamp = scan_time;  // PCL strips precision of timestamp
 
-      this->scanPointCloudNoBoundingBoxPublisher->publish(*boxFilteredCloud);
+      this->scan_point_cloud_no_bounding_box_publisher_->publish(*box_filtered_cloud);
     }
   }
 }
 
 template<typename T>
 void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
-  const sensor_msgs::msg::PointCloud2& projectedPointCloud) const {
-  if (!this->computeOrientedBoundingBox && !this->computeDebugOrientedBoundingBox) {
+  const sensor_msgs::msg::PointCloud2& projected_point_cloud) const {
+  if (!this->compute_oriented_bounding_box_ && !this->compute_debug_oriented_bounding_box_) {
     return;
   }
 
-  // assume this->modelMutex is locked
+  // assume this->model_mutex_ is locked
 
   // when computing bounding boxes for publication, we want to publish them to the time of the
-  // scan, so we need to set cacheLookupBetweenScansRatio again to zero
-  if (this->cacheLookupBetweenScansRatio != 0.0) {
-    this->cacheLookupBetweenScansRatio = 0.0;
-    this->shapeMask->updateBodyPoses();
+  // scan, so we need to set cache_lookup_between_scans_ratio_ again to zero
+  if (this->cache_lookup_between_scans_ratio_ != 0.0) {
+    this->cache_lookup_between_scans_ratio_ = 0.0;
+    this->shape_mask_->updateBodyPoses();
   }
 
-  const auto& scanTime = projectedPointCloud.header.stamp;
+  const auto& scan_time = projected_point_cloud.header.stamp;
   std::vector<bodies::OrientedBoundingBox> boxes;
 
   {
-    visualization_msgs::msg::MarkerArray boundingBoxDebugMsg;
-    for (const auto& [shapeHandle, body] : this->shapeMask->getBodiesForBoundingBox()) {
-      if (this->shapesIgnoredInBoundingBox.find(shapeHandle) != this->shapesIgnoredInBoundingBox.end()) {
+    visualization_msgs::msg::MarkerArray bounding_box_debug_msg;
+    for (const auto& [shape_handle, body] : this->shape_mask_->getBodiesForBoundingBox()) {
+      if (this->shapes_ignored_in_bounding_box_.find(shape_handle) != this->shapes_ignored_in_bounding_box_.end()) {
         continue;
       }
 
@@ -1530,10 +1529,10 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
 
       boxes.push_back(box);
 
-      if (this->computeDebugOrientedBoundingBox) {
+      if (this->compute_debug_oriented_bounding_box_) {
         visualization_msgs::msg::Marker msg;
-        msg.header.stamp = scanTime;
-        msg.header.frame_id = this->filteringFrame;
+        msg.header.stamp = scan_time;
+        msg.header.frame_id = this->filtering_frame_;
 
         tf2::toMsg(box.getExtents(), msg.scale);
         msg.pose.position = tf2::toMsg(static_cast<Eigen::Vector3d>(box.getPose().translation()));
@@ -1543,37 +1542,37 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
         msg.color.a = 0.5;
         msg.type = visualization_msgs::msg::Marker::CUBE;
         msg.action = visualization_msgs::msg::Marker::ADD;
-        msg.ns = "obbox/" + this->shapesToLinks.at(shapeHandle).cacheKey;
+        msg.ns = "obbox/" + this->shapes_to_links_.at(shape_handle).cache_key;
         msg.frame_locked = true;
 
-        boundingBoxDebugMsg.markers.push_back(msg);
+        bounding_box_debug_msg.markers.push_back(msg);
       }
     }
 
-    if (this->computeDebugOrientedBoundingBox) {
-      this->orientedBoundingBoxDebugMarkerPublisher->publish(boundingBoxDebugMsg);
+    if (this->compute_debug_oriented_bounding_box_) {
+      this->oriented_bounding_box_debug_marker_publisher_->publish(bounding_box_debug_msg);
     }
   }
 
-  if (this->computeOrientedBoundingBox) {
+  if (this->compute_oriented_bounding_box_) {
     bodies::OrientedBoundingBox box(Eigen::Isometry3d::Identity(), Eigen::Vector3d::Zero());
     bodies::mergeBoundingBoxesApprox(boxes, box);
 
-    robot_body_filter::msg::OrientedBoundingBoxStamped boundingBoxMsg;
+    robot_body_filter::msg::OrientedBoundingBoxStamped bounding_box_msg;
 
-    boundingBoxMsg.header.stamp = scanTime;
-    boundingBoxMsg.header.frame_id = this->filteringFrame;
+    bounding_box_msg.header.stamp = scan_time;
+    bounding_box_msg.header.frame_id = this->filtering_frame_;
 
-    tf2::toMsg(box.getExtents(), boundingBoxMsg.obb.extents);
-    tf2::toMsg(box.getPose().translation(), boundingBoxMsg.obb.pose.translation);
-    boundingBoxMsg.obb.pose.rotation = tf2::toMsg(Eigen::Quaterniond(box.getPose().linear()));
+    tf2::toMsg(box.getExtents(), bounding_box_msg.obb.extents);
+    tf2::toMsg(box.getPose().translation(), bounding_box_msg.obb.pose.translation);
+    bounding_box_msg.obb.pose.rotation = tf2::toMsg(Eigen::Quaterniond(box.getPose().linear()));
 
-    this->orientedBoundingBoxPublisher->publish(boundingBoxMsg);
+    this->oriented_bounding_box_publisher_->publish(bounding_box_msg);
 
-    if (this->publishOrientedBoundingBoxMarker) {
+    if (this->publish_oriented_bounding_box_marker_) {
       visualization_msgs::msg::Marker msg;
-      msg.header.stamp = scanTime;
-      msg.header.frame_id = this->filteringFrame;
+      msg.header.stamp = scan_time;
+      msg.header.frame_id = this->filtering_frame_;
 
       tf2::toMsg(box.getExtents(), msg.scale);
       msg.pose.position = tf2::toMsg(static_cast<Eigen::Vector3d>(box.getPose().translation()));
@@ -1586,89 +1585,89 @@ void RobotBodyFilter<T>::computeAndPublishOrientedBoundingBox(
       msg.ns = "oriented_bounding_box";
       msg.frame_locked = true;
 
-      this->orientedBoundingBoxMarkerPublisher->publish(msg);
+      this->oriented_bounding_box_marker_publisher_->publish(msg);
     }
 
     // compute and publish the scan_point_cloud with robot bounding box removed
-    if (this->publishNoOrientedBoundingBoxPointcloud) {
-      const pcl::PCLPointCloud2::Ptr bboxCropInput(new pcl::PCLPointCloud2());
-      pcl_conversions::toPCL(projectedPointCloud, *bboxCropInput);
+    if (this->publish_no_oriented_bounding_box_pointcloud_) {
+      const pcl::PCLPointCloud2::Ptr bbox_crop_input(new pcl::PCLPointCloud2());
+      pcl_conversions::toPCL(projected_point_cloud, *bbox_crop_input);
 
-      pcl::CropBox<pcl::PCLPointCloud2> cropBox;
-      cropBox.setNegative(true);
-      cropBox.setInputCloud(bboxCropInput);
-      cropBox.setKeepOrganized(this->keepCloudsOrganized);
+      pcl::CropBox<pcl::PCLPointCloud2> crop_box;
+      crop_box.setNegative(true);
+      crop_box.setInputCloud(bbox_crop_input);
+      crop_box.setKeepOrganized(this->keep_clouds_organized_);
 
       const auto e = box.getExtents();
-      cropBox.setMin(Eigen::Vector4f(-e.x() / 2, -e.y() / 2, -e.z() / 2, 0.0));
-      cropBox.setMax(Eigen::Vector4f(e.x() / 2, e.y() / 2, e.z() / 2, 0.0));
-      cropBox.setTranslation(box.getPose().translation().cast<float>());
-      cropBox.setRotation(box.getPose().linear().eulerAngles(0, 1, 2).cast<float>());
+      crop_box.setMin(Eigen::Vector4f(-e.x() / 2, -e.y() / 2, -e.z() / 2, 0.0));
+      crop_box.setMax(Eigen::Vector4f(e.x() / 2, e.y() / 2, e.z() / 2, 0.0));
+      crop_box.setTranslation(box.getPose().translation().cast<float>());
+      crop_box.setRotation(box.getPose().linear().eulerAngles(0, 1, 2).cast<float>());
 
-      pcl::PCLPointCloud2 pclOutput;
-      cropBox.filter(pclOutput);
+      pcl::PCLPointCloud2 pcl_output;
+      crop_box.filter(pcl_output);
 
-      const sensor_msgs::msg::PointCloud2::SharedPtr boxFilteredCloud(new sensor_msgs::msg::PointCloud2());
-      pcl_conversions::moveFromPCL(pclOutput, *boxFilteredCloud);
-      boxFilteredCloud->header.stamp = scanTime;  // PCL strips precision of timestamp
+      const sensor_msgs::msg::PointCloud2::SharedPtr box_filtered_cloud(new sensor_msgs::msg::PointCloud2());
+      pcl_conversions::moveFromPCL(pcl_output, *box_filtered_cloud);
+      box_filtered_cloud->header.stamp = scan_time;  // PCL strips precision of timestamp
 
-      this->scanPointCloudNoOrientedBoundingBoxPublisher->publish(*boxFilteredCloud);
+      this->scan_point_cloud_no_oriented_bounding_box_publisher_->publish(*box_filtered_cloud);
     }
   }
 }
 
 template<typename T>
 void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
-  const sensor_msgs::msg::PointCloud2& projectedPointCloud) const {
-  if (!this->computeLocalBoundingBox && !this->computeDebugLocalBoundingBox) {
+  const sensor_msgs::msg::PointCloud2& projected_point_cloud) const {
+  if (!this->compute_local_bounding_box_ && !this->compute_debug_local_bounding_box_) {
     return;
   }
 
-  // assume this->modelMutex is locked
+  // assume this->model_mutex_ is locked
 
-  const auto& scanTime = projectedPointCloud.header.stamp;
+  const auto& scan_time = projected_point_cloud.header.stamp;
   std::string err;
   try {
-    if (!this->tfBuffer->canTransform(
-      this->localBoundingBoxFrame, this->filteringFrame, scanTime,
-      cras::remainingTime(scanTime, this->reachableTransformTimeout, clock_ptr), &err)) {
+    if (!this->tf_buffer_->canTransform(
+      this->local_bounding_box_frame_, this->filtering_frame_, scan_time,
+      cras::remainingTime(scan_time, this->reachable_transform_timeout_, clock_ptr_), &err)) {
 
       // TODO: Originally was delayed-throttle
       RCLCPP_ERROR_THROTTLE(
-        get_logger(), *clock_ptr, 3.0, "Cannot get transform %s->%s. Error is %s.",
-        this->filteringFrame.c_str(), this->localBoundingBoxFrame.c_str(), err.c_str());
+        get_logger(), *clock_ptr_, 3.0, "Cannot get transform %s->%s. Error is %s.",
+        this->filtering_frame_.c_str(), this->local_bounding_box_frame_.c_str(), err.c_str());
       return;
     }
   } catch (tf2::TransformException& e) {
     // TODO: Originally was delayed-throttle
     RCLCPP_ERROR_THROTTLE(
-      get_logger(), *clock_ptr, 3.0, "Cannot get transform %s->%s. Error is %s.",
-      this->filteringFrame.c_str(), this->localBoundingBoxFrame.c_str(), e.what());
+      get_logger(), *clock_ptr_, 3.0, "Cannot get transform %s->%s. Error is %s.",
+      this->filtering_frame_.c_str(), this->local_bounding_box_frame_.c_str(), e.what());
     return;
   }
 
-  const auto localTfMsg = this->tfBuffer->lookupTransform(
-    this->localBoundingBoxFrame, this->filteringFrame, scanTime);
-  const Eigen::Isometry3d localTf = tf2::transformToEigen(localTfMsg.transform);
+  const auto local_tf_msg = this->tf_buffer_->lookupTransform(
+    this->local_bounding_box_frame_, this->filtering_frame_, scan_time);
+  const Eigen::Isometry3d local_tf = tf2::transformToEigen(local_tf_msg.transform);
 
   std::vector<bodies::AxisAlignedBoundingBox> boxes;
 
   {
-    visualization_msgs::msg::MarkerArray boundingBoxDebugMsg;
-    for (const auto& [shapeHandle, body] : this->shapeMask->getBodiesForBoundingBox()) {
-      if (this->shapesIgnoredInBoundingBox.find(shapeHandle) != this->shapesIgnoredInBoundingBox.end()) {
+    visualization_msgs::msg::MarkerArray bounding_box_debug_msg;
+    for (const auto& [shape_handle, body] : this->shape_mask_->getBodiesForBoundingBox()) {
+      if (this->shapes_ignored_in_bounding_box_.find(shape_handle) != this->shapes_ignored_in_bounding_box_.end()) {
         continue;
       }
 
       bodies::AxisAlignedBoundingBox box;
-      bodies::computeBoundingBoxAt(body, box, localTf * body->getPose());
+      bodies::computeBoundingBoxAt(body, box, local_tf * body->getPose());
 
       boxes.push_back(box);
 
-      if (this->computeDebugLocalBoundingBox) {
+      if (this->compute_debug_local_bounding_box_) {
         visualization_msgs::msg::Marker msg;
-        msg.header.stamp = scanTime;
-        msg.header.frame_id = this->localBoundingBoxFrame;
+        msg.header.stamp = scan_time;
+        msg.header.frame_id = this->local_bounding_box_frame_;
 
         tf2::toMsg(box.sizes(), msg.scale);
         msg.pose.position = tf2::toMsg(static_cast<Eigen::Vector3d>(box.center()));
@@ -1678,37 +1677,37 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
         msg.color.a = 0.5;
         msg.type = visualization_msgs::msg::Marker::CUBE;
         msg.action = visualization_msgs::msg::Marker::ADD;
-        msg.ns = "lbbox/" + this->shapesToLinks.at(shapeHandle).cacheKey;
+        msg.ns = "lbbox/" + this->shapes_to_links_.at(shape_handle).cache_key;
         msg.frame_locked = true;
 
-        boundingBoxDebugMsg.markers.push_back(msg);
+        bounding_box_debug_msg.markers.push_back(msg);
       }
     }
 
-    if (this->computeDebugLocalBoundingBox) {
-      this->localBoundingBoxDebugMarkerPublisher->publish(boundingBoxDebugMsg);
+    if (this->compute_debug_local_bounding_box_) {
+      this->local_bounding_box_debug_marker_publisher_->publish(bounding_box_debug_msg);
     }
   }
 
-  if (this->computeLocalBoundingBox) {
+  if (this->compute_local_bounding_box_) {
     bodies::AxisAlignedBoundingBox box;
     bodies::mergeBoundingBoxes(boxes, box);
 
-    geometry_msgs::msg::PolygonStamped boundingBoxMsg;
+    geometry_msgs::msg::PolygonStamped bounding_box_msg;
 
-    boundingBoxMsg.header.stamp = scanTime;
-    boundingBoxMsg.header.frame_id = this->localBoundingBoxFrame;
+    bounding_box_msg.header.stamp = scan_time;
+    bounding_box_msg.header.frame_id = this->local_bounding_box_frame_;
 
-    boundingBoxMsg.polygon.points.resize(2);
-    tf2::toMsg(box.min(), boundingBoxMsg.polygon.points[0]);
-    tf2::toMsg(box.max(), boundingBoxMsg.polygon.points[1]);
+    bounding_box_msg.polygon.points.resize(2);
+    tf2::toMsg(box.min(), bounding_box_msg.polygon.points[0]);
+    tf2::toMsg(box.max(), bounding_box_msg.polygon.points[1]);
 
-    this->localBoundingBoxPublisher->publish(boundingBoxMsg);
+    this->local_bounding_box_publisher_->publish(bounding_box_msg);
 
-    if (this->publishLocalBoundingBoxMarker) {
+    if (this->publish_local_bounding_box_marker_) {
       visualization_msgs::msg::Marker msg;
-      msg.header.stamp = scanTime;
-      msg.header.frame_id = this->localBoundingBoxFrame;
+      msg.header.stamp = scan_time;
+      msg.header.frame_id = this->local_bounding_box_frame_;
 
       tf2::toMsg(box.sizes(), msg.scale);
       msg.pose.position = tf2::toMsg(static_cast<Eigen::Vector3d>(box.center()));
@@ -1721,33 +1720,33 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
       msg.ns = "local_bounding_box";
       msg.frame_locked = true;
 
-      this->localBoundingBoxMarkerPublisher->publish(msg);
+      this->local_bounding_box_marker_publisher_->publish(msg);
     }
 
     // compute and publish the scan_point_cloud with robot bounding box removed
-    if (this->publishNoLocalBoundingBoxPointcloud) {
-      pcl::PCLPointCloud2::Ptr bboxCropInput(new pcl::PCLPointCloud2());
-      pcl_conversions::toPCL(projectedPointCloud, *bboxCropInput);
+    if (this->publish_no_local_bounding_box_pointcloud_) {
+      pcl::PCLPointCloud2::Ptr bbox_crop_input(new pcl::PCLPointCloud2());
+      pcl_conversions::toPCL(projected_point_cloud, *bbox_crop_input);
 
-      pcl::CropBox<pcl::PCLPointCloud2> cropBox;
-      cropBox.setNegative(true);
-      cropBox.setInputCloud(bboxCropInput);
-      cropBox.setKeepOrganized(this->keepCloudsOrganized);
+      pcl::CropBox<pcl::PCLPointCloud2> crop_box;
+      crop_box.setNegative(true);
+      crop_box.setInputCloud(bbox_crop_input);
+      crop_box.setKeepOrganized(this->keep_clouds_organized_);
 
-      cropBox.setMin(Eigen::Vector4f(box.min()[0], box.min()[1], box.min()[2], 0.0));
-      cropBox.setMax(Eigen::Vector4f(box.max()[0], box.max()[1], box.max()[2], 0.0));
-      const Eigen::Isometry3d localTfInv = localTf.inverse();
-      cropBox.setTranslation(localTfInv.translation().cast<float>());
-      cropBox.setRotation(localTfInv.linear().eulerAngles(0, 1, 2).cast<float>());
+      crop_box.setMin(Eigen::Vector4f(box.min()[0], box.min()[1], box.min()[2], 0.0));
+      crop_box.setMax(Eigen::Vector4f(box.max()[0], box.max()[1], box.max()[2], 0.0));
+      const Eigen::Isometry3d localTfInv = local_tf.inverse();
+      crop_box.setTranslation(localTfInv.translation().cast<float>());
+      crop_box.setRotation(localTfInv.linear().eulerAngles(0, 1, 2).cast<float>());
 
-      pcl::PCLPointCloud2 pclOutput;
-      cropBox.filter(pclOutput);
+      pcl::PCLPointCloud2 pcl_output;
+      crop_box.filter(pcl_output);
 
-      sensor_msgs::msg::PointCloud2::SharedPtr boxFilteredCloud(new sensor_msgs::msg::PointCloud2());
-      pcl_conversions::moveFromPCL(pclOutput, *boxFilteredCloud);
-      boxFilteredCloud->header.stamp = scanTime;  // PCL strips precision of timestamp
+      sensor_msgs::msg::PointCloud2::SharedPtr box_filtered_cloud(new sensor_msgs::msg::PointCloud2());
+      pcl_conversions::moveFromPCL(pcl_output, *box_filtered_cloud);
+      box_filtered_cloud->header.stamp = scan_time;  // PCL strips precision of timestamp
 
-      this->scanPointCloudNoLocalBoundingBoxPublisher->publish(*boxFilteredCloud);
+      this->scan_point_cloud_no_local_bounding_box_publisher_->publish(*box_filtered_cloud);
     }
   }
 }
@@ -1755,13 +1754,13 @@ void RobotBodyFilter<T>::computeAndPublishLocalBoundingBox(
 template<typename T>
 void RobotBodyFilter<T>::createBodyVisualizationMsg(
   const std::map<point_containment_filter::ShapeHandle, const bodies::Body*>& bodies, const rclcpp::Time& stamp,
-  const std_msgs::msg::ColorRGBA& color, visualization_msgs::msg::MarkerArray& markerArray) const {
+  const std_msgs::msg::ColorRGBA& color, visualization_msgs::msg::MarkerArray& marker_array) const {
 
   // when computing the markers for publication, we want to publish them to the time of the
-  // scan, so we need to set cacheLookupBetweenScansRatio again to zero
-  if (this->cacheLookupBetweenScansRatio != 0.0) {
-    this->cacheLookupBetweenScansRatio = 0.0;
-    this->shapeMask->updateBodyPoses();
+  // scan, so we need to set cache_lookup_between_scans_ratio_ again to zero
+  if (this->cache_lookup_between_scans_ratio_ != 0.0) {
+    this->cache_lookup_between_scans_ratio_ = 0.0;
+    this->shape_mask_->updateBodyPoses();
   }
 
   for (const auto& [shapeHandle, body] : bodies) {
@@ -1769,14 +1768,14 @@ void RobotBodyFilter<T>::createBodyVisualizationMsg(
     bodies::constructMarkerFromBody(body, msg);
 
     msg.header.stamp = stamp;
-    msg.header.frame_id = this->filteringFrame;
+    msg.header.frame_id = this->filtering_frame_;
 
     msg.color = color;
     msg.action = visualization_msgs::msg::Marker::ADD;
-    msg.ns = this->shapesToLinks.at(shapeHandle).cacheKey;
+    msg.ns = this->shapes_to_links_.at(shapeHandle).cache_key;
     msg.frame_locked = true;
 
-    markerArray.markers.push_back(msg);
+    marker_array.markers.push_back(msg);
   }
 }
 
@@ -1799,16 +1798,16 @@ void RobotBodyFilter<T>::onRobotModelMsg(const std_msgs::msg::String::ConstShare
   RCLCPP_INFO(
     get_logger(), "RobotBodyFilter: Reloading robot model because a new model was received. Filter operation stopped.");
 
-  this->robotDescriptionString = msg->data;
+  this->robot_description_string_ = msg->data;
 
-  this->tfFramesWatchdog->pause();
+  this->tf_frames_watchdog_->pause();
   this->configured_ = false;
 
   this->clearRobotMask();
-  this->addRobotMaskFromUrdf(this->robotDescriptionString);
+  this->addRobotMaskFromUrdf(this->robot_description_string_);
 
-  this->tfFramesWatchdog->unpause();
-  this->timeConfigured = nodeHandle->now();
+  this->tf_frames_watchdog_->unpause();
+  this->time_configured_ = node_handle_->now();
   this->configured_ = true;
 
   RCLCPP_INFO(get_logger(), "RobotBodyFilter: Robot model reloaded, resuming filter operation.");
@@ -1824,14 +1823,14 @@ void RobotBodyFilter<T>::triggerModelReload(
 
   RCLCPP_INFO(get_logger(), "RobotBodyFilter: Reloading robot model because of trigger. Filter operation stopped.");
 
-  this->tfFramesWatchdog->pause();
+  this->tf_frames_watchdog_->pause();
   this->configured_ = false;
 
   this->clearRobotMask();
-  this->addRobotMaskFromUrdf(this->robotDescriptionString);
+  this->addRobotMaskFromUrdf(this->robot_description_string_);
 
-  this->tfFramesWatchdog->unpause();
-  this->timeConfigured = nodeHandle->now();
+  this->tf_frames_watchdog_->unpause();
+  this->time_configured_ = node_handle_->now();
   this->configured_ = true;
 
   RCLCPP_INFO(get_logger(), "RobotBodyFilter: Robot model reloaded, resuming filter operation.");
@@ -1840,61 +1839,63 @@ void RobotBodyFilter<T>::triggerModelReload(
 
 template<typename T>
 RobotBodyFilter<T>::~RobotBodyFilter() {
-  if (this->tfFramesWatchdog != nullptr) {
-    this->tfFramesWatchdog->stop();
+  if (this->tf_frames_watchdog_ != nullptr) {
+    this->tf_frames_watchdog_->stop();
   }
 }
 
 template<typename T>
-ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForContainsTest(const string& linkName) const {
-  return this->getLinkInflationForContainsTest({linkName});
+ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForContainsTest(const string& link_name) const {
+  return this->getLinkInflationForContainsTest({link_name});
 }
 
 template<typename T>
-ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForContainsTest(const std::vector<std::string>& linkNames) const {
-  return this->getLinkInflation(linkNames, this->defaultContainsInflation, this->perLinkContainsInflation);
+ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForContainsTest(const std::vector<std::string>& link_names) const {
+  return this->getLinkInflation(link_names, this->default_contains_inflation_, this->per_link_contains_inflation_);
 }
 
 template<typename T>
-ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForShadowTest(const string& linkName) const {
-  return this->getLinkInflationForShadowTest({linkName});
+ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForShadowTest(const string& link_name) const {
+  return this->getLinkInflationForShadowTest({link_name});
 }
 
 template<typename T>
-ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForShadowTest(const std::vector<std::string>& linkNames) const {
-  return this->getLinkInflation(linkNames, this->defaultShadowInflation, this->perLinkShadowInflation);
+ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForShadowTest(const std::vector<std::string>& link_names) const {
+  return this->getLinkInflation(link_names, this->default_shadow_inflation_, this->per_link_shadow_inflation_);
 }
 
 template<typename T>
-ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForBoundingSphere(const string& linkName) const {
-  return this->getLinkInflationForBoundingSphere({linkName});
+ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForBoundingSphere(const string& link_name) const {
+  return this->getLinkInflationForBoundingSphere({link_name});
 }
 
 template<typename T>
-ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForBoundingSphere(const std::vector<std::string>& linkNames) const {
-  return this->getLinkInflation(linkNames, this->defaultBsphereInflation, this->perLinkBsphereInflation);
+ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForBoundingSphere(
+  const std::vector<std::string>& link_names) const {
+
+  return this->getLinkInflation(link_names, this->default_bsphere_inflation_, this->per_link_bsphere_inflation_);
 }
 
 template<typename T>
-ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForBoundingBox(const string& linkName) const {
-  return this->getLinkInflationForBoundingBox({linkName});
+ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForBoundingBox(const string& link_name) const {
+  return this->getLinkInflationForBoundingBox({link_name});
 }
 
 template<typename T>
-ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForBoundingBox(const std::vector<std::string>& linkNames) const {
-  return this->getLinkInflation(linkNames, this->defaultBboxInflation, this->perLinkBboxInflation);
+ScaleAndPadding RobotBodyFilter<T>::getLinkInflationForBoundingBox(const std::vector<std::string>& link_names) const {
+  return this->getLinkInflation(link_names, this->default_bbox_inflation_, this->per_link_bbox_inflation_);
 }
 
 template<typename T>
 ScaleAndPadding RobotBodyFilter<T>::getLinkInflation(
-  const std::vector<std::string>& linkNames, const ScaleAndPadding& defaultInflation,
-  const std::map<std::string, ScaleAndPadding>& perLinkInflation) const {
+  const std::vector<std::string>& link_names, const ScaleAndPadding& default_inflation,
+  const std::map<std::string, ScaleAndPadding>& per_link_inflation) const {
 
-  ScaleAndPadding result = defaultInflation;
+  ScaleAndPadding result = default_inflation;
 
-  for (const auto& linkName : linkNames) {
-    if (perLinkInflation.find(linkName) != perLinkInflation.end()) {
-      result = perLinkInflation.at(linkName);
+  for (const auto& link_name : link_names) {
+    if (per_link_inflation.find(link_name) != per_link_inflation.end()) {
+      result = per_link_inflation.at(link_name);
     }
   }
 
@@ -1913,10 +1914,10 @@ bool ScaleAndPadding::operator!=(const ScaleAndPadding& other) const {
 
 template<typename T>
 std::string RobotBodyFilter<T>::getLinkTfPrefix() const {
-  if (this->linkTfPrefix.empty()) {
+  if (this->link_tf_prefix_.empty()) {
     return "";
   }
-  return this->linkTfPrefix + "/";
+  return this->link_tf_prefix_ + "/";
 }
 }
 

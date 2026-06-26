@@ -9,8 +9,8 @@
 
 namespace bodies {
 
-typedef bodies::AABB AxisAlignedBoundingBox;
-typedef bodies::OBB OrientedBoundingBox;
+using AxisAlignedBoundingBox = AABB;
+using OrientedBoundingBox = OBB;
 
 /**
  * \brief Compute AABB for the body at different pose. Can't use setPose() because we want `body` to be const.
@@ -21,6 +21,6 @@ typedef bodies::OBB OrientedBoundingBox;
  *
  * \throw std::runtime_error For unsupported body types (supported are SPHERE, CYLINDER, BOX, MESH).
  */
-void computeBoundingBoxAt(const bodies::Body* body, AxisAlignedBoundingBox& bbox, const Eigen::Isometry3d& pose);
+void computeBoundingBoxAt(const Body* body, AxisAlignedBoundingBox& bbox, const Eigen::Isometry3d& pose);
 
 }  // namespace bodies

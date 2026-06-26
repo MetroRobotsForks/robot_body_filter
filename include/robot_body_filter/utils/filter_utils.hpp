@@ -24,12 +24,12 @@ protected:
    * \return Whether the parameter is specified.
    */
   bool hasParam(const std::string& name) const {
-    const auto paramName = this->param_prefix_ + name;
-    if (this->params_interface_->has_parameter(paramName)) {
+    const auto param_name = this->param_prefix_ + name;
+    if (this->params_interface_->has_parameter(param_name)) {
       return true;
     }
     const auto overrides = this->params_interface_->get_parameter_overrides();
-    return overrides.count(paramName) > 0;
+    return overrides.count(param_name) > 0;
   }
 
   /**
@@ -38,29 +38,29 @@ protected:
    *        the loaded values.
    * \tparam T Param type.
    * \param[in] name Name of the parameter (without the `filterN.params.` prefix).
-   * \param[in] defaultValue The default value to use.
+   * \param[in] default_value The default value to use.
    * \param[in] unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
    *                 messages more informative.
-   * \param[out] defaultUsed Whether the default value was used.
-   * \param[in] valueToStringFn Function that converts valid/default values to string (for console logging).
+   * \param[out] default_used Whether the default value was used.
+   * \param[in] value_to_string_fn Function that converts valid/default values to string (for console logging).
    *                            Set to nullptr to disable logging.
    * \return The loaded param value.
    */
   template<typename T>
   T getParamVerbose(
-    const std::string &name, const T &defaultValue = T(), const std::string &unit = "", bool* defaultUsed = nullptr,
-    ToStringFn<T> valueToStringFn = &cras::to_string) {
+    const std::string &name, const T &default_value = T(), const std::string &unit = "", bool* default_used = nullptr,
+    ToStringFn<T> value_to_string_fn = &cras::to_string) {
 
     T value;
     try {
       if (this->hasParam(name) && filters::FilterBase<F>::getParam(name, value)) {
-        if (valueToStringFn != nullptr) {
+        if (value_to_string_fn != nullptr) {
           RCLCPP_INFO_STREAM(
             this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
-            ", value: " << valueToStringFn(value) << cras::prependIfNonEmpty(unit, " "));
+            ", value: " << value_to_string_fn(value) << cras::prependIfNonEmpty(unit, " "));
         }
-        if (defaultUsed != nullptr) {
-          *defaultUsed = false;
+        if (default_used != nullptr) {
+          *default_used = false;
         }
         return value;
       }
@@ -70,34 +70,34 @@ protected:
         this->getName() << ": Error getting value of parameter " << name << ": " << e.what());
     }
 
-    if (valueToStringFn != nullptr) {
+    if (value_to_string_fn != nullptr) {
       RCLCPP_INFO_STREAM(
         this->logging_interface_->get_logger(), this->getName() << ": Parameter " << name <<
-        " not defined, assigning default: " << valueToStringFn(defaultValue) << cras::prependIfNonEmpty(unit, " "));
+        " not defined, assigning default: " << value_to_string_fn(default_value) << cras::prependIfNonEmpty(unit, " "));
     }
-    if (defaultUsed != nullptr) {
-      *defaultUsed = true;
+    if (default_used != nullptr) {
+      *default_used = true;
     }
-    return defaultValue;
+    return default_value;
   }
 
   /** \brief Get the value of the given filter parameter, falling back to the
    *         specified default value, and print out a ROS info/warning message with
    *         the loaded values.
    * \param[in] name Name of the parameter (without the `filterN.params.` prefix).
-   * \param[in] defaultValue The default value to use.
+   * \param[in] default_value The default value to use.
    * \param[in] unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
    *                 messages more informative.
-   * \param[out] defaultUsed Whether the default value was used.
-   * \param[in] valueToStringFn Function that converts valid/default values to string (for console logging).
+   * \param[out] default_used Whether the default value was used.
+   * \param[in] value_to_string_fn Function that converts valid/default values to string (for console logging).
    *                            Set to nullptr to disable logging.
    * \return The loaded param value.
    */
   std::string getParamVerbose(
-    const std::string& name, const char* defaultValue, const std::string& unit = "", bool* defaultUsed = nullptr,
-    const ToStringFn<std::string> valueToStringFn = &cras::to_string) {
+    const std::string& name, const char* default_value, const std::string& unit = "", bool* default_used = nullptr,
+    const ToStringFn<std::string> value_to_string_fn = &cras::to_string) {
 
-    return this->getParamVerbose(name, std::string(defaultValue), unit, defaultUsed, valueToStringFn);
+    return this->getParamVerbose(name, std::string(default_value), unit, default_used, value_to_string_fn);
   }
 
   // getParam specializations for unsigned values
@@ -106,20 +106,20 @@ protected:
    *         specified default value, and print out a ROS info/warning message with
    *         the loaded values.
    * \param[in] name Name of the parameter (without the `filterN.params.` prefix).
-   * \param[in] defaultValue The default value to use.
+   * \param[in] default_value The default value to use.
    * \param[in] unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
    *                 messages more informative.
-   * \param[out] defaultUsed Whether the default value was used.
-   * \param[in] valueToStringFn Function that converts valid/default values to string (for console logging).
+   * \param[out] default_used Whether the default value was used.
+   * \param[in] value_to_string_fn Function that converts valid/default values to string (for console logging).
    *                            Set to nullptr to disable logging.
    * \return The loaded param value.
    * \throw std::invalid_argument If the loaded value is negative.
    */
   uint64_t getParamVerbose(
-    const std::string& name, const uint64_t& defaultValue, const std::string& unit = "", bool* defaultUsed = nullptr,
-    const ToStringFn<int> valueToStringFn = &cras::to_string) {
+    const std::string& name, const uint64_t& default_value, const std::string& unit = "", bool* default_used = nullptr,
+    const ToStringFn<int> value_to_string_fn = &cras::to_string) {
 
-    return this->getParamUnsigned<uint64_t, int>(name, defaultValue, unit, defaultUsed, valueToStringFn);
+    return this->getParamUnsigned<uint64_t, int>(name, default_value, unit, default_used, value_to_string_fn);
   }
 
   // there actually is an unsigned int implementation of FilterBase::getParam,
@@ -129,20 +129,20 @@ protected:
    *         specified default value, and print out a ROS info/warning message with
    *         the loaded values.
    * \param[in] name Name of the parameter (without the `filterN.params.` prefix).
-   * \param[in] defaultValue The default value to use.
+   * \param[in] default_value The default value to use.
    * \param[in] unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
    *                 messages more informative.
-   * \param[out] defaultUsed Whether the default value was used.
-   * \param[in] valueToStringFn Function that converts valid/default values to string (for console logging).
+   * \param[out] default_used Whether the default value was used.
+   * \param[in] value_to_string_fn Function that converts valid/default values to string (for console logging).
    *                            Set to nullptr to disable logging.
    * \return The loaded param value.
    * \throw std::invalid_argument If the loaded value is negative.
    */
   unsigned int getParamVerbose(
-    const std::string& name, const unsigned int& defaultValue, const std::string& unit = "",
-    bool* defaultUsed = nullptr, const ToStringFn<int> valueToStringFn = &cras::to_string) {
+    const std::string& name, const unsigned int& default_value, const std::string& unit = "",
+    bool* default_used = nullptr, const ToStringFn<int> value_to_string_fn = &cras::to_string) {
 
-    return this->getParamUnsigned<unsigned int, int>(name, defaultValue, unit, defaultUsed, valueToStringFn);
+    return this->getParamUnsigned<unsigned int, int>(name, default_value, unit, default_used, value_to_string_fn);
   }
 
   // ROS types specializations
@@ -151,19 +151,19 @@ protected:
    *         specified default value, and print out a ROS info/warning message with
    *         the loaded values.
    * \param[in] name Name of the parameter (without the `filterN.params.` prefix).
-   * \param[in] defaultValue The default value to use.
+   * \param[in] default_value The default value to use.
    * \param[in] unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
    *                 messages more informative.
-   * \param[out] defaultUsed Whether the default value was used.
-   * \param[in] valueToStringFn Function that converts valid/default values to string (for console logging).
+   * \param[out] default_used Whether the default value was used.
+   * \param[in] value_to_string_fn Function that converts valid/default values to string (for console logging).
    *                            Set to nullptr to disable logging.
    * \return The loaded param value.
    */
   rclcpp::Duration getParamDuration(
-    const std::string& name, const rclcpp::Duration& defaultValue, const std::string& unit = "",
-    bool* defaultUsed = nullptr, const ToStringFn<double> valueToStringFn = &cras::to_string) {
+    const std::string& name, const rclcpp::Duration& default_value, const std::string& unit = "",
+    bool* default_used = nullptr, const ToStringFn<double> value_to_string_fn = &cras::to_string) {
 
-    const double temp_value = getParamVerbose(name, defaultValue.seconds(), unit, defaultUsed, valueToStringFn);
+    const double temp_value = getParamVerbose(name, default_value.seconds(), unit, default_used, value_to_string_fn);
     return rclcpp::Duration::from_seconds(temp_value);
   }
 
@@ -172,21 +172,21 @@ protected:
    *         the loaded values.
    * \tparam T Type of the values in the set. Only std::string and double are supported.
    * \param[in] name Name of the parameter (without the `filterN.params.` prefix).
-   * \param[in] defaultValue The default value to use.
+   * \param[in] default_value The default value to use.
    * \param[in] unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
    *                 messages more informative.
-   * \param[out] defaultUsed Whether the default value was used.
-   * \param[in] valueToStringFn Function that converts valid/default values to string (for console logging).
+   * \param[out] default_used Whether the default value was used.
+   * \param[in] value_to_string_fn Function that converts valid/default values to string (for console logging).
    *                            Set to nullptr to disable logging.
    * \return The loaded param value.
    */
   template<typename T>
   std::set<T> getParamVerboseSet(
-    const std::string& name, const std::set<T>& defaultValue = std::set<T>(), const std::string& unit = "",
-    bool* defaultUsed = nullptr, const ToStringFn<std::vector<T>> valueToStringFn = &cras::to_string) {
+    const std::string& name, const std::set<T>& default_value = std::set<T>(), const std::string& unit = "",
+    bool* default_used = nullptr, const ToStringFn<std::vector<T>> value_to_string_fn = &cras::to_string) {
 
-    std::vector<T> vector(defaultValue.begin(), defaultValue.end());
-    vector = this->getParamVerbose(name, vector, unit, defaultUsed, valueToStringFn);
+    std::vector<T> vector(default_value.begin(), default_value.end());
+    vector = this->getParamVerbose(name, vector, unit, default_used, value_to_string_fn);
     return std::set<T>(vector.begin(), vector.end());
   }
 
@@ -196,19 +196,19 @@ protected:
    * \tparam T Type of the values in the map.
    * \tparam MapType Type of the map. Only maps with string keys are expected to be used.
    * \param[in] name Name of the parameter (without the `filterN.params.` prefix).
-   * \param[in] defaultValue The default value to use.
+   * \param[in] default_value The default value to use.
    * \param[in] unit Optional string serving as a [physical/SI] unit of the parameter, just to make the
    *             messages more informative.
-   * \param[out] defaultUsed Whether the default value was used.
-   * \param[in] valueToStringFn Function that converts valid/default values to string (for console logging).
+   * \param[out] default_used Whether the default value was used.
+   * \param[in] value_to_string_fn Function that converts valid/default values to string (for console logging).
    *                            Set to nullptr to disable logging.
    * \return The loaded param value.
    */
   template<typename T, typename MapType=std::map<std::string, T>>
   MapType getParamVerboseMap(
-    const std::string& name, const std::map<std::string, T>& defaultValue = std::map<std::string, T>(),
-    const std::string& unit = "", bool* defaultUsed = nullptr,
-    const ToStringFn<MapType> valueToStringFn = &cras::to_string) {
+    const std::string& name, const std::map<std::string, T>& default_value = std::map<std::string, T>(),
+    const std::string& unit = "", bool* default_used = nullptr,
+    const ToStringFn<MapType> value_to_string_fn = &cras::to_string) {
 
     MapType value;
 
@@ -239,22 +239,22 @@ protected:
     }
 
     if (value.empty()) {
-      value = defaultValue;
-      if (defaultUsed != nullptr) {
-        *defaultUsed = true;
+      value = default_value;
+      if (default_used != nullptr) {
+        *default_used = true;
       }
-      if (valueToStringFn != nullptr) {
+      if (value_to_string_fn != nullptr) {
         RCLCPP_INFO_STREAM(
           this->logging_interface_->get_logger(), this->getName() << ": Parameter " << name <<
-          " not defined, assigning default: " << valueToStringFn(defaultValue) << cras::prependIfNonEmpty(unit, " "));
+          " not defined, assigning default: " << value_to_string_fn(default_value) << cras::prependIfNonEmpty(unit, " "));
       }
     } else {
-      if (defaultUsed != nullptr) {
-        *defaultUsed = false;
+      if (default_used != nullptr) {
+        *default_used = false;
       }
       RCLCPP_INFO_STREAM(
         this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
-        ", value: " << valueToStringFn(value) << cras::prependIfNonEmpty(unit, " "));
+        ", value: " << value_to_string_fn(value) << cras::prependIfNonEmpty(unit, " "));
     }
 
     return value;
@@ -263,30 +263,30 @@ protected:
 private:
   template<typename Result, typename Param>
   Result getParamUnsigned(
-    const std::string& name, const Result& defaultValue, const std::string& unit = "", bool* defaultUsed = nullptr,
-    const ToStringFn<Param> valueToStringFn = &cras::to_string) {
+    const std::string& name, const Result& default_value, const std::string& unit = "", bool* default_used = nullptr,
+    const ToStringFn<Param> value_to_string_fn = &cras::to_string) {
 
-    const Param signedValue = this->getParamVerbose(
-      name, static_cast<Param>(defaultValue), unit, defaultUsed, valueToStringFn);
-    if (signedValue < 0) {
-      if (valueToStringFn != nullptr) {
+    const Param signed_value = this->getParamVerbose(
+      name, static_cast<Param>(default_value), unit, default_used, value_to_string_fn);
+    if (signed_value < 0) {
+      if (value_to_string_fn != nullptr) {
         RCLCPP_ERROR_STREAM(
-          this->logging_interface_->get_logger(), this->getName() << ": Value " << valueToStringFn(signedValue) <<
+          this->logging_interface_->get_logger(), this->getName() << ": Value " << value_to_string_fn(signed_value) <<
           " of unsigned parameter " << name << " is negative.");
       }
       throw std::invalid_argument(name);
     }
-    return static_cast<Result>(signedValue);
+    return static_cast<Result>(signed_value);
   }
 
   // generic casting getParam()
   template<typename Result, typename Param>
   Result getParamCast(
-    const std::string& name, const Param& defaultValue, const std::string& unit = "", bool* defaultUsed = nullptr,
-    const ToStringFn<Param> valueToStringFn = &cras::to_string) {
+    const std::string& name, const Param& default_value, const std::string& unit = "", bool* default_used = nullptr,
+    const ToStringFn<Param> value_to_string_fn = &cras::to_string) {
 
-    const Param paramValue = this->getParamVerbose(name, defaultValue, unit, defaultUsed, valueToStringFn);
-    return Result(paramValue);
+    const Param param_value = this->getParamVerbose(name, default_value, unit, default_used, value_to_string_fn);
+    return Result(param_value);
   }
 };
 

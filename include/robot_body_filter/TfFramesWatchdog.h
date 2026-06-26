@@ -27,10 +27,10 @@ class TFFramesWatchdog {
 public:
   TFFramesWatchdog(
     const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr& logging_interface,
-    const rclcpp::Clock::SharedPtr& clock_ptr, std::string robotFrame, std::set<std::string> monitoredFrames,
-    std::shared_ptr<tf2_ros::Buffer> tfBuffer,
-    rclcpp::Duration unreachableTfLookupTimeout = rclcpp::Duration(0, 100000000), // 0.1 sec
-    rclcpp::Rate::SharedPtr unreachableFramesCheckRate = std::make_shared<rclcpp::Rate>(1.0));
+    const rclcpp::Clock::SharedPtr& clock_ptr, std::string robot_frame, std::set<std::string> monitored_frames,
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer,
+    rclcpp::Duration unreachable_tf_lookup_timeout = rclcpp::Duration(0, 100000000), // 0.1 sec
+    rclcpp::Rate::SharedPtr unreachable_frames_check_rate = std::make_shared<rclcpp::Rate>(1.0));
 
   virtual ~TFFramesWatchdog();
 
@@ -70,16 +70,16 @@ public:
 
   /**
    * \brief TF frames to be monitored by this watchdog.
-   * \param[in] monitoredFrames Set of frames to be monitored.
+   * \param[in] monitored_frames Set of frames to be monitored.
    */
-  void setMonitoredFrames(std::set<std::string> monitoredFrames);
+  void setMonitoredFrames(std::set<std::string> monitored_frames);
 
   /**
    * \brief Add the given frame to the set of monitored frames (if it is not
    * already there).
-   * \param[in] monitoredFrame Name of the frame.
+   * \param[in] monitored_frame Name of the frame.
    */
-  void addMonitoredFrame(const std::string& monitoredFrame);
+  void addMonitoredFrame(const std::string& monitored_frame);
 
   /**
    * \brief Return whether the given frame is monitored by this watchdog.
@@ -137,10 +137,10 @@ protected:
 
   /**
    * \brief Add the given frame to the set of monitored frames (if it is not already there).
-   * \param[in] monitoredFrame Name of the frame.
+   * \param[in] monitored_frame Name of the frame.
    * \note The caller has to hold a lock to framesMutex.
    */
-  void addMonitoredFrameNoLock(const std::string& monitoredFrame);
+  void addMonitoredFrameNoLock(const std::string& monitored_frame);
 
   /**
    * \brief Mark the given frame as reachable.
@@ -160,36 +160,36 @@ protected:
   void searchForReachableFrames();
 
   //! The target frame of all watched transforms.
-  std::string robotFrame;
+  std::string robot_frame_;
   //! List of source frames for which TFs to robot_frame are available.
-  std::set<std::string> reachableFrames;
+  std::set<std::string> reachable_frames_;
   //! Set of frames to be watched
-  std::set<std::string> monitoredFrames;
+  std::set<std::string> monitored_frames_;
 
-  //! If true, this thread is paused.
-  volatile bool paused = true;
+  //! If true, this thread is paused_.
+  volatile bool paused_ = true;
   //! True if the watchdog thread has been started.
-  bool started = false;
+  bool started_ = false;
   //! If true, the watchdog should stop its execution. Blocks until the
   //! execution thread exits.
-  volatile bool shouldStop = false;
+  volatile bool should_stop_ = false;
 
   //! TF buffer
-  std::shared_ptr<tf2_ros::Buffer> tfBuffer;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 
   //! Timeout for canTransform() for figuring out if an unreachable frame became reachable.
-  rclcpp::Duration unreachableTfLookupTimeout;
+  rclcpp::Duration unreachable_tf_lookup_timeout_;
   //! Rate at which checking for unreachable frames will be done.
-  rclcpp::Rate::SharedPtr unreachableFramesCheckRate;
+  rclcpp::Rate::SharedPtr unreachable_frames_check_rate_;
 
-  //! Lock this mutex any time you want to work with monitoredFrames or reachableFrames.
-  mutable std::mutex framesMutex;
+  //! Lock this mutex any time you want to work with monitored_frames_ or reachable_frames_.
+  mutable std::mutex frames_mutex_;
 
 private:
-  std::thread thisThread;
+  std::thread this_thread_;
 
-  rclcpp::Logger logger;
-  rclcpp::Clock::SharedPtr clock_ptr;
+  rclcpp::Logger logger_;
+  rclcpp::Clock::SharedPtr clock_ptr_;
 };
 
 }  // namespace robot_body_filter

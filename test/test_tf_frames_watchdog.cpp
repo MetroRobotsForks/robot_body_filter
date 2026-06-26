@@ -74,57 +74,57 @@ TEST(TfFramesWatchdog, ThreadControl) {
     nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
     rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
-  EXPECT_FALSE(watchdog.started);
-  EXPECT_TRUE(watchdog.paused);
-  EXPECT_FALSE(watchdog.shouldStop);
+  EXPECT_FALSE(watchdog.started_);
+  EXPECT_TRUE(watchdog.paused_);
+  EXPECT_FALSE(watchdog.should_stop_);
 
   watchdog.unpause();
-  EXPECT_FALSE(watchdog.started);
-  EXPECT_FALSE(watchdog.paused);
-  EXPECT_FALSE(watchdog.shouldStop);
+  EXPECT_FALSE(watchdog.started_);
+  EXPECT_FALSE(watchdog.paused_);
+  EXPECT_FALSE(watchdog.should_stop_);
 
   watchdog.pause();
-  EXPECT_FALSE(watchdog.started);
-  EXPECT_TRUE(watchdog.paused);
-  EXPECT_FALSE(watchdog.shouldStop);
+  EXPECT_FALSE(watchdog.started_);
+  EXPECT_TRUE(watchdog.paused_);
+  EXPECT_FALSE(watchdog.should_stop_);
 
   watchdog.stop();
-  EXPECT_FALSE(watchdog.started);
-  EXPECT_TRUE(watchdog.paused);
-  EXPECT_TRUE(watchdog.shouldStop);
+  EXPECT_FALSE(watchdog.started_);
+  EXPECT_TRUE(watchdog.paused_);
+  EXPECT_TRUE(watchdog.should_stop_);
 
   watchdog.start();
   for (size_t i = 0; i < 100; ++i) {
-    if (watchdog.started) {
+    if (watchdog.started_) {
       break;
     }
     rclcpp::sleep_for(std::chrono::milliseconds(10));
   }
-  EXPECT_TRUE(watchdog.started);
-  EXPECT_FALSE(watchdog.paused);
-  EXPECT_FALSE(watchdog.shouldStop);
+  EXPECT_TRUE(watchdog.started_);
+  EXPECT_FALSE(watchdog.paused_);
+  EXPECT_FALSE(watchdog.should_stop_);
 
   watchdog.stop();
-  EXPECT_TRUE(watchdog.started);
-  EXPECT_TRUE(watchdog.paused);
-  EXPECT_TRUE(watchdog.shouldStop);
+  EXPECT_TRUE(watchdog.started_);
+  EXPECT_TRUE(watchdog.paused_);
+  EXPECT_TRUE(watchdog.should_stop_);
 
   // test that the watchdog can be re-run
   watchdog.start();
   for (size_t i = 0; i < 100; ++i) {
-    if (watchdog.started) {
+    if (watchdog.started_) {
       break;
     }
     rclcpp::sleep_for(std::chrono::milliseconds(10));
   }
-  EXPECT_TRUE(watchdog.started);
-  EXPECT_FALSE(watchdog.paused);
-  EXPECT_FALSE(watchdog.shouldStop);
+  EXPECT_TRUE(watchdog.started_);
+  EXPECT_FALSE(watchdog.paused_);
+  EXPECT_FALSE(watchdog.should_stop_);
 
   watchdog.stop();
-  EXPECT_TRUE(watchdog.started);
-  EXPECT_TRUE(watchdog.paused);
-  EXPECT_TRUE(watchdog.shouldStop);
+  EXPECT_TRUE(watchdog.started_);
+  EXPECT_TRUE(watchdog.paused_);
+  EXPECT_TRUE(watchdog.should_stop_);
 }
 
 TEST(TfFramesWatchdog, SearchForReachableFrames) {
@@ -136,7 +136,7 @@ TEST(TfFramesWatchdog, SearchForReachableFrames) {
     nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
     rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
-  watchdog.unpause();  // searchForReachableFrames checks this->paused
+  watchdog.unpause();  // searchForReachableFrames checks this->paused_
 
   rclcpp::Time start = clock_ptr->now();
   watchdog.searchForReachableFrames();
@@ -146,8 +146,8 @@ TEST(TfFramesWatchdog, SearchForReachableFrames) {
   EXPECT_FALSE(watchdog.isReachable("front_left_flipper"));
   // we're searching for 2 frames; check that the search took at least 2x lookup timeout time, but
   // it did not take much more
-  EXPECT_LE(2.0 * watchdog.unreachableTfLookupTimeout.seconds(), (end - start).seconds());
-  EXPECT_GE(2.5 * watchdog.unreachableTfLookupTimeout.seconds(), (end - start).seconds());
+  EXPECT_LE(2.0 * watchdog.unreachable_tf_lookup_timeout_.seconds(), (end - start).seconds());
+  EXPECT_GE(2.5 * watchdog.unreachable_tf_lookup_timeout_.seconds(), (end - start).seconds());
 
   geometry_msgs::msg::TransformStamped tf;
   tf.header.frame_id = "base_link";
@@ -166,8 +166,8 @@ TEST(TfFramesWatchdog, SearchForReachableFrames) {
   EXPECT_FALSE(watchdog.isReachable("front_left_flipper"));
   // we're searching for 2 frames, one of which should be found immediately; check that the search
   // took at least 1x lookup timeout time, but it did not take much more
-  EXPECT_LE(1.0 * watchdog.unreachableTfLookupTimeout.seconds(), (end - start).seconds());
-  EXPECT_GE(1.5 * watchdog.unreachableTfLookupTimeout.seconds(), (end - start).seconds());
+  EXPECT_LE(1.0 * watchdog.unreachable_tf_lookup_timeout_.seconds(), (end - start).seconds());
+  EXPECT_GE(1.5 * watchdog.unreachable_tf_lookup_timeout_.seconds(), (end - start).seconds());
 
   tf.header.frame_id = "left_track";
   tf.child_frame_id = "front_left_flipper";
@@ -195,7 +195,7 @@ TEST(TfFramesWatchdog, LookupTransform) {
     watchdog.lookupTransform("left_track", clock_ptr->now(), rclcpp::Duration::from_seconds(1)),
     std::runtime_error);
 
-  watchdog.started = true;  // fake the running thread
+  watchdog.started_ = true;  // fake the running thread
 
   EXPECT_FALSE(watchdog.isReachable("left_track"));
   auto resTf = watchdog.lookupTransform("left_track", clock_ptr->now(), rclcpp::Duration::from_seconds(1));

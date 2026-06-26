@@ -7,7 +7,7 @@
 
 namespace bodies {
 
-void computeBoundingBoxAt(const bodies::Body* body, AxisAlignedBoundingBox& bbox, const Eigen::Isometry3d& pose) {
+void computeBoundingBoxAt(const Body* body, AxisAlignedBoundingBox& bbox, const Eigen::Isometry3d& pose) {
   bbox.setEmpty();
 
   if (body == nullptr) {
@@ -17,21 +17,21 @@ void computeBoundingBoxAt(const bodies::Body* body, AxisAlignedBoundingBox& bbox
   switch (body->getType()) {
     case shapes::SPHERE:
     {
-      bodies::Sphere copy(*dynamic_cast<const bodies::Sphere*>(body));
+      Sphere copy(*dynamic_cast<const Sphere*>(body));
       copy.setPose(pose);
       copy.computeBoundingBox(bbox);
     }
     break;
     case shapes::CYLINDER:
     {
-      bodies::Cylinder copy(*dynamic_cast<const bodies::Cylinder*>(body));
+      Cylinder copy(*dynamic_cast<const Cylinder*>(body));
       copy.setPose(pose);
       copy.computeBoundingBox(bbox);
     }
     break;
     case shapes::BOX:
     {
-      bodies::Box copy(*dynamic_cast<const bodies::Box*>(body));
+      Box copy(*dynamic_cast<const Box*>(body));
       copy.setPose(pose);
       copy.computeBoundingBox(bbox);
     }

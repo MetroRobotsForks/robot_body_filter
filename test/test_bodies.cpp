@@ -264,11 +264,11 @@ TEST(Bodies, ComputeBoundingBoxConvexMesh) {
     {3.0, 2.0, 1.0},
   };
   bool matches = false;
-  double maxErr = 1e-6;
+  double max_err = 1e-6;
   for (const auto& ext : permutations) {
-    if (fabs(obb1.getExtents().x() - std::get<0>(ext)) < maxErr &&
-      fabs(obb1.getExtents().y() - std::get<1>(ext)) < maxErr &&
-      fabs(obb1.getExtents().z() - std::get<2>(ext)) < maxErr) {
+    if (fabs(obb1.getExtents().x() - std::get<0>(ext)) < max_err &&
+      fabs(obb1.getExtents().y() - std::get<1>(ext)) < max_err &&
+      fabs(obb1.getExtents().z() - std::get<2>(ext)) < max_err) {
       matches = true;
       break;
     }

@@ -82,27 +82,27 @@ public:
   };
 
   /**
-   * \brief
-   * \param[in] logging_interface
-   * \param[in] clock_ptr
-   * \param[in] transformCallback
-   * \param[in] minSensorDist
-   * \param[in] maxSensorDist
-   * \param[in] doClipping
-   * \param[in] doContainsTest
-   * \param[in] doShadowTest
-   * \param[in] maxShadowDist
+   * \brief Constructor of the RayCastingShapeMask.
+   * \param[in] logging_interface Interface for logging messages.
+   * \param[in] clock_ptr The clock to use.
+   * \param[in] transform_callback Callback used to transform bodies into the filtering frame.
+   * \param[in] min_sensor_dist Minimum distance for clipping points.
+   * \param[in] max_sensor_dist Maximum distance for clipping points.
+   * \param[in] do_clipping Whether to perform distance clipping tests.
+   * \param[in] do_contains_test Whether to perform point containment tests.
+   * \param[in] do_shadow_test Whether to perform ray-casting shadow tests.
+   * \param[in] max_shadow_dist Maximum distance for shadow testing. Points further than this are considered OUTSIDE.
    */
   RayCastingShapeMask(
     const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr& logging_interface,
     const rclcpp::Clock::SharedPtr& clock_ptr,
-    const TransformCallback& transformCallback,
-    double minSensorDist = 0.0,
-    double maxSensorDist = 1e10,
-    bool doClipping = true,
-    bool doContainsTest = true,
-    bool doShadowTest = true,
-    double maxShadowDist = -1.0);
+    const TransformCallback& transform_callback,
+    double min_sensor_dist = 0.0,
+    double max_sensor_dist = 1e10,
+    bool do_clipping = true,
+    bool do_contains_test = true,
+    bool do_shadow_test = true,
+    double max_shadow_dist = -1.0);
 
   ~RayCastingShapeMask() override;
 
@@ -112,7 +112,7 @@ public:
    * \param[in] shape The shape to be filtered.
    * \param[in] scale Scale of the shape to be used in both contains and shadow tests.
    * \param[in] padding Padding of the shape to be used in both contains and shadow tests.
-   * \param[in] updateInternalStructures Set to true if only adding a single shape. If adding a batch of
+   * \param[in] update_internal_structures Set to true if only adding a single shape. If adding a batch of
    *            shapes, set this to false and call updateInternalStructures() manually at the end of the batch.
    * \param[in] name Optional name of the shape. Used when reporting problems with the shape transforms.
    * \return A handle of the shape. It can be used for removing the shape. The `contains` and
@@ -124,22 +124,22 @@ public:
     const shapes::ShapeConstPtr& shape,
     double scale = 1.0,
     double padding = 0.0,
-    bool updateInternalStructures = true,
+    bool update_internal_structures = true,
     const std::string& name = "");
 
   /**
    * \brief Add the given shape to the set of filtered bodies. The internally created body will be
    *        transformed by the TransformCallback to which the handle of this shape will be passed.
    * \param[in] shape The shape to be filtered.
-   * \param[in] containsScale Scale of the shape to be used in contains tests.
-   * \param[in] containsPadding Padding of the shape to be used in contains tests.
-   * \param[in] shadowScale Scale of the shape to be used in shadow tests.
-   * \param[in] shadowPadding Padding of the shape to be used in shadow tests.
-   * \param[in] bsphereScale Scale of the shape to be used in bounding sphere computation.
-   * \param[in] bspherePadding Padding of the shape to be used in bounding sphere computation.
-   * \param[in] bboxScale Scale of the shape to be used in bounding box computation.
-   * \param[in] bboxPadding Padding of the shape to be used in bounding box computation.
-   * \param[in] updateInternalStructures Set to true if only adding a single shape. If adding a batch of
+   * \param[in] contains_scale Scale of the shape to be used in contains tests.
+   * \param[in] contains_padding Padding of the shape to be used in contains tests.
+   * \param[in] shadow_scale Scale of the shape to be used in shadow tests.
+   * \param[in] shadow_padding Padding of the shape to be used in shadow tests.
+   * \param[in] bsphere_scale Scale of the shape to be used in bounding sphere computation.
+   * \param[in] bsphere_padding Padding of the shape to be used in bounding sphere computation.
+   * \param[in] bbox_scale Scale of the shape to be used in bounding box computation.
+   * \param[in] bbox_padding Padding of the shape to be used in bounding box computation.
+   * \param[in] update_internal_structures Set to true if only adding a single shape. If adding a batch of
    *            shapes, set this to false and call updateInternalStructures() manually at the end of the
    *            batch.
    * \param[in] name Optional name of the shape. Used when reporting problems with the shape transforms.
@@ -150,26 +150,26 @@ public:
    */
   MultiShapeHandle addShape(
     const shapes::ShapeConstPtr& shape,
-    double containsScale,
-    double containsPadding,
-    double shadowScale,
-    double shadowPadding,
-    double bsphereScale,
-    double bspherePadding,
-    double bboxScale,
-    double bboxPadding,
-    bool updateInternalStructures = true,
+    double contains_scale,
+    double contains_padding,
+    double shadow_scale,
+    double shadow_padding,
+    double bsphere_scale,
+    double bsphere_padding,
+    double bbox_scale,
+    double bbox_padding,
+    bool update_internal_structures = true,
     const std::string& name = "");
 
   /**
    * \brief Remove the shape identified by the given handle from the filtering mask.
    * \param[in] handle The handle returned by addShape().
-   * \param[in] updateInternalStructures Set to true if only removing a single shape. If removing a
+   * \param[in] update_internal_structures Set to true if only removing a single shape. If removing a
    *            batch of shapes, set this to false and call updateInternalStructures() manually at the
    *            end of the batch.
    * \sa updateInternalShapeLists()
    */
-  void removeShape(const MultiShapeHandle& handle, bool updateInternalStructures = true);
+  void removeShape(const MultiShapeHandle& handle, bool update_internal_structures = true);
 
   /**
    * \brief Set the callback which is called whenever a pose of a body needs to be updated.
@@ -239,15 +239,15 @@ public:
    *                 which transform_callback_ transforms the body parts. The
    *                 frame_id of the cloud is ignored.
    * \param[out] mask The mask value of all the points. Ordered by point index.
-   * \param[in] sensorPos Position of the sensor in the pointcloud frame.
+   * \param[in] sensor_pos Position of the sensor in the pointcloud frame.
    *
    * \note Internally calls updateBodyPoses() to update link transforms.
-   * \note Updates bspheres_/boundingBoxes to contain the bounding spheres/boxes of links.
+   * \note Updates bspheres_/bounding_boxes_ to contain the bounding spheres/boxes of links.
   */
   void maskContainmentAndShadows(
     const sensor_msgs::msg::PointCloud2& data,
     std::vector<MaskValue>& mask,
-    const Eigen::Vector3d& sensorPos = Eigen::Vector3d::Zero());
+    const Eigen::Vector3d& sensor_pos = Eigen::Vector3d::Zero());
 
   /**
    * \brief Decide whether the point is either INSIDE the robot,
@@ -259,40 +259,40 @@ public:
    * \param[in] data The input point. It has to be in the same frame
    *                 into which transform_callback_ transforms the body parts.
    * \param[out] mask The mask value of the given point.
-   * \param[in] sensorPos Position of the sensor in the pointcloud frame.
-   * \param[in] updateBodyPoses Whether body poses should be updated during the masking.
+   * \param[in] sensor_pos Position of the sensor in the pointcloud frame.
+   * \param[in] update_body_poses Whether body poses should be updated during the masking.
    *
    * \note Internally calls updateBodyPoses() to update link transforms.
-   * \note Updates bspheres_/boundingBoxes to contain the bounding spheres/boxes of links.
+   * \note Updates bspheres_/bounding_boxes_ to contain the bounding spheres/boxes of links.
   */
   void maskContainmentAndShadows(
     const Eigen::Vector3f& data,
     MaskValue& mask,
-    const Eigen::Vector3d& sensorPos = Eigen::Vector3d::Zero(),
-    bool updateBodyPoses = true);
+    const Eigen::Vector3d& sensor_pos = Eigen::Vector3d::Zero(),
+    bool update_body_poses = true);
 
   /**
    * \brief Set the shapes to be ignored when doing test for INSIDE in maskContainmentAndShadows.
-   * \param[in] ignoreInContainsTest The shapes to be ignored.
-   * \param[in] updateInternalStructures If false, the caller is responsible for calling
+   * \param[in] ignore_in_contains_test The shapes to be ignored.
+   * \param[in] update_internal_structures If false, the caller is responsible for calling
    *            updateInternalShapeLists().
    * \sa updateInternalShapeLists()
    */
   void setIgnoreInContainsTest(
-    std::unordered_set<MultiShapeHandle> ignoreInContainsTest,
-    bool updateInternalStructures = true);
+    std::unordered_set<MultiShapeHandle> ignore_in_contains_test,
+    bool update_internal_structures = true);
 
   /**
    * \brief Set the shapes to be ignored when doing test for SHADOW in maskContainmentAndShadows.
-   * \param[in] ignoreInShadowTest The shapes to be ignored.
-   * \param[in] updateInternalStructures If false, the caller is responsible for calling
+   * \param[in] ignore_in_shadow_test The shapes to be ignored.
+   * \param[in] update_internal_structures If false, the caller is responsible for calling
    *            updateInternalShapeLists().
    * \note E.g. the sensor collision shape should be listed here.
    * \sa updateInternalShapeLists()
    */
   void setIgnoreInShadowTest(
-    std::unordered_set<MultiShapeHandle> ignoreInShadowTest,
-    bool updateInternalStructures = true);
+    std::unordered_set<MultiShapeHandle> ignore_in_shadow_test,
+    bool update_internal_structures = true);
 
   /**
    * \brief Provides the map of shape handle to corresponding body (for all added shapes).
@@ -352,13 +352,13 @@ protected:
    * \param[in] data The input point. It has to be in the same frame
    *                 into which transform_callback_ transforms the body parts.
    * \param[out] mask The mask value of the given point.
-   * \param[in] sensorPos Position of the sensor in the pointcloud frame.
+   * \param[in] sensor_pos Position of the sensor in the pointcloud frame.
    *
    * \note Contrasting to maskContainmentAndShadows(), this method doesn't
    *       update link poses and expects them to be correctly updated by a prior
    *       call to updateBodyPoses(). It also doesn't lock shapes_mutex_.
   */
-  void classifyPointNoLock(const Eigen::Vector3d& data, MaskValue& mask, const Eigen::Vector3d& sensorPos);
+  void classifyPointNoLock(const Eigen::Vector3d& data, MaskValue& mask, const Eigen::Vector3d& sensor_pos) const;
 
   /**
    * \brief Get the bounding sphere containing all registered shapes.
@@ -373,45 +373,45 @@ protected:
    */
   bodies::BoundingSphere getBoundingSphereForContainsTestNoLock() const;
 
-  rclcpp::Logger logger;
-  rclcpp::Clock::SharedPtr clock_ptr;
+  rclcpp::Logger logger_;
+  rclcpp::Clock::SharedPtr clock_ptr_;
 
-  double minSensorDist;  //!< Minimum sensing distance of the sensor.
-  double maxSensorDist;  //!< Maximum sensing distance of the sensor.
-  double maxShadowDist;  //!< Maximum distance of a point classified as SHADOW (further are OUTSIDE).
+  double min_sensor_dist_;  //!< Minimum sensing distance of the sensor.
+  double max_sensor_dist_;  //!< Maximum sensing distance of the sensor.
+  double max_shadow_dist_;  //!< Maximum distance of a point classified as SHADOW (further are OUTSIDE).
 
-  bool doClipping = true;  //!< Classify for CLIP during masking.
-  bool doContainsTest = true;  //!< Classify for INSIDE during masking.
-  bool doShadowTest = true;  //!< Classify for SHADOW during masking.
+  bool do_clipping_ = true;  //!< Classify for CLIP during masking.
+  bool do_contains_test_ = true;  //!< Classify for INSIDE during masking.
+  bool do_shadow_test_ = true;  //!< Classify for SHADOW during masking.
 
   struct RayCastingShapeMaskPIMPL;
-  std::unique_ptr<RayCastingShapeMaskPIMPL> data;  //!< Implementation-private data.
+  std::unique_ptr<RayCastingShapeMaskPIMPL> data_;  //!< Implementation-private data.
 
   /**
    * \brief Contains indices of bodies (as listed in this->bodies_) which correspond to bounding
    *        spheres in this->bspheres_. Indices in this vector correspond to indices in bspheres_. Values
    *        of this vector correspond to indices in bodies_.
    */
-  std::vector<size_t> bspheresBodyIndices;
+  std::vector<size_t> bspheres_body_indices_;
 
   /** \brief Bounding spheres to be used for classifying INSIDE points. */
-  std::vector<bodies::BoundingSphere> bspheresForContainsTest;
+  std::vector<bodies::BoundingSphere> bspheres_for_contains_test_;
   /**
    * \brief Contains indices of bodies (as listed in this->bodies_) which correspond to bounding
-   *        spheres in this->bspheresForContainsTest. Indices in this vector correspond to indices in
-   *        bspheresForContainsTest. Values of this vector correspond to indices in bodies_.
+   *        spheres in this->bspheres_for_contains_test_. Indices in this vector correspond to indices in
+   *        bspheres_for_contains_test_. Values of this vector correspond to indices in bodies_.
    */
-  std::vector<size_t> bspheresForContainsTestBodyIndices;
+  std::vector<size_t> bspheres_for_contains_test_body_indices_;
 
   /** \brief Shapes to be ignored when doing test for INSIDE in maskContainmentAndShadows. */
-  std::unordered_set<MultiShapeHandle> ignoreInContainsTest;
+  std::unordered_set<MultiShapeHandle> ignore_in_contains_test_;
   /** \brief Shapes to be ignored when doing test for SHADOW in maskContainmentAndShadows.
    *  E.g. the sensor collision shape should be listed here. */
-  std::unordered_set<MultiShapeHandle> ignoreInShadowTest;
+  std::unordered_set<MultiShapeHandle> ignore_in_shadow_test_;
   /** \brief Shapes to be ignored when computing the robot's bounding sphere. */
-  std::unordered_set<MultiShapeHandle> ignoreInBsphere;
+  std::unordered_set<MultiShapeHandle> ignore_in_bsphere_;
   /** \brief Shapes to be ignored when computing the robot's bounding box. */
-  std::unordered_set<MultiShapeHandle> ignoreInBbox;
+  std::unordered_set<MultiShapeHandle> ignore_in_bbox_;
 };
 
 }  // namespace robot_body_filter
