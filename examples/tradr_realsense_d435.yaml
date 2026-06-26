@@ -6,6 +6,10 @@
 # The field of view of the sensor can only capture a few links, so the `only_links` parameter is set
 # to increase performance. Also, the `filter/keep_clouds_organized` parameter is important here to
 # retain the 2D structure of the RGBD camera output.
+
+# This config is meant to be loaded by laser_filters/cloud_to_cloud_filter_chain .
+# See vlp16_params.yaml for an example how to load the filter into sensor_filters/pointcloud2_filter_chain .
+
 cloud_filter_chain:
   ros__parameters:
     filter1:

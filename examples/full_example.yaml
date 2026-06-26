@@ -3,6 +3,10 @@
 
 # This is an example filter config for tracked vehicle Absolem from Czech Technical University's
 # VRAS team. The robot is equipped with a 2D lidar attached to a rotating pivot point.
+
+# This config is meant to be loaded by laser_filters/scan_to_scan_filter_chain .
+# See vlp16_params.yaml for an example how to load the filter into sensor_filters/pointcloud2_filter_chain .
+
 laser_filter:
  ros__parameters:
   filter1:
