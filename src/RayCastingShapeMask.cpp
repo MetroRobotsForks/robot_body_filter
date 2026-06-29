@@ -13,6 +13,8 @@
 
 #include <cras_cpp_common/cloud.hpp>
 #include <geometric_shapes/body_operations.h>
+#include <rclcpp/clock.hpp>
+#include <rclcpp/logger.hpp>
 #include <rclcpp/logging.hpp>
 #include <robot_body_filter/RayCastingShapeMask.h>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -36,8 +38,8 @@ struct RayCastingShapeMask::RayCastingShapeMaskPIMPL {
 };
 
 RayCastingShapeMask::RayCastingShapeMask(
-  const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr& logging_interface,
-  const rclcpp::Clock::SharedPtr& clock_ptr,
+  rclcpp::Logger logger,
+  const rclcpp::Clock::SharedPtr& clock,
   const TransformCallback& transform_callback,
   const double min_sensor_dist,
   const double max_sensor_dist,
@@ -46,8 +48,8 @@ RayCastingShapeMask::RayCastingShapeMask(
   const bool do_shadow_test,
   const double max_shadow_dist)
   : ShapeMask(transform_callback),
-    logger_(logging_interface->get_logger().get_child("ray_casting_shape_mask")),
-    clock_ptr_(clock_ptr),
+    logger_(logger.get_child("ray_casting_shape_mask")),
+    clock_(clock),
     min_sensor_dist_(min_sensor_dist),
     max_sensor_dist_(max_sensor_dist),
     max_shadow_dist_(max_shadow_dist),
@@ -154,7 +156,7 @@ void RayCastingShapeMask::updateBodyPosesNoLock() {
     } else {
       if (contains_body == nullptr) {
         RCLCPP_ERROR_STREAM_THROTTLE(
-          logger_, *clock_ptr_, 3, "Missing transform for shape with handle " << contains_handle << " without a body");
+          logger_, *clock_, 3, "Missing transform for shape with handle " << contains_handle << " without a body");
       } else {
         std::string name;
         if (this->data_->shape_names.find(contains_handle) != this->data_->shape_names.end()) {
@@ -163,11 +165,11 @@ void RayCastingShapeMask::updateBodyPosesNoLock() {
 
         if (name.empty()) {
           RCLCPP_ERROR_STREAM_THROTTLE(
-            logger_, *clock_ptr_, 3,
+            logger_, *clock_, 3,
             "Missing transform for shape " << contains_body->getType() << " with handle " << contains_handle);
         } else {
           RCLCPP_ERROR_STREAM_THROTTLE(
-            logger_, *clock_ptr_, 3, "Missing transform for shape " << name << " (" << contains_body->getType() << ")");
+            logger_, *clock_, 3, "Missing transform for shape " << name << " (" << contains_body->getType() << ")");
         }
       }
     }

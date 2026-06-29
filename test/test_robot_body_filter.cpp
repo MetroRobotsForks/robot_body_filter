@@ -103,7 +103,7 @@ constexpr char ROBOT_URDF[] =
 
 class RobotBodyFilterLaserScanTest : public robot_body_filter::RobotBodyFilterLaserScan {
 public:
-  RobotBodyFilterLaserScanTest() {
+  explicit RobotBodyFilterLaserScanTest(rclcpp::Node::SharedPtr node) : node_(std::move(node)) {
     this->fail_without_robot_description_ = true;
   }
 
@@ -121,11 +121,22 @@ public:
   friend class RobotBodyFilter_Transforms_Test;
   friend class RobotBodyFilter_ComputeMaskPointByPoint_Test;
   friend class RobotBodyFilter_UpdateLaserScan_Test;
+
+protected:
+  RequiredInterfaces createNodeInterfaces() override {
+    if (node_ != nullptr) {
+      return *node_;
+    }
+    return RobotBodyFilterLaserScan::createNodeInterfaces();
+  }
+
+private:
+  rclcpp::Node::SharedPtr node_;
 };
 
 class RobotBodyFilterPointCloud2Test : public robot_body_filter::RobotBodyFilterPointCloud2 {
 public:
-  RobotBodyFilterPointCloud2Test() {
+  explicit RobotBodyFilterPointCloud2Test(rclcpp::Node::SharedPtr node) : node_(std::move(node)) {
     this->fail_without_robot_description_ = true;
   }
 
@@ -137,12 +148,23 @@ public:
 
   friend class RobotBodyFilter_ComputeMaskAllAtOnce_Test;
   friend class RobotBodyFilter_UpdatePointCloud2_Test;
+
+protected:
+  RequiredInterfaces createNodeInterfaces() override {
+    if (node_ != nullptr) {
+      return *node_;
+    }
+    return RobotBodyFilterPointCloud2::createNodeInterfaces();
+  }
+
+private:
+  rclcpp::Node::SharedPtr node_;
 };
 
 TEST(RobotBodyFilter, InitFromDict) {
   const auto nh = std::make_shared<rclcpp::Node>("test_chain_config");
 
-  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
+  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>(nh);
   const auto filter_base = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   // test that invalid robot model doesn't throw any exception, but also generates no filter shapes
@@ -165,7 +187,7 @@ TEST(RobotBodyFilter, InitFromDict) {
 TEST(RobotBodyFilter, LoadParams) {
   const auto nh = std::make_shared<rclcpp::Node>("test_chain_config");
 
-  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
+  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>(nh);
   const auto filter_base = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   filter_base->configure(
@@ -267,7 +289,7 @@ TEST(RobotBodyFilter, LoadParams) {
 TEST(RobotBodyFilter, LoadParamsAllConfig) {
   const auto nh = std::make_shared<rclcpp::Node>("all_config");
 
-  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
+  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>(nh);
   const auto filter_base = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   filter_base->configure(
@@ -360,7 +382,7 @@ TEST(RobotBodyFilter, LoadParamsAllConfig) {
 TEST(RobotBodyFilter, ParseRobot) {
   const auto nh = std::make_shared<rclcpp::Node>("test_chain_config");
 
-  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
+  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>(nh);
   const auto filter_base = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   filter_base->configure(
@@ -433,7 +455,7 @@ TEST(RobotBodyFilter, ParseRobot) {
 TEST(RobotBodyFilter, Transforms) {
   const auto nh = std::make_shared<rclcpp::Node>("test_chain_config");
 
-  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
+  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>(nh);
   const auto filter_base = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   filter_base->configure(
@@ -526,7 +548,7 @@ TEST(RobotBodyFilter, Transforms) {
 TEST(RobotBodyFilter, ComputeMaskPointByPoint) {
   const auto nh = std::make_shared<rclcpp::Node>("compute_mask_config_point_by_point");
 
-  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
+  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>(nullptr);
   const auto filter_base = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   filter_base->configure(
@@ -1551,7 +1573,7 @@ TEST(RobotBodyFilter, ComputeMaskPointByPoint) {
 TEST(RobotBodyFilter, ComputeMaskAllAtOnce) {
   const auto nh = std::make_shared<rclcpp::Node>("compute_mask_config_all_at_once");
 
-  const auto filter = std::make_shared<RobotBodyFilterPointCloud2Test>();
+  const auto filter = std::make_shared<RobotBodyFilterPointCloud2Test>(nullptr);
   const auto filter_base = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::PointCloud2>>(filter);
 
   filter_base->configure(
@@ -2472,7 +2494,7 @@ TEST(RobotBodyFilter, ComputeMaskAllAtOnce) {
 TEST(RobotBodyFilter, UpdateLaserScan) {
   const auto nh = std::make_shared<rclcpp::Node>("compute_mask_config_point_by_point");
 
-  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>();
+  const auto filter = std::make_shared<RobotBodyFilterLaserScanTest>(nh);
   const auto filter_base = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::LaserScan>>(filter);
 
   filter_base->configure(
@@ -2575,7 +2597,7 @@ TEST(RobotBodyFilter, UpdateLaserScan) {
 TEST(RobotBodyFilter, UpdatePointCloud2) {
   const auto nh = std::make_shared<rclcpp::Node>("compute_mask_config_all_at_once");
 
-  const auto filter = std::make_shared<RobotBodyFilterPointCloud2Test>();
+  const auto filter = std::make_shared<RobotBodyFilterPointCloud2Test>(nh);
   const auto filter_base = std::dynamic_pointer_cast<filters::FilterBase<sensor_msgs::msg::PointCloud2>>(filter);
 
   filter_base->configure(

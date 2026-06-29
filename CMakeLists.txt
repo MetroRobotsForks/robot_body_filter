@@ -8,6 +8,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+
 set(THIS_PACKAGE_DEPS
   cras_cpp_common
   fcl
@@ -25,6 +27,7 @@ set(THIS_PACKAGE_DEPS
   tf2_sensor_msgs
   Eigen3
   GLUT
+  Threads
 )
 set(MESSAGE_DEPS
   geometry_msgs
@@ -82,6 +85,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 target_link_libraries(${PROJECT_NAME}
   Eigen3::Eigen
+  Threads::Threads
   ${PROJECT_NAME}_utils
   TFFramesWatchdog
   RayCastingShapeMask

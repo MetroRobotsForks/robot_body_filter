@@ -11,7 +11,7 @@ public:
     rclcpp::Node::SharedPtr node, const std::string& robotFrame, const std::set<std::string>& monitoredFrames,
     const std::shared_ptr<tf2_ros::Buffer>& tfBuffer, const rclcpp::Duration& unreachableTfLookupTimeout,
     const rclcpp::Rate::SharedPtr& unreachableFramesCheckRate)
-    : TFFramesWatchdog(node->get_node_logging_interface(), node->get_clock(), robotFrame, monitoredFrames, tfBuffer,
+    : TFFramesWatchdog(node->get_logger(), node->get_clock(), robotFrame, monitoredFrames, tfBuffer,
       unreachableTfLookupTimeout, unreachableFramesCheckRate) {
   }
 

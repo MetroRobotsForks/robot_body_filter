@@ -21,7 +21,7 @@ laser_filter:
               shadow: false
           sensor:
             min_distance: 0.05
-            max_distance: 10
+            max_distance: 10.0
           # For more information of how to choose the fixed frame and configure point_by_point, see the discussion at https://github.com/ctu-vras/robot_body_filter/pull/18#discussion_r780655811
             point_by_point: true
           frames:

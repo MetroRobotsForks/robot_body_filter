@@ -10,13 +10,15 @@
 #include <string>
 #include <thread>
 
+#include <rclcpp/clock.hpp>
+#include <rclcpp/logger.hpp>
 #include <tf2_ros/buffer.hpp>
 #include <tf2_ros/transform_listener.hpp>
 
 namespace robot_body_filter {
 
 /**
- * \brief Provide quick access to TFs while simultaneousely monitoring if some
+ * \brief Provide quick access to TFs while simultaneously monitoring if some
  *        frames haven't got unreachable (in which case the node tries to get
  *        the transforms with longer timeouts but doesn't block other queries).
  *
@@ -27,11 +29,10 @@ namespace robot_body_filter {
 class TFFramesWatchdog {
 public:
   TFFramesWatchdog(
-    const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr& logging_interface,
-    const rclcpp::Clock::SharedPtr& clock_ptr, std::string robot_frame, std::set<std::string> monitored_frames,
-    std::shared_ptr<tf2_ros::Buffer> tf_buffer,
+    rclcpp::Logger logger, const rclcpp::Clock::SharedPtr& clock,
+    std::string robot_frame, std::set<std::string> monitored_frames, std::shared_ptr<tf2_ros::Buffer> tf_buffer,
     rclcpp::Duration unreachable_tf_lookup_timeout = rclcpp::Duration(0, 100000000),  // 0.1 sec
-    rclcpp::Rate::SharedPtr unreachable_frames_check_rate = std::make_shared<rclcpp::Rate>(1.0));
+    rclcpp::Rate::SharedPtr unreachable_frames_check_rate = nullptr);
 
   virtual ~TFFramesWatchdog();
 
@@ -190,7 +191,7 @@ private:
   std::thread this_thread_;
 
   rclcpp::Logger logger_;
-  rclcpp::Clock::SharedPtr clock_ptr_;
+  rclcpp::Clock::SharedPtr clock_;
 };
 
 }  // namespace robot_body_filter

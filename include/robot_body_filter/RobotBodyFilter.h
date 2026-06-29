@@ -8,6 +8,7 @@
 #include <mutex>
 #include <set>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -20,7 +21,17 @@
 #include <geometry_msgs/msg/polygon_stamped.hpp>
 #include <laser_geometry/laser_geometry.hpp>
 #include <moveit/occupancy_map_monitor/occupancy_map_updater.hpp>
-#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/clock.hpp>
+#include <rclcpp/executor.hpp>
+#include <rclcpp/logger.hpp>
+#include <rclcpp/node.hpp>
+#include <rclcpp/node_interfaces/get_node_base_interface.hpp>
+#include <rclcpp/node_interfaces/get_node_clock_interface.hpp>
+#include <rclcpp/node_interfaces/get_node_logging_interface.hpp>
+#include <rclcpp/node_interfaces/get_node_parameters_interface.hpp>
+#include <rclcpp/node_interfaces/get_node_services_interface.hpp>
+#include <rclcpp/node_interfaces/get_node_topics_interface.hpp>
+#include <rclcpp/node_interfaces/node_interfaces.hpp>
 #include <robot_body_filter/msg/oriented_bounding_box_stamped.hpp>
 #include <robot_body_filter/msg/sphere_stamped.hpp>
 #include <robot_body_filter/RayCastingShapeMask.h>
@@ -92,6 +103,14 @@ class RobotBodyFilter : public ::robot_body_filter::FilterBase<T> {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  using RequiredInterfaces = rclcpp::node_interfaces::NodeInterfaces<
+    rclcpp::node_interfaces::NodeBaseInterface,
+    rclcpp::node_interfaces::NodeClockInterface,
+    rclcpp::node_interfaces::NodeLoggingInterface,
+    rclcpp::node_interfaces::NodeParametersInterface,
+    rclcpp::node_interfaces::NodeServicesInterface,
+    rclcpp::node_interfaces::NodeTopicsInterface>;
+
   RobotBodyFilter();
 
   ~RobotBodyFilter() override;
@@ -104,6 +123,10 @@ public:
   virtual bool hasModel() const;
 
 protected:
+  //! This filter needs a few more interfaces than FilterBase provides. This function should provide them (however they
+  //! are created).
+  virtual RequiredInterfaces createNodeInterfaces();
+
   //! Read config parameters loaded by FilterBase::configure(...)
   //! Parameters are described in the readme.
   bool configure() override;
@@ -112,8 +135,12 @@ protected:
     return this->logging_interface_->get_logger();
   }
 
-  rclcpp::Node::SharedPtr node_handle_;  //!< Handle of the node this filter runs in.
-  rclcpp::Clock::SharedPtr clock_ptr_;  //!< The clock to use.
+  rclcpp::Executor::UniquePtr executor_;  //!< Executor handling the topics required by this filter.
+  RequiredInterfaces node_interfaces_;  //!< Handles to various required node interfaces.
+  rclcpp::Clock::SharedPtr clock_;  //!< The clock to use.
+
+  volatile bool should_stop_;
+  std::unique_ptr<std::thread> executor_thread_;  //!< Thread running the internal executor.
 
   /**
    * \brief If true, suppose that every point in the scan was captured at a
@@ -498,6 +525,10 @@ private:
     const std::map<std::string, ScaleAndPadding>& per_link_inflation) const;
 
   std::string getLinkTfPrefix() const;
+
+  rclcpp::Node::SharedPtr own_node_handle_;
+
+  std::unique_ptr<urdf::Model> parsed_urdf_model_;
 };
 
 class RobotBodyFilterLaserScan : public RobotBodyFilter<sensor_msgs::msg::LaserScan> {

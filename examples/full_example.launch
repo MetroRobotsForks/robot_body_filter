@@ -15,7 +15,6 @@
 
   <node name="laser_filter" pkg="laser_filters" exec="scan_to_scan_filter_chain" output="screen">
     <param from="$(dirname)/full_example.yaml"/>
-    <param name="robot_description" value="$(file-content '$(dirname)/full_example.urdf')"/>
   </node>
   <executable
     name="scan"

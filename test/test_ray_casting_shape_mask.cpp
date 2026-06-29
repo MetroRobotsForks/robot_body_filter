@@ -4,6 +4,7 @@
 #include "gtest/gtest.h"
 
 #include <cras_cpp_common/cloud.hpp>
+#include <rclcpp/node.hpp>
 #include <robot_body_filter/RayCastingShapeMask.h>
 #include <robot_body_filter/utils/shapes.h>
 #include <urdf_model/model.h>
@@ -19,7 +20,7 @@ public:
   TestMask(
     rclcpp::Node& node, const ShapeMask::TransformCallback& transform_callback,
     double min_sensor_dist, double max_sensor_dist, bool do_clipping, bool do_contains_test, bool do_shadow_test)
-    : RayCastingShapeMask(node.get_node_logging_interface(), node.get_clock(), transform_callback,
+    : RayCastingShapeMask(node.get_logger(), node.get_clock(), transform_callback,
       min_sensor_dist, max_sensor_dist, do_clipping, do_contains_test, do_shadow_test) {
   }
 

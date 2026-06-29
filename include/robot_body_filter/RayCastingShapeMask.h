@@ -11,7 +11,8 @@
 
 #include <geometric_shapes/body_operations.h>
 #include <moveit/point_containment_filter/shape_mask.hpp>
-#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/clock.hpp>
+#include <rclcpp/logger.hpp>
 #include <robot_body_filter/utils/bodies.h>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
@@ -85,8 +86,8 @@ public:
 
   /**
    * \brief Constructor of the RayCastingShapeMask.
-   * \param[in] logging_interface Interface for logging messages.
-   * \param[in] clock_ptr The clock to use.
+   * \param[in] logger The logger to use.
+   * \param[in] clock The clock to use.
    * \param[in] transform_callback Callback used to transform bodies into the filtering frame.
    * \param[in] min_sensor_dist Minimum distance for clipping points.
    * \param[in] max_sensor_dist Maximum distance for clipping points.
@@ -96,8 +97,8 @@ public:
    * \param[in] max_shadow_dist Maximum distance for shadow testing. Points further than this are considered OUTSIDE.
    */
   RayCastingShapeMask(
-    const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr& logging_interface,
-    const rclcpp::Clock::SharedPtr& clock_ptr,
+    rclcpp::Logger logger,
+    const rclcpp::Clock::SharedPtr& clock,
     const TransformCallback& transform_callback,
     double min_sensor_dist = 0.0,
     double max_sensor_dist = 1e10,
@@ -376,7 +377,7 @@ protected:
   bodies::BoundingSphere getBoundingSphereForContainsTestNoLock() const;
 
   rclcpp::Logger logger_;
-  rclcpp::Clock::SharedPtr clock_ptr_;
+  rclcpp::Clock::SharedPtr clock_;
 
   double min_sensor_dist_;  //!< Minimum sensing distance of the sensor.
   double max_sensor_dist_;  //!< Maximum sensing distance of the sensor.
