@@ -56,7 +56,7 @@ protected:
 
     T value;
     try {
-      if (this->hasParam(name) && filters::FilterBase<F>::getParam(name, value)) {
+      if (hasParam(name) && filters::FilterBase<F>::getParam(name, value)) {
         if (value_to_string_fn != nullptr) {
           RCLCPP_INFO_STREAM(
             this->logging_interface_->get_logger(), this->getName() << ": Found parameter: " << name <<
@@ -100,7 +100,7 @@ protected:
     const std::string& name, const char* default_value, const std::string& unit = "", bool* default_used = nullptr,
     const ToStringFn<std::string> value_to_string_fn = &cras::to_string) {
 
-    return this->getParamVerbose(name, std::string(default_value), unit, default_used, value_to_string_fn);
+    return getParamVerbose(name, std::string(default_value), unit, default_used, value_to_string_fn);
   }
 
   // getParam specializations for unsigned values
@@ -122,7 +122,7 @@ protected:
     const std::string& name, const uint64_t& default_value, const std::string& unit = "", bool* default_used = nullptr,
     const ToStringFn<int> value_to_string_fn = &cras::to_string) {
 
-    return this->getParamUnsigned<uint64_t, int>(name, default_value, unit, default_used, value_to_string_fn);
+    return getParamUnsigned<uint64_t, int>(name, default_value, unit, default_used, value_to_string_fn);
   }
 
   // there actually is an unsigned int implementation of FilterBase::getParam,
@@ -145,7 +145,7 @@ protected:
     const std::string& name, const unsigned int& default_value, const std::string& unit = "",
     bool* default_used = nullptr, const ToStringFn<int> value_to_string_fn = &cras::to_string) {
 
-    return this->getParamUnsigned<unsigned int, int>(name, default_value, unit, default_used, value_to_string_fn);
+    return getParamUnsigned<unsigned int, int>(name, default_value, unit, default_used, value_to_string_fn);
   }
 
   // ROS types specializations
@@ -189,7 +189,7 @@ protected:
     bool* default_used = nullptr, const ToStringFn<std::vector<T>> value_to_string_fn = &cras::to_string) {
 
     std::vector<T> vector(default_value.begin(), default_value.end());
-    vector = this->getParamVerbose(name, vector, unit, default_used, value_to_string_fn);
+    vector = getParamVerbose(name, vector, unit, default_used, value_to_string_fn);
     return std::set<T>(vector.begin(), vector.end());
   }
 
@@ -270,7 +270,7 @@ private:
     const std::string& name, const Result& default_value, const std::string& unit = "", bool* default_used = nullptr,
     const ToStringFn<Param> value_to_string_fn = &cras::to_string) {
 
-    const Param signed_value = this->getParamVerbose(
+    const Param signed_value = getParamVerbose(
       name, static_cast<Param>(default_value), unit, default_used, value_to_string_fn);
     if (signed_value < 0) {
       if (value_to_string_fn != nullptr) {
@@ -289,7 +289,7 @@ private:
     const std::string& name, const Param& default_value, const std::string& unit = "", bool* default_used = nullptr,
     const ToStringFn<Param> value_to_string_fn = &cras::to_string) {
 
-    const Param param_value = this->getParamVerbose(name, default_value, unit, default_used, value_to_string_fn);
+    const Param param_value = getParamVerbose(name, default_value, unit, default_used, value_to_string_fn);
     return Result(param_value);
   }
 };

@@ -79,7 +79,7 @@ struct CollisionBodyWithLink {
 
     std::ostringstream stream;
     stream << link->name << "-" << indexInCollisionArray;
-    this->cache_key = stream.str();
+    cache_key = stream.str();
   }
 };
 

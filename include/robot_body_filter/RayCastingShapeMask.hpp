@@ -394,8 +394,8 @@ protected:
   std::unique_ptr<RayCastingShapeMaskPIMPL> data_;  //!< Implementation-private data.
 
   /**
-   * \brief Contains indices of bodies (as listed in this->bodies_) which correspond to bounding
-   *        spheres in this->bspheres_. Indices in this vector correspond to indices in bspheres_. Values
+   * \brief Contains indices of bodies (as listed in bodies_) which correspond to bounding
+   *        spheres in bspheres_. Indices in this vector correspond to indices in bspheres_. Values
    *        of this vector correspond to indices in bodies_.
    */
   std::vector<size_t> bspheres_body_indices_;
@@ -403,8 +403,8 @@ protected:
   /** \brief Bounding spheres to be used for classifying INSIDE points. */
   std::vector<bodies::BoundingSphere> bspheres_for_contains_test_;
   /**
-   * \brief Contains indices of bodies (as listed in this->bodies_) which correspond to bounding
-   *        spheres in this->bspheres_for_contains_test_. Indices in this vector correspond to indices in
+   * \brief Contains indices of bodies (as listed in bodies_) which correspond to bounding
+   *        spheres in bspheres_for_contains_test_. Indices in this vector correspond to indices in
    *        bspheres_for_contains_test_. Values of this vector correspond to indices in bodies_.
    */
   std::vector<size_t> bspheres_for_contains_test_body_indices_;
