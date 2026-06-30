@@ -22,6 +22,7 @@
   <maintainer email="peckama2@fel.cvut.cz">Martin Pecka</maintainer>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_gen_version_h</buildtool_depend>
 
   <depend>filters</depend>
   <depend>geometric_shapes</depend>

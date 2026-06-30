@@ -94,10 +94,13 @@ target_link_libraries(${PROJECT_NAME}
 ament_target_dependencies(${PROJECT_NAME} ${THIS_PACKAGE_DEPS})
 ament_export_targets(export_${PROJECT_NAME})
 
+add_library(${PROJECT_NAME}_version INTERFACE)
+ament_generate_version_header(${PROJECT_NAME}_version)
+
 install(DIRECTORY include/
   DESTINATION include
 )
-install(TARGETS ${PROJECT_NAME} TFFramesWatchdog RayCastingShapeMask ${PROJECT_NAME}_utils
+install(TARGETS ${PROJECT_NAME} TFFramesWatchdog RayCastingShapeMask ${PROJECT_NAME}_utils ${PROJECT_NAME}_version
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
