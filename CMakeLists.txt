@@ -92,22 +92,21 @@ target_link_libraries(${PROJECT_NAME}
   "${cpp_typesupport_target}"
 )
 ament_target_dependencies(${PROJECT_NAME} ${THIS_PACKAGE_DEPS})
-ament_export_targets(export_${PROJECT_NAME})
 
 add_library(${PROJECT_NAME}_version INTERFACE)
 ament_generate_version_header(${PROJECT_NAME}_version)
 
+ament_export_include_directories(include)
 install(DIRECTORY include/
   DESTINATION include
 )
+
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 install(TARGETS ${PROJECT_NAME} TFFramesWatchdog RayCastingShapeMask ${PROJECT_NAME}_utils ${PROJECT_NAME}_version
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
-)
-install(FILES laser_filters.xml
-  DESTINATION share/${PROJECT_NAME}
 )
 install(DIRECTORY examples/
   DESTINATION share/${PROJECT_NAME}/examples
@@ -115,7 +114,7 @@ install(DIRECTORY examples/
 install(FILES rviz/debug.rviz
   DESTINATION share/${PROJECT_NAME}/rviz
 )
-ament_export_include_directories(include)
+
 pluginlib_export_plugin_description_file(filters laser_filters.xml)
 
 if(BUILD_TESTING)
