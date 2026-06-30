@@ -3,7 +3,7 @@
 
 #include <geometric_shapes/bodies.h>
 #include <geometric_shapes/mesh_operations.h>
-#include <robot_body_filter/utils/bodies.h>
+#include <robot_body_filter/utils/bodies.hpp>
 
 namespace bodies {
 

@@ -3,8 +3,8 @@
 
 #include <geometric_shapes/mesh_operations.h>
 #include <rclcpp/rclcpp.hpp>
-#include <robot_body_filter/utils/bodies.h>
-#include <robot_body_filter/utils/shapes.h>
+#include <robot_body_filter/utils/bodies.hpp>
+#include <robot_body_filter/utils/shapes.hpp>
 #include <urdf_model/link.h>
 
 shapes::ShapeConstPtr robot_body_filter::constructShape(const urdf::Geometry& geometry) {

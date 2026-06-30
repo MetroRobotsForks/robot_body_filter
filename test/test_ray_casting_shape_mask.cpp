@@ -17,8 +17,8 @@
 #include <rclcpp/node.hpp>
 #include <rclcpp/time.hpp>
 #include <rclcpp/utilities.hpp>
-#include <robot_body_filter/RayCastingShapeMask.h>
-#include <robot_body_filter/utils/shapes.h>
+#include <robot_body_filter/RayCastingShapeMask.hpp>
+#include <robot_body_filter/utils/shapes.hpp>
 #include <urdf_model/link.h>
 
 #include "utils.cpp"  // NOLINT

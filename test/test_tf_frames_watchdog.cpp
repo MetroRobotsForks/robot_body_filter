@@ -11,7 +11,7 @@
 #include <rclcpp/node.hpp>
 #include <rclcpp/rate.hpp>
 #include <rclcpp/utilities.hpp>
-#include <robot_body_filter/TfFramesWatchdog.h>
+#include <robot_body_filter/TfFramesWatchdog.hpp>
 #include <tf2_ros/buffer.hpp>
 
 class TestWatchdog : public robot_body_filter::TFFramesWatchdog {

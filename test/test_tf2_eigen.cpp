@@ -6,7 +6,7 @@
 #include <Eigen/Core>
 
 #include <geometry_msgs/msg/point32.hpp>
-#include <robot_body_filter/utils/tf2_eigen.h>
+#include <robot_body_filter/utils/tf2_eigen.hpp>
 
 TEST(TF2Eigen, ToMsg) {
   const auto e_point = Eigen::Vector3d(1.0, 2.0, 3.0);

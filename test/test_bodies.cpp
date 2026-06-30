@@ -14,7 +14,7 @@
 #include <geometric_shapes/bodies.h>
 #include <geometric_shapes/mesh_operations.h>
 #include <geometric_shapes/shapes.h>
-#include <robot_body_filter/utils/bodies.h>
+#include <robot_body_filter/utils/bodies.hpp>
 
 #include "utils.cpp"  // NOLINT
 

@@ -22,8 +22,8 @@
 #include <rclcpp/utilities.hpp>
 #include <robot_body_filter/msg/oriented_bounding_box_stamped.hpp>
 #include <robot_body_filter/msg/sphere_stamped.hpp>
-#include <robot_body_filter/RayCastingShapeMask.h>
-#include <robot_body_filter/RobotBodyFilter.h>
+#include <robot_body_filter/RayCastingShapeMask.hpp>
+#include <robot_body_filter/RobotBodyFilter.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/msg/point_field.hpp>

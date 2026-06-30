@@ -19,7 +19,7 @@
 #include <rclcpp/rate.hpp>
 #include <rclcpp/time.hpp>
 #include <rclcpp/utilities.hpp>
-#include <robot_body_filter/TfFramesWatchdog.h>
+#include <robot_body_filter/TfFramesWatchdog.hpp>
 #include <tf2/exceptions.hpp>
 #include <tf2_ros/buffer.hpp>
 

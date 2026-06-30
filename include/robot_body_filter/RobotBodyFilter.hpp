@@ -42,8 +42,8 @@
 #include <rmw/types.h>
 #include <robot_body_filter/msg/oriented_bounding_box_stamped.hpp>
 #include <robot_body_filter/msg/sphere_stamped.hpp>
-#include <robot_body_filter/RayCastingShapeMask.h>
-#include <robot_body_filter/TfFramesWatchdog.h>
+#include <robot_body_filter/RayCastingShapeMask.hpp>
+#include <robot_body_filter/TfFramesWatchdog.hpp>
 #include <robot_body_filter/utils/filter_utils.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>

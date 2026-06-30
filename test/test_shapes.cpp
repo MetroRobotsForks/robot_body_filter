@@ -7,7 +7,7 @@
 #include <string>
 
 #include <geometric_shapes/shapes.h>
-#include <robot_body_filter/utils/shapes.h>
+#include <robot_body_filter/utils/shapes.hpp>
 #include <urdf_model/link.h>
 
 TEST(Shapes, Box) {

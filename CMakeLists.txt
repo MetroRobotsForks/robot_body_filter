@@ -116,7 +116,7 @@ target_link_libraries(RayCastingShapeMask PRIVATE
   eigen_stl_containers::eigen_stl_containers
 )
 
-add_library(TFFramesWatchdog src/TFFramesWatchdog.cpp)
+add_library(TFFramesWatchdog src/TfFramesWatchdog.cpp)
 target_include_directories(TFFramesWatchdog PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>

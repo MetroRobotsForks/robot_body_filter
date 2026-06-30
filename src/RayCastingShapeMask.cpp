@@ -31,7 +31,7 @@
 #include <rclcpp/clock.hpp>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/logging.hpp>
-#include <robot_body_filter/RayCastingShapeMask.h>
+#include <robot_body_filter/RayCastingShapeMask.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 namespace robot_body_filter {
