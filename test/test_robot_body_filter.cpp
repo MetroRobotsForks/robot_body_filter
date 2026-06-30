@@ -126,7 +126,7 @@ constexpr char ROBOT_URDF[] =
 class RobotBodyFilterLaserScanTest : public robot_body_filter::RobotBodyFilterLaserScan {
 public:
   explicit RobotBodyFilterLaserScanTest(rclcpp::Node::SharedPtr node) : node_(std::move(node)) {
-    this->fail_without_robot_description_ = true;
+    fail_without_robot_description_ = true;
   }
 
   ~RobotBodyFilterLaserScanTest() override {
@@ -159,7 +159,7 @@ private:
 class RobotBodyFilterPointCloud2Test : public robot_body_filter::RobotBodyFilterPointCloud2 {
 public:
   explicit RobotBodyFilterPointCloud2Test(rclcpp::Node::SharedPtr node) : node_(std::move(node)) {
-    this->fail_without_robot_description_ = true;
+    fail_without_robot_description_ = true;
   }
 
   ~RobotBodyFilterPointCloud2Test() override {

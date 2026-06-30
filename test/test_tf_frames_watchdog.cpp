@@ -143,7 +143,7 @@ TEST(TfFramesWatchdog, SearchForReachableFrames) {
     nh, "base_link", {"left_track", "front_left_flipper"}, tfBuffer,
     rclcpp::Duration::from_seconds(0.1), std::make_shared<rclcpp::Rate>(1.0));
 
-  watchdog.unpause();  // searchForReachableFrames checks this->paused_
+  watchdog.unpause();  // searchForReachableFrames checks paused_
 
   rclcpp::Time start = clock_ptr->now();
   watchdog.searchForReachableFrames();

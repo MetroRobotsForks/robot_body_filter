@@ -39,7 +39,7 @@ using bodies::Sphere;
 class WrongBody : public ::bodies::Body {
 public:
   explicit WrongBody(const ::shapes::ShapeType type) {
-    this->type_ = type;
+    type_ = type;
   }
 
   std::vector<double> getDimensions() const override {
