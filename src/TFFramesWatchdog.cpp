@@ -1,11 +1,27 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
+#include <algorithm>
+#include <iterator>
+#include <memory>
+#include <mutex>
 #include <optional>
+#include <set>
+#include <string>
+#include <thread>
 #include <utility>
 
 #include <cras_cpp_common/time_utils.hpp>
+#include <rclcpp/clock.hpp>
+#include <rclcpp/duration.hpp>
+#include <rclcpp/logger.hpp>
+#include <rclcpp/logging.hpp>
+#include <rclcpp/rate.hpp>
+#include <rclcpp/time.hpp>
+#include <rclcpp/utilities.hpp>
 #include <robot_body_filter/TfFramesWatchdog.h>
+#include <tf2/exceptions.hpp>
+#include <tf2_ros/buffer.hpp>
 
 namespace robot_body_filter {
 TFFramesWatchdog::TFFramesWatchdog(

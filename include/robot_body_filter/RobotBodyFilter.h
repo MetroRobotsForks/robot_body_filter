@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
+#include <cstdint>
+#include <cstdio>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -17,11 +19,12 @@
 #include <Eigen/Geometry>
 
 #include <cras_cpp_common/tf2_sensor_msgs.hpp>
-#include <geometric_shapes/mesh_operations.h>
 #include <geometry_msgs/msg/polygon_stamped.hpp>
 #include <laser_geometry/laser_geometry.hpp>
-#include <moveit/occupancy_map_monitor/occupancy_map_updater.hpp>
+#include <moveit/point_containment_filter/shape_mask.hpp>
+#include <rcl_interfaces/msg/set_parameters_result.hpp>
 #include <rclcpp/clock.hpp>
+#include <rclcpp/duration.hpp>
 #include <rclcpp/executor.hpp>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/node.hpp>
@@ -32,17 +35,26 @@
 #include <rclcpp/node_interfaces/get_node_services_interface.hpp>
 #include <rclcpp/node_interfaces/get_node_topics_interface.hpp>
 #include <rclcpp/node_interfaces/node_interfaces.hpp>
+#include <rclcpp/node_interfaces/node_parameters_interface.hpp>
+#include <rclcpp/parameter.hpp>
+#include <rclcpp/subscription.hpp>
+#include <rclcpp/time.hpp>
+#include <rmw/types.h>
 #include <robot_body_filter/msg/oriented_bounding_box_stamped.hpp>
 #include <robot_body_filter/msg/sphere_stamped.hpp>
 #include <robot_body_filter/RayCastingShapeMask.h>
 #include <robot_body_filter/TfFramesWatchdog.h>
 #include <robot_body_filter/utils/filter_utils.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <std_msgs/msg/color_rgba.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <tf2_ros/buffer.hpp>
 #include <tf2_ros/transform_listener.hpp>
+#include <urdf_model/link.h>
 #include <urdf/model.h>
+#include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 namespace robot_body_filter {

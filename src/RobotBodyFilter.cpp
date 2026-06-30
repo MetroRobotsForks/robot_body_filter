@@ -10,9 +10,25 @@
 #undef private
 /* HACK END HACK */
 
+#include <algorithm>
+#include <chrono>
+#include <ctime>
 #include <functional>
+#include <limits>
+#include <map>
 #include <memory>
+#include <mutex>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <unordered_set>
 #include <utility>
+#include <vector>
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <pcl/filters/crop_box.h>
+#include <pcl/PCLPointCloud2.h>
 
 #include <cras_cpp_common/cloud.hpp>
 #include <cras_cpp_common/set_utils.hpp>
@@ -22,18 +38,45 @@
 #include <cras_cpp_common/urdf_utils.hpp>
 #include <geometric_shapes/bodies.h>
 #include <geometric_shapes/body_operations.h>
-#include <geometric_shapes/shape_operations.h>
-#include <pcl/filters/crop_box.h>
+#include <geometry_msgs/msg/polygon_stamped.hpp>
+#include <laser_geometry/laser_geometry.hpp>
+#include <moveit/point_containment_filter/shape_mask.hpp>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pluginlib/class_list_macros.hpp>
+#include <rclcpp/callback_group.hpp>
+#include <rclcpp/create_publisher.hpp>
+#include <rclcpp/create_service.hpp>
+#include <rclcpp/create_subscription.hpp>
+#include <rclcpp/duration.hpp>
 #include <rclcpp/executors/single_threaded_executor.hpp>
+#include <rclcpp/logging.hpp>
+#include <rclcpp/node.hpp>
+#include <rclcpp/publisher_options.hpp>
+#include <rclcpp/qos.hpp>
+#include <rclcpp/subscription_options.hpp>
+#include <rclcpp/time.hpp>
+#include <rmw/rmw.h>
+#include <robot_body_filter/RayCastingShapeMask.h>
 #include <robot_body_filter/RobotBodyFilter.h>
+#include <robot_body_filter/TfFramesWatchdog.h>
 #include <robot_body_filter/utils/bodies.h>
 #include <robot_body_filter/utils/shapes.h>
 #include <robot_body_filter/utils/tf2_eigen.h>
+#include <sensor_msgs/msg/laser_scan.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
+#include <std_msgs/msg/color_rgba.hpp>
+#include <std_srvs/srv/trigger.hpp>
+#include <tf2/exceptions.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
-#include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_ros/buffer.hpp>
+#include <tf2_ros/buffer_interface.hpp>
+#include <tf2_ros/transform_listener.hpp>
+// #include <tf2_sensor_msgs/tf2_sensor_msgs.hpp>
+#include <urdf/model.h>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 using std::max;
 using std::min;

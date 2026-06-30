@@ -4,8 +4,16 @@
 #include "gtest/gtest.h"
 
 #include <set>
+#include <string>
+#include <stdexcept>
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
+#include <eigen_stl_containers/eigen_stl_vector_container.h>
+#include <geometric_shapes/bodies.h>
 #include <geometric_shapes/mesh_operations.h>
+#include <geometric_shapes/shapes.h>
 #include <robot_body_filter/utils/bodies.h>
 
 #include "utils.cpp"  // NOLINT

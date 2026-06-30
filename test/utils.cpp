@@ -3,7 +3,15 @@
 
 #include "gtest/gtest.h"
 
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
 #include <eigen_stl_containers/eigen_stl_vector_container.h>
+#include <rclcpp/utilities.hpp>
 
 void expectVector3dSetsEqual(
   EigenSTL::vector_Vector3d vec1, EigenSTL::vector_Vector3d vec2, const double up_to_error = 1e-6) {

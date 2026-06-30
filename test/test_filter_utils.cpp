@@ -3,6 +3,18 @@
 
 #include "gtest/gtest.h"
 
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <set>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+#include <filters/filter_base.hpp>
+#include <rclcpp/duration.hpp>
+#include <rclcpp/node.hpp>
+#include <rclcpp/utilities.hpp>
 #include <robot_body_filter/utils/filter_utils.hpp>
 
 class TestFilter : public robot_body_filter::FilterBase<std::string> {

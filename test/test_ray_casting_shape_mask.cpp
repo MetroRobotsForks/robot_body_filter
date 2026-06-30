@@ -3,11 +3,23 @@
 
 #include "gtest/gtest.h"
 
+#include <functional>
+#include <string>
+#include <vector>
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
 #include <cras_cpp_common/cloud.hpp>
+#include <geometric_shapes/shapes.h>
+#include <moveit/point_containment_filter/shape_mask.hpp>
+#include <rclcpp/clock.hpp>
 #include <rclcpp/node.hpp>
+#include <rclcpp/time.hpp>
+#include <rclcpp/utilities.hpp>
 #include <robot_body_filter/RayCastingShapeMask.h>
 #include <robot_body_filter/utils/shapes.h>
-#include <urdf_model/model.h>
+#include <urdf_model/link.h>
 
 #include "utils.cpp"  // NOLINT
 

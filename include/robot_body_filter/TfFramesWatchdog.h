@@ -10,8 +10,11 @@
 #include <string>
 #include <thread>
 
+#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <rclcpp/clock.hpp>
+#include <rclcpp/duration.hpp>
 #include <rclcpp/logger.hpp>
+#include <rclcpp/rate.hpp>
 #include <tf2_ros/buffer.hpp>
 #include <tf2_ros/transform_listener.hpp>
 

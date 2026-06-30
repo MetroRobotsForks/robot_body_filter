@@ -3,17 +3,20 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // SPDX-FileCopyrightText: Czech Technical University in Prague
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
-#include <geometric_shapes/body_operations.h>
+#include <Eigen/Core>
+
+#include <geometric_shapes/bodies.h>
+#include <geometric_shapes/shapes.h>
 #include <moveit/point_containment_filter/shape_mask.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/logger.hpp>
-#include <robot_body_filter/utils/bodies.h>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 namespace robot_body_filter {

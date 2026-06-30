@@ -3,6 +3,9 @@
 
 #include "gtest/gtest.h"
 
+#include <Eigen/Core>
+
+#include <geometry_msgs/msg/point32.hpp>
 #include <robot_body_filter/utils/tf2_eigen.h>
 
 TEST(TF2Eigen, ToMsg) {

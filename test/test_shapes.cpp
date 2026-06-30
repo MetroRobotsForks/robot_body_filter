@@ -3,10 +3,12 @@
 
 #include "gtest/gtest.h"
 
-#include <set>
+#include <memory>
+#include <string>
 
+#include <geometric_shapes/shapes.h>
 #include <robot_body_filter/utils/shapes.h>
-#include <urdf_model/model.h>
+#include <urdf_model/link.h>
 
 TEST(Shapes, Box) {
   auto g = urdf::Box();

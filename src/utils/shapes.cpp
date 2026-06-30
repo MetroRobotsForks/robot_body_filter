@@ -5,7 +5,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <robot_body_filter/utils/bodies.h>
 #include <robot_body_filter/utils/shapes.h>
-#include <urdf_model/model.h>
+#include <urdf_model/link.h>
 
 shapes::ShapeConstPtr robot_body_filter::constructShape(const urdf::Geometry& geometry) {
   shapes::ShapePtr result;

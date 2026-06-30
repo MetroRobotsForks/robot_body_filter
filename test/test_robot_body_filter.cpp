@@ -3,11 +3,33 @@
 
 #include "gtest/gtest.h"
 
+#include <chrono>
+#include <map>
+#include <memory>
+#include <string>
 #include <thread>
+#include <utility>
+#include <vector>
 
 #include <cras_cpp_common/cloud.hpp>
+#include <geometry_msgs/msg/polygon_stamped.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <moveit/point_containment_filter/shape_mask.hpp>
 #include <rclcpp/executors/single_threaded_executor.hpp>
+#include <rclcpp/duration.hpp>
+#include <rclcpp/node.hpp>
+#include <rclcpp/time.hpp>
+#include <rclcpp/utilities.hpp>
+#include <robot_body_filter/msg/oriented_bounding_box_stamped.hpp>
+#include <robot_body_filter/msg/sphere_stamped.hpp>
+#include <robot_body_filter/RayCastingShapeMask.h>
 #include <robot_body_filter/RobotBodyFilter.h>
+#include <sensor_msgs/msg/laser_scan.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <sensor_msgs/msg/point_field.hpp>
+#include <std_msgs/msg/string.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 #include "utils.cpp"  // NOLINT
 

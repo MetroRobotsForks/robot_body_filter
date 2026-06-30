@@ -9,10 +9,25 @@
 #undef private
 /* HACK END HACK */
 
+#include <cmath>
 #include <list>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <tuple>
+#include <set>
+#include <string>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
-#include <cras_cpp_common/cloud.hpp>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
+#include <eigen_stl_containers/eigen_stl_vector_container.h>
+#include <geometric_shapes/bodies.h>
 #include <geometric_shapes/body_operations.h>
+#include <cras_cpp_common/cloud.hpp>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/logging.hpp>

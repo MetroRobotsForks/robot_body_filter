@@ -672,3 +672,14 @@ environments since they can degrade performance of the filter.
 
     Whether to publish debugging marker array containing the exact robot body 
     model used for computing the bounding box.
+
+## Extending This Package
+
+This filter is designed so that you can extend it in your own package or reuse its building blocks.
+For that purpose, several CMake targets are exported. Just `find_package(robot_body_filter REQUIRED)` and
+`target_link_libraries(my_target PUBLIC target_from_following_list)`.
+
+- `robot_body_filter::robot_body_filter_utils`: Small utilities from `include/robot_body_filter/utils`.
+- `robot_body_filter::TFFramesWatchdog`: The watchdog of TF frames telling which ones are reachable or not.
+- `robot_body_filter::RayCastingShapeMask`: The actual object that does the masking of a set of shapes from a pcl.
+- `robot_body_filter::robot_body_filter`: The actual rclcpp component with the filter.
